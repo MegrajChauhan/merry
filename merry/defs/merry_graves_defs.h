@@ -1,6 +1,11 @@
 #ifndef _MERRY_GRAVES_DEFS_
 #define _MERRY_GRAVES_DEFS_
 
+#define _MERRY_MINIMUM_NORMAL_INPUT_FILE_SIZE_ 64
+#define _MERRY_NORMAL_INPUT_FILE_ITIT_ENTRY_LEN_ 16
+#define _MERRY_INPUT_FILE_HEADER_SIZE_ 40
+#define _MERRY_DATA_METADATA_LENGTH_ 24
+
 typedef enum MerryFileType MerryFileType;
 enum MerryFileType {
   _NORMAL_INPUT_FILE,

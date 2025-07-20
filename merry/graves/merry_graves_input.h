@@ -121,34 +121,55 @@ mbool_t merry_graves_reader_confirm_input_file(MerryGravesInput *reader,
 MerryGravesInput *merry_graves_initialize_reader(mstr_t inp_path,
                                                  MerryErrorStack *st);
 
-mret_t merry_graves_reader_read_input(MerryGravesInput *reader);
+mret_t merry_graves_reader_read_input(MerryGravesInput *reader,
+                                      MerryErrorStack *st);
 
-void merry_graves_reader_destroy(MerryGravesInput *reader);
+void merry_graves_reader_destroy(MerryGravesInput *reader, MerryErrorStack *st);
 
-mret_t
-merry_graves_reader_parse_identification_header(MerryGravesInput *reader);
+mret_t merry_graves_reader_parse_identification_header(MerryGravesInput *reader,
+                                                       MerryErrorStack *st);
 
-mret_t merry_graves_reader_parse_ITIT_header(MerryGravesInput *reader);
+mret_t merry_graves_reader_parse_ITIT_header(MerryGravesInput *reader,
+                                             MerryErrorStack *st);
 
 mret_t
 merry_graves_reader_parse_data_and_string_header(MerryGravesInput *reader);
 
-mret_t merry_graves_reader_perform_checksum(MerryGravesInput *reader);
+mret_t merry_graves_reader_perform_checksum(MerryGravesInput *reader,
+                                            MerryErrorStack *st);
 
-mret_t merry_graves_reader_parse_ITIT(MerryGravesInput *reader);
+mret_t merry_graves_reader_parse_ITIT(MerryGravesInput *reader,
+                                      MerryErrorStack *st);
 
-mret_t merry_graves_reader_parse_instruction_sections(MerryGravesInput *reader);
+mret_t merry_graves_reader_parse_instruction_sections(MerryGravesInput *reader,
+                                                      MerryErrorStack *st);
 
-mret_t merry_graves_reader_parse_data_type_metadata(MerryGravesInput *reader);
+mret_t merry_graves_reader_parse_data_type_metadata(MerryGravesInput *reader,
+                                                    MerryErrorStack *st);
 
-mret_t
-merry_graves_reader_parse_data_and_string_section(MerryGravesInput *reader);
+mret_t merry_graves_reader_parse_data_section(MerryGravesInput *reader,
+                                              MerryErrorStack *st);
 
-mret_t merry_graves_reader_prep_memory(MerryGravesInput *reader);
+mret_t merry_graves_reader_parse_string_section(MerryGravesInput *reader,
+                                                MerryErrorStack *st);
+
+mret_t merry_graves_reader_prep_memory(MerryGravesInput *reader,
+                                       MerryErrorStack *st);
 
 mret_t merry_graves_reader_load_instructions(MerryGravesInput *reader,
-                                             mcore_t c_type, msize_t pgnum);
+                                             mcore_t c_type, msize_t pgnum,
+                                             MerryErrorStack *st);
 
-mret_t merry_graves_reader_load_data(MerryGravesInput *reader, msize_t pgnum);
+mret_t merry_graves_reader_read_qword(MerryGravesInput *reader, msize_t pg_num,
+                                      MerrySection *s, msize_t *tr);
+
+mret_t merry_graves_reader_read_dword(MerryGravesInput *reader, msize_t pg_num,
+                                      MerrySection *s, msize_t *tr);
+
+mret_t merry_graves_reader_read_word(MerryGravesInput *reader, msize_t pg_num,
+                                     MerrySection *s, msize_t *tr);
+
+mret_t merry_graves_reader_load_data(MerryGravesInput *reader, msize_t pgnum,
+                                     MerryErrorStack *st);
 
 #endif
