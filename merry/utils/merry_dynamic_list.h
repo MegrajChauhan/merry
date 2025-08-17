@@ -29,7 +29,7 @@ typedef MerryList MerryDynamicList; // The same base though
 #define merry_dynamic_list_size(list) merry_list_size(list)
 #define merry_dynamic_list_replace(list, new_elem, at)                         \
   merry_list_replace(list, new_elem, at)
-
+#define merry_dynamic_list_index_of(list, elem) merry_list_index_of(list, elem)
 // The extra conversions are probably unnecessary given that MerryDynamicList is
 // just a sugar coating around MerryList in which the push and pop behave
 // slightly differently

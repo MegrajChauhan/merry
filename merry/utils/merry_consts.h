@@ -16,9 +16,12 @@ typedef struct MerryConsts MerryConsts;
 struct MerryConsts {
   msize_t stack_len; // The number of pages for a stack(not the number of bytes)
   // ....
-  int *program_args;
+  int argc;
+  char **argv;
   int inp_file_index;
 };
+
+_MERRY_INTERNAL_ MerryConsts consts;
 
 #define _MERRY_HELP_MSG_                                                       \
   "Usage: mvm [Options] [Path to Input File]...\n"                             \
@@ -27,6 +30,8 @@ struct MerryConsts {
   "-h, --help             --> Display this help message\n"                     \
   "-v, --version          --> Display Current Version\n"
 
-mret_t merry_parse_arg(int argc, char **argv, MerryConsts *consts);
+mret_t merry_parse_arg(int argc, char **argv);
+
+_MERRY_ALWAYS_INLINE_ MerryConsts CONSTS();
 
 #endif

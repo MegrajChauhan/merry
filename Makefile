@@ -1,7 +1,7 @@
 # Variable definitions
 CC = gcc
 FLAGS = -Wall -Wextra -MMD -MP
-DIRS = merry/utils merry/abs merry/core merry/graves merry/memory merry/comps merry/interface merry/defs 
+DIRS = merry/utils merry/abs merry/core merry/graves merry/memory merry/comps merry/interface merry/defs merry/graves/linterfaces 
 SRC_DIR = merry/
 INC_DIRS = ${addprefix -I, ${DIRS}}
 FLAGS += ${flags}
@@ -14,7 +14,7 @@ OUTPUT_FILES_NAME = ${patsubst %.c, ${OUTPUT_DIR}%.o, ${FILES_TO_COMPILE}}
 DEPS=${patsubst %.c, ${OUTPUT_DEPS}%.d, ${FILES_TO_COMPILE}}
 
 all: directories ${OUTPUT_FILES_NAME} ${ASM_OUTPUT_FILES_NAME}
-	${CC} ${FLAGS} ${OUTPUT_FILES_NAME} mvm.c ${INC_DIRS} -o ${OUTPUT_DIR}mvm
+	${CC} ${FLAGS} ${OUTPUT_FILES_NAME} merry/interface/merry_assembly.S mvm.c ${INC_DIRS} -o ${OUTPUT_DIR}mvm
 
 WATCH_PROJECT: directories ${OUTPUT_FILES_NAME} ${ASM_OUTPUT_FILES_NAME}
 

@@ -44,6 +44,39 @@ __rid_of_during_error: // not the best names :(
   return RET_NULL;
 }
 
+MerryRAM *merry_copy_RAM(MerryRAM *source, MerryErrorStack *st) {
+  merry_check_ptr(source);
+
+  MerryRAM *destination = (MerryRAM *)malloc(sizeof(MerryRAM));
+
+  if (!destination) {
+    PUSH(st, "Memory Allocation Failure", "Failed to allocate memory",
+         "Copying a RAM");
+    merry_error_stack_errno(st);
+    merry_error_stack_fatality(st); // because this is fatal
+    return RET_NULL;
+  }
+
+  destination->page_count = source->page_count;
+
+  if ((destination->pages = (MerryNormalMemoryPage **)malloc(
+           sizeof(MerryMemoryPageBase *) * destination->page_count)) ==
+      RET_NULL) {
+    PUSH(st, "Memory Allocation Failure", "Failed to allocate memory",
+         "Copying a RAM");
+    merry_error_stack_errno(st);
+    merry_error_stack_fatality(st); // because this is fatal
+    free(destination);
+    return RET_NULL;
+  }
+
+  // memcpy the pointers or just loop
+  for (msize_t i = 0; i < destination->page_count; i++)
+    destination->pages[i] = source->pages[i];
+
+  return destination;
+}
+
 mret_t merry_RAM_append_page(MerryRAM *ram, MerryNormalMemoryPage *page,
                              MerryErrorStack *st) {
   merry_check_ptr(ram);

@@ -33,6 +33,8 @@ struct MerryList {
 #define merry_list_can_fit(list, len)                                          \
   (((list)->buf_cap - ((list)->curr_ptr + 1)) >= len)
 #define merry_list_space_left_for(list) ((list)->max_ind - (list)->curr_ptr)
+#define merry_list_index_of(list, elem)                                        \
+  ((msize_t)((elem) - (list)->buf) / (list)->elem_len)
 
 MerryList *merry_create_list(msize_t capacity, msize_t elem_len,
                              MerryErrorStack *st);

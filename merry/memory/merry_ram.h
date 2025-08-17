@@ -55,6 +55,8 @@ struct MerryRAM {
 // Builds a RAM that has default flags and properties set(PUBLIC RAM)
 MerryRAM *merry_create_RAM(msize_t number_of_pages, MerryErrorStack *st);
 
+MerryRAM *merry_copy_RAM(MerryRAM *source, MerryErrorStack *st);
+
 mret_t merry_RAM_append_page(MerryRAM *ram, MerryNormalMemoryPage *page,
                              MerryErrorStack *st);
 
