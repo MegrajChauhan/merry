@@ -16,7 +16,6 @@
 typedef struct MerryGravesMemPg MerryGravesMemPg;
 
 struct MerryGravesMemPg {
-  MerryNormalMemoryPage *mem_page;
   MerryGravesMemPg *original; // The original page in case of shared pages
 
   // Identification data

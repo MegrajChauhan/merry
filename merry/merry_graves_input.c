@@ -746,3 +746,13 @@ mret_t merry_graves_reader_load_data(MerryGravesInput *reader, msize_t pgnum,
   // done.... probably?
   return RET_SUCCESS;
 }
+
+MerryRAM *merry_graves_reader_get_data_RAM(MerryGravesInput *reader,
+                                           MerryErrorStack *st) {
+  MerryRAM *ram = merry_copy_RAM(reader->data_ram, st);
+  if (!ram) {
+    PUSH(st, NULL, "Failed to get a private DataRAM copy", "Copying DataRAM");
+    return RET_NULL;
+  }
+  return ram;
+}

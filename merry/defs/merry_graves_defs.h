@@ -31,14 +31,13 @@ enum MerryFileType {
 };
 
 enum mmempg_t {
-  MEMPG_VM_OWNED, // This cannot be modified
+  MEMPG_VM_OWNED, // Rogue pages with no parents(The properties remain intact)
   MEMPG_PRIVATE,
   MEMPG_PUBLIC,
   MEMPG_SHARED, // This implies that the particular page was private
                 // for some core but they decided to share it with
                 // some other core which makes it private.
-                // If the owner dies, it automatically becomes a
-                // MEMPG_VM_OWNED so that the shared core can use it
+                // If the owner dies, the page is made MEMPG_VM_OWNED
 };
 
 #endif

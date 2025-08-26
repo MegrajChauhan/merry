@@ -38,40 +38,20 @@ struct MerryGraves {
 
   mcorecreatebase_t HOW_TO_CREATE_BASE[__CORE_TYPE_COUNT];
   mcoredeletebase_t HOW_TO_DESTROY_BASE[__CORE_TYPE_COUNT];
+
+  MerryConsts *_config;
 };
 
 // GRAVES has the full authority to terminate the VM
 _MERRY_INTERNAL_ MerryGraves GRAVES;
 
-mret_t merry_graves_user_input_needs_attention(int argc, char **argv,
-                                               MerryErrorStack *st);
+// Entry to Graves(doesn't return)
+_MERRY_NO_RETURN_ void Merry_Graves_Run(int argc, char **argv);
 
-// ... if we have config files, parsing them should happen here
+// Pre-initialization before initializing Graves
+mret_t merry_graves_pre_init(MerryErrorStack *st);
 
-mret_t merry_graves_pre_initialize(MerryErrorStack *st);
-
-mret_t merry_graves_understand_user_input(MerryErrorStack *st);
-
-void merry_graves_acquaint_with_cores();
-
-MerryGravesGroup *merry_graves_find_dead_group(msize_t *ind);
-
-mret_t merry_graves_add_group(MerryErrorStack *st);
-
-MerryGravesCoreRepr *
-merry_graves_find_a_dead_core_repr_grp_specific(MerryGravesGroup *grp,
-                                                MerryErrorStack *st);
-
-MerryGravesCoreRepr *merry_graves_find_a_dead_core_repr(MerryErrorStack *st);
-
-mret_t merry_graves_initialize_core_repr(MerryGravesCoreRepr *repr,
-                                         mcore_t type, MerryErrorStack *st);
-
-mret_t merry_graves_add_core_repr(MerryGravesGroup *parent_grp,
-                                  MerryErrorStack *st);
-
-mret_t merry_graves_launch_core(MerryGravesCoreRepr *repr, MerryErrorStack *st);
-
-mret_t merry_graves_initialize(MerryErrorStack *st, int argc, char **argv);
+// Read the input file
+mret_t merry_graves_parse_input(MerryErrorStack *st);
 
 #endif

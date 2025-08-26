@@ -9,4 +9,4 @@ mret_t merry_parse_arg(int argc, char **argv) {
   return RET_SUCCESS;
 }
 
-MerryConsts CONSTS() { return consts; }
+MerryConsts *CONSTS() { return &consts; }

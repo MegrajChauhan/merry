@@ -29,8 +29,8 @@ struct MerryCoreBase {
   mcoreexec_t execc;
 
   // Flags
-  mbool_t running; // Set to mfalse iff the core has terminated
-  // mbool_t interrupt; // the core was just interrupted
+  mbool_t running;   // Set to mfalse iff the core has terminated
+  mbool_t interrupt; // the core was just interrupted
   mbool_t terminate; // if set, the core will terminate
   // mbool_t pause;     // set to pause the core
   // mbool_t smsqen;    // Switchable Multi-State Queue Enabled?

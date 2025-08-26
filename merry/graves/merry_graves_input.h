@@ -172,4 +172,7 @@ mret_t merry_graves_reader_read_word(MerryGravesInput *reader, msize_t pg_num,
 mret_t merry_graves_reader_load_data(MerryGravesInput *reader, msize_t pgnum,
                                      MerryErrorStack *st);
 
+MerryRAM *merry_graves_reader_get_data_RAM(MerryGravesInput *reader,
+                                           MerryErrorStack *st);
+
 #endif
