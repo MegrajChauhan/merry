@@ -32,6 +32,6 @@ _MERRY_INTERNAL_ MerryConsts consts;
 
 mret_t merry_parse_arg(int argc, char **argv);
 
-_MERRY_ALWAYS_INLINE_ MerryConsts *CONSTS();
+MerryConsts *CONSTS();
 
 #endif

@@ -24,7 +24,7 @@
 #endif
 
 #if defined(_MERRY_OPTIMIZE_)
-#define _MERRY_ALWAYS_INLINE_ __attribute__((always_inline))
+#define _MERRY_ALWAYS_INLINE_ inline __attribute__((always_inline))
 #else
 #define _MERRY_ALWAYS_INLINE_ static inline
 #endif

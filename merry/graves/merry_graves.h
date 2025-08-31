@@ -29,6 +29,7 @@ struct MerryGraves {
   MerryDynamicList *GRPS; // all of the groups
   msize_t overall_core_count;
   msize_t overall_active_core_count;
+  msize_t initial_data_mem_page_count;
   MerryGravesInput *input;
 
   // needed fields
@@ -53,5 +54,11 @@ mret_t merry_graves_pre_init(MerryErrorStack *st);
 
 // Read the input file
 mret_t merry_graves_parse_input(MerryErrorStack *st);
+
+// Initialize Graves
+mret_t merry_graves_init(MerryErrorStack *st);
+
+// Destroy Graves
+void merry_graves_destroy(MerryErrorStack *st);
 
 #endif

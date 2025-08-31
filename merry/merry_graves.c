@@ -21,8 +21,16 @@ void Merry_Graves_Run(int argc, char **argv) {
     exit(-1);
   }
 
+  // Initialize Graves finally
+
   // Exit
   exit(GRAVES.return_value);
+
+GRAVES_FAILED_TO_START:
+  // Graves couldn't fully initialize
+  merry_err("GRAVES: Couldn't start the machine...", NULL);
+  merry_graves_destroy();
+  exit(-1);
 }
 
 mret_t merry_graves_pre_init(MerryErrorStack *st) {
@@ -52,4 +60,42 @@ mret_t merry_graves_parse_input(MerryErrorStack *st) {
   }
 
   return RET_SUCCESS;
+}
+
+mret_t merry_graves_init(MerryErrorStack *st) {
+  GRAVES.GRPS = merry_create_dynamic_list(1, sizeof(MerryGravesGroup *), st);
+  if (!GRAVES.GRPS) {
+    PUSH(st, NULL, "Failed to create GRPS list", "Initializing Graves");
+    return RET_FAILURE;
+  }
+
+  if (merry_cond_init(&GRAVES.graves_cond) == RET_FAILURE) {
+    PUSH(st, NULL, "Failed to initialize GRAVES COND", "Initializing Graves");
+    return RET_FAILURE;
+  }
+
+  if (merry_mutex_init(&GRAVES.graves_lock) == RET_FAILURE) {
+    PUSH(st, NULL, "Failed to initialize GRAVES LOCK", "Initializing Graves");
+    return RET_FAILURE;
+  }
+
+  GRAVES.overall_core_count = 0;
+  GRAVES.overall_active_core_count = 0;
+  GRAVES.initial_data_mem_page_count = GRAVES.input->data_ram->page_count;
+  GRAVES.return_value = 0;
+
+  /*
+   * More fields as added
+   * */
+
+  return RET_FAILURE;
+}
+
+void merry_graves_destroy(MerryErrorStack *st) {
+  // Just basic cleanup
+  if (GRAVES.GRPS)
+    merry_destroy_dynamic_list(GRAVES.GRPS);
+  if (GRAVES.input) {
+  }
+  merry_graves_reader_destroy(GRAVES.input, st);
 }
