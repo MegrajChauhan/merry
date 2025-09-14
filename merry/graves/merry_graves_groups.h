@@ -29,8 +29,10 @@
 #include <merry_utils.h>
 #include <stdlib.h>
 
+// Working on cleaning up after termination is finished
+// Trying to figure out how to use core_count
+
 #define merry_graves_group_register_new_core(grp) ((grp)->core_count++)
-#define merry_graves_group_register_dead_core(grp) ((grp)->core_count--)
 #define merry_graves_group_index_for(grp, repr)                                \
   merry_dynamic_list_index_of((grp)->all_cores, (repr))
 #define merry_graves_group_dead(grp) ((grp)->core_count == 0)

@@ -2,6 +2,7 @@
 #define _MERRY_GRAVES_DEFS_
 
 #include <merry_core_types.h>
+#include <merry_error_stack.h>
 #include <merry_types.h>
 
 #define _MERRY_MINIMUM_NORMAL_INPUT_FILE_SIZE_ 64
@@ -16,10 +17,11 @@ struct MerryCoreBase;
 // something that is the default of the core and then later using
 // some other tricks, the programs may enable/disable certain features
 _MERRY_DEFINE_FUNC_PTR_(mptr_t, mcorecreate_t, struct MerryCoreBase *,
-                        maddress_t);
+                        maddress_t, MerryErrorStack *);
 _MERRY_DEFINE_FUNC_PTR_(void, mcoredeletecore_t, mptr_t);
 _MERRY_DEFINE_FUNC_PTR_(_THRET_T_, mcoreexec_t, mptr_t);
-_MERRY_DEFINE_FUNC_PTR_(struct MerryCoreBase *, mcorecreatebase_t, void);
+_MERRY_DEFINE_FUNC_PTR_(struct MerryCoreBase *, mcorecreatebase_t,
+                        MerryErrorStack *);
 _MERRY_DEFINE_FUNC_PTR_(void, mcoredeletebase_t, struct MerryCoreBase *);
 
 // Input file type
@@ -39,5 +41,8 @@ enum mmempg_t {
                 // some other core which makes it private.
                 // If the owner dies, the page is made MEMPG_VM_OWNED
 };
+
+// Interrupts That are Broadcasted
+enum { __INT_TERMINATE };
 
 #endif

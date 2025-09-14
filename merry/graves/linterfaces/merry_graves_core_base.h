@@ -29,9 +29,11 @@ struct MerryCoreBase {
   mcoreexec_t execc;
 
   // Flags
-  mbool_t running;   // Set to mfalse iff the core has terminated
-  mbool_t interrupt; // the core was just interrupted
-  mbool_t terminate; // if set, the core will terminate
+  mbool_t running;               // Set to mfalse iff the core has terminated
+  mbool_t interrupt;             // the core was just interrupted
+  atomic_bool *global_interrupt; // All cores interrupted by Graves
+  mbool_t terminate;             // if set, the core will terminate
+
   // mbool_t pause;     // set to pause the core
   // mbool_t smsqen;    // Switchable Multi-State Queue Enabled?
 
@@ -48,6 +50,9 @@ struct MerryCoreBase {
   mcond_t cond; // Just the condition variable
 
   MerryErrorStack estack; // A personal error stack
+
+  atomic_size_t *global_request; // A global broadcast by Graves
+  atomic_size_t *global_request_inform;
 };
 
 /*

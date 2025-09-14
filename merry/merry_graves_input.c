@@ -66,6 +66,7 @@ MerryGravesInput *merry_graves_initialize_reader(mstr_t inp_path,
   reader->data_ram = NULL;
   reader->data_offsets = NULL;
   reader->string_offsets = NULL;
+  reader->string_offsets_count = reader->data_offsets_count = 0;
   return reader;
 }
 
@@ -92,13 +93,29 @@ mret_t merry_graves_reader_read_input(MerryGravesInput *reader,
     goto __parsing_error;
   if (merry_graves_reader_parse_string_section(reader, st) == RET_FAILURE)
     goto __parsing_error;
+  if (reader->metadata.data_section_len == 0)
+    reader->data_offsets_count++;
   if (merry_graves_reader_prep_memory(reader, st) == RET_FAILURE)
     goto __parsing_error;
   if (merry_graves_reader_load_instructions(
           reader, reader->itit.entries[0].type, 0, st) == RET_FAILURE)
     goto __parsing_error;
-  if (merry_graves_reader_load_data(reader, 0, st) == RET_FAILURE)
+  if ((reader->data_offsets_count > 0 || reader->string_offsets_count > 0) &&
+      merry_graves_reader_load_data(reader, 0, st) == RET_FAILURE)
     goto __parsing_error;
+  else {
+    if ((reader->data_ram = merry_create_RAM(1, st)) == RET_NULL) {
+      PUSH(st, NULL, "Failed to initialize empty data memory",
+           "Preparing Merrt");
+      goto __parsing_error;
+    }
+    if (merry_initialize_normal_memory_page(reader->data_ram->pages[0], st) ==
+        RET_FAILURE) {
+      PUSH(st, NULL, "Failed to initialize empty data memory",
+           "Preparing Merry");
+      goto __parsing_error;
+    }
+  }
 
   return RET_SUCCESS;
 

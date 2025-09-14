@@ -404,19 +404,6 @@ mret_t merry_RAM_write_qword(MerryRAM *ram, maddress_t address, mqword_t value,
   return RET_SUCCESS;
 }
 
-void merry_destroy_RAM(MerryRAM *ram, MerryErrorStack *st) {
-  merry_check_ptr(ram);
-  merry_check_ptr(ram->pages);
-
-  for (msize_t i = 0; i < ram->page_count; i++) {
-    merry_check_ptr(ram->pages[i]);
-    merry_return_normal_memory_page(ram->pages[i], st);
-  }
-
-  free(ram->pages);
-  free(ram);
-}
-
 mbptr_t merry_RAM_bulk_read(MerryRAM *ram, maddress_t address, msize_t length,
                             MerryErrorStack *st) {
   merry_check_ptr(ram);
@@ -801,4 +788,17 @@ mret_t merry_RAM_cmpxchg(MerryRAM *ram, maddress_t address, mbyte_t expected,
       (atomic_char *)&ram->pages[page_num]->buf[page_off], (char *)&expected,
       desired);
   return RET_SUCCESS;
+}
+
+void merry_destroy_RAM(MerryRAM *ram, MerryErrorStack *st) {
+  merry_check_ptr(ram);
+  merry_check_ptr(ram->pages);
+
+  for (msize_t i = 0; i < ram->page_count; i++) {
+    merry_check_ptr(ram->pages[i]);
+    merry_return_normal_memory_page(ram->pages[i], st);
+  }
+
+  free(ram->pages);
+  free(ram);
 }

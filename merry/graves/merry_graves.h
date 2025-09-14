@@ -36,11 +36,21 @@ struct MerryGraves {
   mcond_t graves_cond;
   mmutex_t graves_lock;
   msize_t return_value;
+  msize_t core_count; // for the unique ID
+  msize_t active_core_count;
 
   mcorecreatebase_t HOW_TO_CREATE_BASE[__CORE_TYPE_COUNT];
   mcoredeletebase_t HOW_TO_DESTROY_BASE[__CORE_TYPE_COUNT];
 
   MerryConsts *_config;
+
+  atomic_bool interrupt_broadcast;
+  atomic_size_t request_broadcast;
+  atomic_size_t broadcast_result; // Once the broadcast is made and
+                                  // each core start completing the
+                                  // request then they will update
+                                  // this counter and Graves will
+                                  // wait until it reaches 0
 };
 
 // GRAVES has the full authority to terminate the VM
@@ -58,7 +68,31 @@ mret_t merry_graves_parse_input(MerryErrorStack *st);
 // Initialize Graves
 mret_t merry_graves_init(MerryErrorStack *st);
 
+// Prepare everything now right before running
+mret_t merry_graves_ready_everything(MerryErrorStack *st);
+// Registers all of the Base creation and destruction functions
+void merry_graves_acquaint_with_cores();
+
+// This is the OVERSEER
+void merry_graves_START();
+
 // Destroy Graves
 void merry_graves_destroy(MerryErrorStack *st);
+
+// Step by step clearing of the Graves before basic cleanup
+void merry_graves_cleanup_groups();
+void merry_graves_terminate_all_cores();
+
+// Utilities
+
+MerryGravesGroup *merry_graves_add_group(MerryErrorStack *st);
+MerryGravesCoreRepr *merry_graves_add_core(MerryGravesGroup *grp,
+                                           MerryErrorStack *st);
+mret_t merry_graves_init_a_core(MerryGravesCoreRepr *repr, mcore_t type,
+                                maddress_t addr, MerryErrorStack *st);
+
+mret_t merry_graves_boot_a_core(MerryGravesCoreRepr *repr, MerryErrorStack *st);
+
+/* Request Handlers */
 
 #endif
