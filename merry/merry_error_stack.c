@@ -21,12 +21,22 @@ void ERROR(MerryErrorStack *st) {
   merry_check_ptr(st);
 
   merry_log("ERROR DUMP:", NULL);
-  if (st->SP == 0)
-    merry_unreachable("Empty Error Dump[STACK OWNER: id=%zu, uid=%zu, gid=%zu]",
-                      st->owner_id, st->owner_uid, st->owner_gid);
+  if (st->SP == 0) {
+    if (st->owner_id != (mqword_t)-1)
+      merry_unreachable(
+          "Empty Error Dump[STACK OWNER: id=%zu, uid=%zu, gid=%zu]",
+          st->owner_id, st->owner_uid, st->owner_gid);
+    else
+      merry_unreachable("Empty Error Dump[STACK OWNER: id=COMPONENT, "
+                        "uid=COMPONENT, gid=COMPONENT]",
+                        NULL);
+  }
+  if (st->owner_id != (mqword_t)-1)
+    merry_msg("Belongs to: id=%zu, uid=%zu, gid=%zu", st->owner_id,
+              st->owner_uid, st->owner_gid);
+  else
+    merry_msg("Belongs to: id=COMPONENT, uid=COMPONENT, gid=COMPONENT", NULL);
 
-  merry_msg("Belongs to: id=%zu, uid=%zu, gid=%zu", st->owner_id, st->owner_uid,
-            st->owner_gid);
   for (msize_t i = 0; i < st->SP; i++) {
     MerryErrorStackEntry entry = st->entries[i];
     if (entry.context)

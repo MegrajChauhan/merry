@@ -122,4 +122,7 @@ mret_t merry_RAM_cmpxchg(MerryRAM *ram, maddress_t address, mbyte_t expected,
 
 void merry_destroy_RAM(MerryRAM *ram, MerryErrorStack *st);
 
+// Destroys the RAM but doesn't delete the pages
+void merry_basic_cleaning_RAM(MerryRAM *ram);
+
 #endif

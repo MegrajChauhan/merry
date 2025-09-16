@@ -8,7 +8,7 @@ void Merry_Graves_Run(int argc, char **argv) {
   GRAVES._config = CONSTS();
 
   MerryErrorStack init_st;
-
+  merry_error_stack_init(&init_st, -1, -1, -1);
   // Now we perform pre-initialization
   if (merry_graves_pre_init(&init_st) == RET_FAILURE)
     goto GRAVES_FAILED_TO_START;
@@ -95,7 +95,7 @@ mret_t merry_graves_init(MerryErrorStack *st) {
    * More fields as added
    * */
 
-  return RET_FAILURE;
+  return RET_SUCCESS;
 }
 
 mret_t merry_graves_ready_everything(MerryErrorStack *st) {
@@ -128,8 +128,7 @@ mret_t merry_graves_ready_everything(MerryErrorStack *st) {
     return RET_FAILURE;
   }
 
-  first_core->base->guid = 0;
-  first_core->base->id = 0;
+  merry_graves_give_IDs_to_cores(first_core, grp);
 
   // Add the group
   if (merry_dynamic_list_push(GRAVES.GRPS, (mptr_t)grp, st) == RET_FAILURE) {
@@ -184,8 +183,36 @@ void merry_graves_cleanup_groups() {
 }
 
 void merry_graves_terminate_all_cores() {
-  atomic_store(&GRAVES.request_broadcast, __INT_TERMINATE);
-  atomic_store(&GRAVES.interrupt_broadcast, 1);
+
+  atomic_store_explicit(&GRAVES.request_broadcast, __INT_TERMINATE,
+                        memory_order_release);
+  atomic_store_explicit(&GRAVES.interrupt_broadcast, 1, memory_order_release);
+}
+
+void merry_graves_cleanup_request_queue() {
+  MerryGravesRequest *req;
+  mbool_t is_dead;
+  while (merry_graves_wants_work(&req) != RET_FAILURE) {
+    MerryGravesGroup *grp = merry_dynamic_list_at(GRAVES.GRPS, req->guid);
+    MerryGravesCoreRepr *repr =
+        merry_graves_group_find_core(grp, req->uid, req->id, &is_dead);
+    // most likely not dead
+    repr->base->interrupt = mtrue;
+    repr->base->terminate = mtrue;
+    merry_cond_signal(&repr->base->cond);
+  }
+}
+
+void merry_graves_temporary_wake_up_request_queue_cores() {
+  MerryGravesRequest *req;
+  mbool_t is_dead;
+  while (merry_graves_temporary_get_work(&req) != RET_FAILURE) {
+    MerryGravesGroup *grp = merry_dynamic_list_at(GRAVES.GRPS, req->guid);
+    MerryGravesCoreRepr *repr =
+        merry_graves_group_find_core(grp, req->uid, req->id, &is_dead);
+    repr->base->broadcast_wake_up = mtrue;
+    merry_cond_signal(&repr->base->cond);
+  }
 }
 
 MerryGravesGroup *merry_graves_add_group(MerryErrorStack *st) {
@@ -218,10 +245,6 @@ MerryGravesCoreRepr *merry_graves_add_core(MerryGravesGroup *grp,
     return RET_NULL;
   }
 
-  // Assign IDs
-  repr->base->guid = grp->group_id;
-  repr->base->id = merry_graves_group_index_for(grp, (mptr_t)repr);
-
   return repr;
 }
 
@@ -239,23 +262,29 @@ mret_t merry_graves_init_a_core(MerryGravesCoreRepr *repr, mcore_t type,
   repr->base = GRAVES.HOW_TO_CREATE_BASE[type](st);
 
   if (!repr->base) {
-    PUSH(st, NULL, "Failed to BOOT core", "Initializing New Core");
+    PUSH(st, NULL, "Failed to BUILD core base", "Initializing New Core");
     return RET_FAILURE;
   }
 
   repr->core = repr->base->createc(repr->base, addr, st);
 
   if (!repr->core) {
-    PUSH(st, NULL, "Failed to BOOT core", "Initializing New Core");
+    PUSH(st, NULL, "Failed to BUILD core", "Initializing New Core");
     GRAVES.HOW_TO_DESTROY_BASE[type](repr->base);
     return RET_FAILURE;
   }
 
-  // Initialized and ready to RUN
-  // Assigning IDs needed Here
-  repr->base->uid = GRAVES.core_count++;
-  repr->base->global_interrupt = &GRAVES.interrupt_broadcast;
-  repr->base->global_request = &GRAVES.request_broadcast;
+  MerryRAM *dram = merry_graves_reader_get_data_RAM(GRAVES.input, st);
+  if (!dram) {
+    PUSH(st, NULL, "Failed to GET data ram", "Initializing New Core");
+    repr->base->deletec(repr->core);
+    repr->core = NULL;
+    GRAVES.HOW_TO_DESTROY_BASE[type](repr->base);
+    return RET_FAILURE;
+  }
+
+  repr->base->iram = GRAVES.input->iram[type];
+  repr->base->ram = dram;
 
   return RET_SUCCESS;
 }
@@ -273,7 +302,42 @@ mret_t merry_graves_boot_a_core(MerryGravesCoreRepr *repr,
     return RET_FAILURE;
   }
 
+  MerryGravesGroup *grp = merry_dynamic_list_at(GRAVES.GRPS, repr->base->guid);
+  merry_graves_group_register_new_core(grp);
+  GRAVES.active_core_count++;
+
   return RET_SUCCESS;
+}
+
+void merry_graves_give_IDs_to_cores(MerryGravesCoreRepr *repr,
+                                    MerryGravesGroup *grp) {
+  merry_check_ptr(repr);
+  merry_check_ptr(repr->core);
+  merry_check_ptr(grp);
+
+  // Initialized and ready to RUN
+  // Assigning IDs needed Here
+  repr->base->guid = grp->group_id;
+  repr->base->id = merry_graves_group_index_for(grp, (mptr_t)repr);
+  repr->base->uid = GRAVES.core_count++;
+  repr->base->global_interrupt = &GRAVES.interrupt_broadcast;
+  repr->base->global_request = &GRAVES.request_broadcast;
+  repr->base->global_request_inform = &GRAVES.broadcast_result;
+  repr->base->group_request = &grp->group_interrupt_request;
+  repr->base->group_interrupt = &grp->group_interrupt_broadcast;
+}
+
+void merry_graves_wait_out_global_broadcast() {
+  // A broadcast was made and now we must wait
+  merry_graves_temporary_wake_up_request_queue_cores();
+  while (atomic_load_explicit(&GRAVES.broadcast_result, memory_order_relaxed) !=
+         0) {
+    usleep(10);
+  }
+  atomic_store_explicit(&GRAVES.interrupt_broadcast, mfalse,
+                        memory_order_release);
+  atomic_store_explicit(&GRAVES.request_broadcast, __INT_NONE,
+                        memory_order_release);
 }
 
 void merry_graves_START() {
@@ -282,6 +346,7 @@ void merry_graves_START() {
   // Let's extract the first core directly with no shame
 
   MerryErrorStack merry_stack;
+  merry_error_stack_init(&merry_stack, -1, -1, -1);
 
   MerryGravesCoreRepr *first_core =
       (MerryGravesCoreRepr *)(((MerryGravesGroup *)(GRAVES.GRPS->buf))
@@ -289,12 +354,43 @@ void merry_graves_START() {
   if (merry_graves_boot_a_core(first_core, &merry_stack) == RET_FAILURE) {
     ERROR(&merry_stack);
     merry_err("[<BOOT>]: Failed to start the VM", NULL);
-    goto GRAVES_OVERSEER_FAILURE;
+    goto GRAVES_OVERSEER_END;
+  }
+  MerryGravesRequest *req;
+  mbool_t is_dead_tmp;
+  while (1) {
+    if (merry_graves_wants_work(&req) == RET_FAILURE) {
+      if (GRAVES.active_core_count == 0)
+        goto GRAVES_OVERSEER_END;
+      merry_cond_wait(&GRAVES.graves_cond, &GRAVES.graves_lock);
+    } else {
+      // Hanling Requests
+      MerryGravesGroup *grp = merry_dynamic_list_at(GRAVES.GRPS, req->guid);
+      MerryGravesCoreRepr *repr =
+          merry_graves_group_find_core(grp, req->uid, req->id, &is_dead_tmp);
+      /*
+       * Since a core cannot change any of its IDs and nor can it be
+       * dead if it is making a request, the above won't fail
+       * */
+      switch (req->type) {
+        // .. Requests
+      case KILL_SELF:
+        req_kill_self(repr, grp);
+        continue;
+      default:
+        // Unknown requests will result in a panic by default
+        merry_unreachable("UNKNOWN REQUEST: Core ID: %zu, UID: %zu, GUID: %zu "
+                          "made request %u which is not valid.",
+                          req->id, req->uid, req->guid, req->type);
+      }
+      // After handling the request
+      merry_cond_signal(&repr->base->cond);
+    }
   }
 
-GRAVES_OVERSEER_FAILURE:
+GRAVES_OVERSEER_END:
   merry_graves_terminate_all_cores();
-
+  merry_graves_wait_out_global_broadcast();
   merry_graves_cleanup_groups();
   return;
 }

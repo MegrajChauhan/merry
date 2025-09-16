@@ -802,3 +802,11 @@ void merry_destroy_RAM(MerryRAM *ram, MerryErrorStack *st) {
   free(ram->pages);
   free(ram);
 }
+
+void merry_basic_cleaning_RAM(MerryRAM *ram) {
+  merry_check_ptr(ram);
+  merry_check_ptr(ram->pages);
+
+  free(ram->pages);
+  free(ram);
+}

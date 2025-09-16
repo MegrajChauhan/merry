@@ -29,7 +29,10 @@
 typedef enum mgreq_t mgreq_t;
 
 enum mgreq_t {
-  __,
+  KILL_SELF, // RES: A core killing itself
+             // DESC: If a core has done what it can and wants to
+             //       terminate itself gracefully
+
 };
 
 #endif

@@ -1,6 +1,6 @@
-#include <stdio.h>
+#include <merry_graves.h>
 
 int main(int argc, char **argv) {
-  printf("Hello World!\n");
+  Merry_Graves_Run(argc, argv);
   return 0;
 }

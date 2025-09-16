@@ -30,10 +30,6 @@ mbool_t merry_graves_reader_confirm_input_file(MerryGravesInput *reader,
     return mfalse;
   }
 
-  for (msize_t i = 0; i < __CORE_TYPE_COUNT; i++) {
-    reader->_instruction_for_core_already_read[i] = mfalse;
-  }
-
   return mtrue;
 }
 
@@ -106,7 +102,7 @@ mret_t merry_graves_reader_read_input(MerryGravesInput *reader,
   else {
     if ((reader->data_ram = merry_create_RAM(1, st)) == RET_NULL) {
       PUSH(st, NULL, "Failed to initialize empty data memory",
-           "Preparing Merrt");
+           "Preparing Merry");
       goto __parsing_error;
     }
     if (merry_initialize_normal_memory_page(reader->data_ram->pages[0], st) ==
@@ -288,7 +284,12 @@ mret_t merry_graves_reader_parse_ITIT(MerryGravesInput *reader,
     merry_LITTLE_ENDIAN_to_BIG_ENDIAN(&c_type);
     merry_LITTLE_ENDIAN_to_BIG_ENDIAN(&section_len);
 #endif
-    c_type.bytes.b7 = c_type.bytes.b7 & __CORE_TYPE_COUNT;
+    if (c_type.bytes.b7 >= __CORE_TYPE_COUNT) {
+      PUSH(st, "Unknown Core Type", "ITIT entry specifies an unknown CORE TYPE",
+           "Parsing Input File");
+      merry_error_stack_fatality(st);
+      return RET_FAILURE;
+    }
     if (reader->_instruction_for_core_already_read[c_type.bytes.b7] == mtrue) {
       PUSH(st, "Invalid File Structure",
            "Multiple ITIT entries for the same core type",

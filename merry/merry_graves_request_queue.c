@@ -23,6 +23,7 @@ mret_t merry_graves_req_queue_init(mcond_t *graves_cond, MerryErrorStack *st) {
 
   g_queue.graves_cond = graves_cond;
   g_queue.accept_requests = mtrue;
+  merry_error_stack_init(&g_queue_stack, -1, -1, -1);
   return RET_SUCCESS;
 }
 
@@ -62,6 +63,30 @@ mret_t merry_graves_wants_work(MerryGravesRequest **req) {
 
 MerryErrorStack *merry_graves_get_req_queue_error_stack() {
   return &g_queue_stack;
+}
+
+mret_t merry_graves_temporary_get_work(MerryGravesRequest **req) {
+  // No need for mutex locks
+  merry_mutex_lock(&g_queue.queue_lock);
+  if (!g_queue.last_temp_req) {
+    *req = g_queue.req_queue->head->data;
+    g_queue.last_temp_req = g_queue.req_queue->head;
+  } else if (g_queue.last_temp_req == g_queue.req_queue->tail) {
+    merry_mutex_unlock(&g_queue.queue_lock);
+    return RET_FAILURE;
+  } else {
+    *req = g_queue.last_temp_req->next_node->data;
+    g_queue.last_temp_req = g_queue.last_temp_req->next_node;
+  }
+  merry_mutex_unlock(&g_queue.queue_lock);
+  return RET_SUCCESS;
+}
+
+void merry_graves_req_no_more_requests() {
+  merry_mutex_lock(&g_queue.queue_lock);
+  g_queue.accept_requests = mfalse;
+  g_queue.last_temp_req = NULL;
+  merry_mutex_unlock(&g_queue.queue_lock);
 }
 
 void merry_graves_req_queue_free() {

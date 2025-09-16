@@ -20,7 +20,10 @@ MerryGravesGroup *merry_graves_group_create(msize_t gid, MerryErrorStack *st) {
   }
 
   grp->core_count = 0;
+  grp->active_core_count = 0;
   grp->group_id = gid;
+  grp->group_interrupt_broadcast = mfalse;
+  grp->group_interrupt_request = __INT_NONE;
   return grp;
 }
 
@@ -40,6 +43,7 @@ MerryGravesCoreRepr *merry_graves_group_add_core(MerryGravesGroup *grp,
          "Couldn't create space for a new core");
     return RET_NULL;
   }
+  grp->core_count++;
   return (MerryGravesCoreRepr *)merry_dynamic_list_at(grp->all_cores,
                                                       grp->core_count - 1);
 }
@@ -51,6 +55,7 @@ void merry_graves_group_last_add_failed(MerryGravesGroup *grp) {
   // The last core that was added wasn't successfully initialized.
   // KILL it
   merry_dynamic_list_pop(grp->all_cores);
+  grp->core_count--;
   return;
 }
 

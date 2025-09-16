@@ -82,6 +82,8 @@ void merry_graves_destroy(MerryErrorStack *st);
 // Step by step clearing of the Graves before basic cleanup
 void merry_graves_cleanup_groups();
 void merry_graves_terminate_all_cores();
+void merry_graves_cleanup_request_queue();
+void merry_graves_temporary_wake_up_request_queue_cores();
 
 // Utilities
 
@@ -90,9 +92,14 @@ MerryGravesCoreRepr *merry_graves_add_core(MerryGravesGroup *grp,
                                            MerryErrorStack *st);
 mret_t merry_graves_init_a_core(MerryGravesCoreRepr *repr, mcore_t type,
                                 maddress_t addr, MerryErrorStack *st);
-
 mret_t merry_graves_boot_a_core(MerryGravesCoreRepr *repr, MerryErrorStack *st);
+void merry_graves_give_IDs_to_cores(MerryGravesCoreRepr *repr,
+                                    MerryGravesGroup *grp);
+void merry_graves_wait_out_global_broadcast();
 
 /* Request Handlers */
+REQ(kill_self);
+REQ(create_core);
+REQ(create_group);
 
 #endif

@@ -10,7 +10,11 @@
 #define _MERRY_INPUT_FILE_HEADER_SIZE_ 40
 #define _MERRY_DATA_METADATA_LENGTH_ 24
 
+#define REQ(name)                                                              \
+  void req_##name(MerryGravesCoreRepr *repr, MerryGravesGroup *grp)
+
 struct MerryCoreBase;
+union MerryRequestArgs;
 
 // Since each core can have its own unique set of fields that
 // might require different ways of initialization, this will create
@@ -23,10 +27,12 @@ _MERRY_DEFINE_FUNC_PTR_(_THRET_T_, mcoreexec_t, mptr_t);
 _MERRY_DEFINE_FUNC_PTR_(struct MerryCoreBase *, mcorecreatebase_t,
                         MerryErrorStack *);
 _MERRY_DEFINE_FUNC_PTR_(void, mcoredeletebase_t, struct MerryCoreBase *);
+_MERRY_DEFINE_FUNC_PTR_(union MerryRequestArgs *, mgetreqargs_t, mptr_t);
 
 // Input file type
 typedef enum MerryFileType MerryFileType;
 typedef enum mmempg_t mmempg_t;
+typedef enum mbroadcast_t mbroadcast_t;
 
 enum MerryFileType {
   _NORMAL_INPUT_FILE,
@@ -43,6 +49,6 @@ enum mmempg_t {
 };
 
 // Interrupts That are Broadcasted
-enum { __INT_TERMINATE };
+enum mbroadcast_t { __INT_NONE, __INT_TERMINATE };
 
 #endif
