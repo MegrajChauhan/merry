@@ -28,14 +28,13 @@ struct MerryCoreBase {
   mcoredeletecore_t deletec;
   mcoreexec_t execc;
   mgetreqargs_t getargs;
+  mcorepredel_t predel;
 
   // Flags
-  mbool_t req_res;               // The result of a previous request
-  mbool_t running;               // Set to mfalse iff the core has terminated
-  mbool_t interrupt;             // the core was just interrupted
-  atomic_bool *global_interrupt; // All cores interrupted by Graves
-  atomic_bool *group_interrupt;  // This group was interrupted
-  mbool_t terminate;             // if set, the core will terminate
+  mbool_t req_res;   // The result of a previous request
+  mbool_t running;   // Set to mfalse iff the core has terminated
+  mbool_t interrupt; // the core was just interrupted
+  mbool_t terminate; // if set, the core will terminate
   mbool_t
       broadcast_wake_up; // If the core was waiting on the request queue but was
                          // awaken to handle the broadcast, this will be set
@@ -57,10 +56,6 @@ struct MerryCoreBase {
   mcond_t cond; // Just the condition variable
 
   MerryErrorStack estack; // A personal error stack
-
-  atomic_size_t *global_request; // A global broadcast by Graves
-  atomic_size_t *global_request_inform;
-  atomic_size_t *group_request; // group local request
 };
 
 /*

@@ -29,10 +29,16 @@
 typedef enum mgreq_t mgreq_t;
 
 enum mgreq_t {
-  KILL_SELF, // RES: A core killing itself
-             // DESC: If a core has done what it can and wants to
-             //       terminate itself gracefully
-
+  KILL_SELF,          // A core killing itself
+                      // DESC: If a core has done what it can and wants to
+                      //       terminate itself gracefully
+  CREATE_CORE,        // Creating a new core
+                      // DESC: Create a new core to execute some more code
+                      //       in parallel
+  CREATE_GROUP,       // Create a new group
+                      // DESC: Creates a new empty group
+  GET_GROUP_DETAILS,  // DESC: Get the details of one specific group
+  GET_SYSTEM_DETAILS, // DESC: Get the details of the system
 };
 
 #endif

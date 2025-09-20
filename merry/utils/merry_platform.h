@@ -8,6 +8,8 @@
 
 #ifdef _USE_LINUX_
 #include <dlfcn.h>
+#include <fcntl.h>
+#include <liburing.h>
 #include <pthread.h>
 #include <sys/mman.h>
 #include <unistd.h>
@@ -47,6 +49,11 @@ typedef HANDLE mfd_t;
 
 // Default flag (not used in Windows)
 #define _MERRY_FLAG_DEFAULT_
+
+// For Pipes
+#define _MERRY_INHERIT_IN_FD_ 0
+#define _MERRY_INHERIT_OUT_FD_ 1
+
 #endif
 
 typedef mptr_t mdlentry_t; // same for windows and linux

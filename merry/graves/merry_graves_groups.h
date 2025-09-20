@@ -43,8 +43,6 @@ struct MerryGravesGroup {
   msize_t core_count;
   msize_t active_core_count;
   msize_t group_id;
-  atomic_bool group_interrupt_broadcast;
-  atomic_size_t group_interrupt_request;
 };
 
 MerryGravesGroup *merry_graves_group_create(msize_t gid, MerryErrorStack *st);
@@ -59,6 +57,9 @@ MerryGravesCoreRepr *merry_graves_group_find_core(MerryGravesGroup *grp,
                                                   mbool_t *is_dead);
 
 MerryGravesCoreRepr *merry_graves_group_find_dead_core(MerryGravesGroup *grp);
+
+MerryGravesCoreRepr *merry_graves_group_get_core(MerryGravesGroup *grp,
+                                                 msize_t id);
 
 void merry_graves_group_destroy(MerryGravesGroup *grp);
 

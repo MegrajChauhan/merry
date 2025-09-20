@@ -28,11 +28,11 @@ _MERRY_DEFINE_FUNC_PTR_(struct MerryCoreBase *, mcorecreatebase_t,
                         MerryErrorStack *);
 _MERRY_DEFINE_FUNC_PTR_(void, mcoredeletebase_t, struct MerryCoreBase *);
 _MERRY_DEFINE_FUNC_PTR_(union MerryRequestArgs *, mgetreqargs_t, mptr_t);
+_MERRY_DEFINE_FUNC_PTR_(void, mcorepredel_t, mptr_t);
 
 // Input file type
 typedef enum MerryFileType MerryFileType;
 typedef enum mmempg_t mmempg_t;
-typedef enum mbroadcast_t mbroadcast_t;
 
 enum MerryFileType {
   _NORMAL_INPUT_FILE,
@@ -47,8 +47,5 @@ enum mmempg_t {
                 // some other core which makes it private.
                 // If the owner dies, the page is made MEMPG_VM_OWNED
 };
-
-// Interrupts That are Broadcasted
-enum mbroadcast_t { __INT_NONE, __INT_TERMINATE };
 
 #endif

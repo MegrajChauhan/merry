@@ -176,42 +176,17 @@ void merry_graves_cleanup_groups() {
   // all of the cores have terminated execution
   for (msize_t i = 0; i < merry_dynamic_list_size(GRAVES.GRPS); i++) {
     MerryGravesGroup *grp = merry_dynamic_list_at(GRAVES.GRPS, i);
+    MerryGravesCoreRepr *repr;
+    for (msize_t j = 0;; j++) {
+      repr = merry_graves_group_get_core(grp, j);
+      if (!repr)
+        break;
+      repr->base->predel(repr->core);
+      repr->base->deletec(repr->core);
+      repr->core = NULL;
+      GRAVES.HOW_TO_DESTROY_BASE[repr->base->type](repr->base);
+    }
     merry_graves_group_destroy(grp);
-  }
-  merry_cond_destroy(&GRAVES.graves_cond);
-  merry_mutex_destroy(&GRAVES.graves_lock);
-}
-
-void merry_graves_terminate_all_cores() {
-
-  atomic_store_explicit(&GRAVES.request_broadcast, __INT_TERMINATE,
-                        memory_order_release);
-  atomic_store_explicit(&GRAVES.interrupt_broadcast, 1, memory_order_release);
-}
-
-void merry_graves_cleanup_request_queue() {
-  MerryGravesRequest *req;
-  mbool_t is_dead;
-  while (merry_graves_wants_work(&req) != RET_FAILURE) {
-    MerryGravesGroup *grp = merry_dynamic_list_at(GRAVES.GRPS, req->guid);
-    MerryGravesCoreRepr *repr =
-        merry_graves_group_find_core(grp, req->uid, req->id, &is_dead);
-    // most likely not dead
-    repr->base->interrupt = mtrue;
-    repr->base->terminate = mtrue;
-    merry_cond_signal(&repr->base->cond);
-  }
-}
-
-void merry_graves_temporary_wake_up_request_queue_cores() {
-  MerryGravesRequest *req;
-  mbool_t is_dead;
-  while (merry_graves_temporary_get_work(&req) != RET_FAILURE) {
-    MerryGravesGroup *grp = merry_dynamic_list_at(GRAVES.GRPS, req->guid);
-    MerryGravesCoreRepr *repr =
-        merry_graves_group_find_core(grp, req->uid, req->id, &is_dead);
-    repr->base->broadcast_wake_up = mtrue;
-    merry_cond_signal(&repr->base->cond);
   }
 }
 
@@ -320,24 +295,6 @@ void merry_graves_give_IDs_to_cores(MerryGravesCoreRepr *repr,
   repr->base->guid = grp->group_id;
   repr->base->id = merry_graves_group_index_for(grp, (mptr_t)repr);
   repr->base->uid = GRAVES.core_count++;
-  repr->base->global_interrupt = &GRAVES.interrupt_broadcast;
-  repr->base->global_request = &GRAVES.request_broadcast;
-  repr->base->global_request_inform = &GRAVES.broadcast_result;
-  repr->base->group_request = &grp->group_interrupt_request;
-  repr->base->group_interrupt = &grp->group_interrupt_broadcast;
-}
-
-void merry_graves_wait_out_global_broadcast() {
-  // A broadcast was made and now we must wait
-  merry_graves_temporary_wake_up_request_queue_cores();
-  while (atomic_load_explicit(&GRAVES.broadcast_result, memory_order_relaxed) !=
-         0) {
-    usleep(10);
-  }
-  atomic_store_explicit(&GRAVES.interrupt_broadcast, mfalse,
-                        memory_order_release);
-  atomic_store_explicit(&GRAVES.request_broadcast, __INT_NONE,
-                        memory_order_release);
 }
 
 void merry_graves_START() {
@@ -377,6 +334,18 @@ void merry_graves_START() {
       case KILL_SELF:
         req_kill_self(repr, grp);
         continue;
+      case CREATE_CORE:
+        req_create_core(repr, grp);
+        break;
+      case CREATE_GROUP:
+        req_create_group(repr, grp);
+        break;
+      case GET_GROUP_DETAILS:
+        req_get_group_details(repr, grp);
+        break;
+      case GET_SYSTEM_DETAILS:
+        req_get_system_details(repr, grp);
+        break;
       default:
         // Unknown requests will result in a panic by default
         merry_unreachable("UNKNOWN REQUEST: Core ID: %zu, UID: %zu, GUID: %zu "
@@ -389,8 +358,6 @@ void merry_graves_START() {
   }
 
 GRAVES_OVERSEER_END:
-  merry_graves_terminate_all_cores();
-  merry_graves_wait_out_global_broadcast();
   merry_graves_cleanup_groups();
   return;
 }

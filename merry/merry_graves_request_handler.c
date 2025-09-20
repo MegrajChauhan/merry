@@ -84,10 +84,58 @@ REQ(create_core) {
     return;
   }
   repr->base->req_res = mtrue; // success
+  args->create_core.gid = grp->group_id;
+  args->create_core.new_id = new_repr->base->id;
+  args->create_core.new_uid = new_repr->base->uid;
 }
 
 REQ(create_group) {
   /*
-   * How do we pass on the results to the requester?
+   * Just create a new group
    * */
+  MerryRequestArgs *args = repr->base->getargs(repr->core);
+  MerryErrorStack *st = &repr->base->estack;
+  MerryGravesGroup *ngrp = merry_graves_add_group(st);
+  if (!ngrp) {
+    PUSH(st, NULL, "Failed to create a new GROUP", "Creating New Group");
+    repr->base->req_res = mfalse;
+    return;
+  }
+  args->create_group.new_guid = ngrp->group_id;
+  repr->base->req_res = mtrue; // success
+}
+
+REQ(get_group_details) {
+  /*
+   * Get the details of some group you want.
+   * The results include the number of cores and
+   * cores that are active in that group
+   * */
+  MerryRequestArgs *args = repr->base->getargs(repr->core);
+  MerryErrorStack *st = &repr->base->estack;
+  MerryGravesGroup *ngrp = merry_dynamic_list_at(GRAVES.GRPS, repr->base->guid);
+  if (!ngrp) {
+    PUSH(st, "Invalid GUID", "Group Details Requested but GUID doesn't exisi",
+         "Get Group Details");
+    repr->base->req_res = mfalse;
+    return;
+  }
+  args->get_group_details.core_count = ngrp->core_count;
+  args->get_group_details.active_core_count = ngrp->active_core_count;
+  repr->base->req_res = mtrue; // success
+}
+
+REQ(get_system_details) {
+  /*
+   * Get system details but not what you think
+   * You get the number of groups that are active,
+   * the number of cores and the number of cores that
+   * are currently active. These numbers are global and not
+   * just one group.
+   * */
+  MerryRequestArgs *args = repr->base->getargs(repr->core);
+  args->get_system_details.grp_count = merry_dynamic_list_size(GRAVES.GRPS);
+  args->get_system_details.core_count = GRAVES.core_count;
+  args->get_system_details.active_core_count = GRAVES.active_core_count;
+  // will never fail so don't worry
 }

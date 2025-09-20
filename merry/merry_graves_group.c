@@ -22,8 +22,6 @@ MerryGravesGroup *merry_graves_group_create(msize_t gid, MerryErrorStack *st) {
   grp->core_count = 0;
   grp->active_core_count = 0;
   grp->group_id = gid;
-  grp->group_interrupt_broadcast = mfalse;
-  grp->group_interrupt_request = __INT_NONE;
   return grp;
 }
 
@@ -94,6 +92,15 @@ MerryGravesCoreRepr *merry_graves_group_find_core(MerryGravesGroup *grp,
     return RET_NULL;
   }
   return repr;
+}
+
+MerryGravesCoreRepr *merry_graves_group_get_core(MerryGravesGroup *grp,
+                                                 msize_t id) {
+  merry_check_ptr(grp);
+  merry_check_ptr(grp->all_cores);
+  if (id >= merry_dynamic_list_size(grp->all_cores))
+    return RET_NULL;
+  return (MerryGravesCoreRepr *)merry_dynamic_list_at(grp->all_cores, id);
 }
 
 void merry_graves_group_destroy(MerryGravesGroup *grp) {

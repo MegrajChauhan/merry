@@ -1,10 +1,16 @@
 # Variable definitions
 CC = gcc
 FLAGS = -Wall -Wextra -MMD -MP
-DIRS = merry/utils merry/abs merry/core merry/graves merry/memory merry/comps merry/interface merry/defs merry/graves/linterfaces 
+DIRS = merry/utils merry/abs merry/core merry/graves merry/memory merry/comps merry/interface merry/defs merry/graves/linterfaces merry/lib/defs merry/lib merry/graves/nort/lib merry/graves/nort/nort
 SRC_DIR = merry/
 INC_DIRS = ${addprefix -I, ${DIRS}}
 FLAGS += ${flags}
+
+ifeq (${OS},Linux)
+	FLAGS += -luring
+else ifeq (${OS},Windows_NT)
+	# Nothing for now
+endif
 
 OUTPUT_DIR = build/
 OUTPUT_DEPS= build/
