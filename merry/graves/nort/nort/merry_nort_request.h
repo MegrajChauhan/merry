@@ -19,9 +19,11 @@ struct MerryNortRequest {
   mnreqstate_t state;
   mbool_t blocking;
   mcond_t *owner_cond;
+  mmutex_t *owner_lock;
 };
 
 MerryNortRequest *merry_new_nort_request(mbool_t blocking, mcond_t *ocond,
+                                         mmutex_t *owner_lock,
                                          MerryErrorStack *st);
 
 void merry_destory_nort_request(MerryNortRequest *req);

@@ -27,6 +27,7 @@
  * */
 
 typedef enum mgreq_t mgreq_t;
+typedef enum msreq_t msreq_t;
 
 enum mgreq_t {
   KILL_SELF,          // A core killing itself
@@ -39,6 +40,10 @@ enum mgreq_t {
                       // DESC: Creates a new empty group
   GET_GROUP_DETAILS,  // DESC: Get the details of one specific group
   GET_SYSTEM_DETAILS, // DESC: Get the details of the system
+};
+
+enum msreq_t {
+  _SYS_FAILURE,
 };
 
 #endif

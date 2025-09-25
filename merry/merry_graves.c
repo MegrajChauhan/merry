@@ -1,6 +1,6 @@
 #include <merry_graves.h>
 
-void Merry_Graves_Run(int argc, char **argv) {
+_MERRY_NO_RETURN_ void Merry_Graves_Run(int argc, char **argv) {
   if (merry_parse_arg(argc, argv) == RET_FAILURE) {
     merry_err("[Failed to parse argument]", NULL);
     exit(-1);
@@ -26,7 +26,7 @@ void Merry_Graves_Run(int argc, char **argv) {
     goto GRAVES_FAILED_TO_START;
 
   // Finally Ready to RUN the VM
-  merry_graves_START();
+  merry_graves_START(NULL);
 
   // Exit
   exit(GRAVES.return_value);
@@ -86,6 +86,16 @@ mret_t merry_graves_init(MerryErrorStack *st) {
     return RET_FAILURE;
   }
 
+  if (merry_initialize_nort(&GRAVES.graves_cond, &GRAVES._for_nort, st) ==
+      RET_FAILURE) {
+    PUSH(st, NULL, "Failed to initialize NORT", "Initializing Graves");
+    return RET_FAILURE;
+  }
+
+  // Initialize different modules
+  merry_fio_prepare();
+
+  GRAVES._for_nort = mfalse;
   GRAVES.overall_core_count = 0;
   GRAVES.overall_active_core_count = 0;
   GRAVES.initial_data_mem_page_count = GRAVES.input->data_ram->page_count;
@@ -165,6 +175,7 @@ void merry_graves_destroy(MerryErrorStack *st) {
     merry_graves_reader_destroy(GRAVES.input, st);
   if (GRAVES.GRPS)
     merry_destroy_dynamic_list(GRAVES.GRPS);
+  merry_destroy_nort();
   merry_cond_destroy(&GRAVES.graves_cond);
   merry_mutex_destroy(&GRAVES.graves_lock);
   merry_graves_req_queue_free();
@@ -297,13 +308,22 @@ void merry_graves_give_IDs_to_cores(MerryGravesCoreRepr *repr,
   repr->base->uid = GRAVES.core_count++;
 }
 
-void merry_graves_START() {
+void merry_graves_START(mptr_t __) {
   // Boot the first core
   // Since the first steps have been successfull
   // Let's extract the first core directly with no shame
 
   MerryErrorStack merry_stack;
   merry_error_stack_init(&merry_stack, -1, -1, -1);
+  mthread_t th;
+
+  // Boot up NORT first
+  if (merry_create_detached_thread(&th, merry_nort_run, NULL, &merry_stack) ==
+      RET_FAILURE) {
+    ERROR(&merry_stack);
+    merry_err("[<NORT>]: Failed to BOOT NORT(SYS FAILED)", NULL);
+    goto GRAVES_OVERSEER_END;
+  }
 
   MerryGravesCoreRepr *first_core =
       (MerryGravesCoreRepr *)(((MerryGravesGroup *)(GRAVES.GRPS->buf))
@@ -316,9 +336,23 @@ void merry_graves_START() {
   MerryGravesRequest *req;
   mbool_t is_dead_tmp;
   while (1) {
+    if (atomic_load_explicit((_Atomic mbool_t *)&GRAVES._for_nort,
+                             memory_order_relaxed) == mtrue) {
+      // GRAVES has been notified
+      merry_nort_shutdown();
+      atomic_store_explicit(
+          (_Atomic mbool_t *)&GRAVES._for_nort, mfalse,
+          memory_order_release); // Acknowledged
+                                 // Serious failure probably[System component
+                                 // DOWN]
+      ERROR(merry_get_nort_error_stack());
+      goto GRAVES_OVERSEER_END;
+    }
     if (merry_graves_wants_work(&req) == RET_FAILURE) {
-      if (GRAVES.active_core_count == 0)
+      if (GRAVES.active_core_count == 0) {
+        merry_destroy_nort();
         goto GRAVES_OVERSEER_END;
+      }
       merry_cond_wait(&GRAVES.graves_cond, &GRAVES.graves_lock);
     } else {
       // Hanling Requests
@@ -329,28 +363,45 @@ void merry_graves_START() {
        * Since a core cannot change any of its IDs and nor can it be
        * dead if it is making a request, the above won't fail
        * */
-      switch (req->type) {
-        // .. Requests
-      case KILL_SELF:
-        req_kill_self(repr, grp);
-        continue;
-      case CREATE_CORE:
-        req_create_core(repr, grp);
-        break;
-      case CREATE_GROUP:
-        req_create_group(repr, grp);
-        break;
-      case GET_GROUP_DETAILS:
-        req_get_group_details(repr, grp);
-        break;
-      case GET_SYSTEM_DETAILS:
-        req_get_system_details(repr, grp);
-        break;
-      default:
-        // Unknown requests will result in a panic by default
-        merry_unreachable("UNKNOWN REQUEST: Core ID: %zu, UID: %zu, GUID: %zu "
-                          "made request %u which is not valid.",
-                          req->id, req->uid, req->guid, req->type);
+      if (req->sys_request == mtrue) {
+        switch (req->stype) {
+        case _SYS_FAILURE: {
+          // When a core fails in anyway, even if
+          // it was because of a System failure,
+          // it will handle it in a way it sees
+          // fit. It must call KILL_SELF before
+          // terminating if it wants to
+          // We simply dump the error of the core
+          ERROR(&repr->base->estack);
+          merry_err("CORE FAILED[SYS FAILURE]", NULL);
+          break;
+        }
+        }
+      } else {
+        switch (req->type) {
+          // .. Requests
+        case KILL_SELF:
+          req_kill_self(repr, grp);
+          continue;
+        case CREATE_CORE:
+          req_create_core(repr, grp);
+          break;
+        case CREATE_GROUP:
+          req_create_group(repr, grp);
+          break;
+        case GET_GROUP_DETAILS:
+          req_get_group_details(repr, grp);
+          break;
+        case GET_SYSTEM_DETAILS:
+          req_get_system_details(repr, grp);
+          break;
+        default:
+          // Unknown requests will result in a panic by default
+          merry_unreachable(
+              "UNKNOWN REQUEST: Core ID: %zu, UID: %zu, GUID: %zu "
+              "made request %u which is not valid.",
+              req->id, req->uid, req->guid, req->type);
+        }
       }
       // After handling the request
       merry_cond_signal(&repr->base->cond);

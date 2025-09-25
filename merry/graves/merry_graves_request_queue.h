@@ -13,7 +13,11 @@ typedef struct MerryGravesRequest MerryGravesRequest;
 typedef union MerryRequestArgs MerryRequestArgs;
 
 struct MerryGravesRequest {
-  mgreq_t type;
+  mbool_t sys_request; // is it a system request?
+  union {
+    mgreq_t type;
+    msreq_t stype;
+  };
   mid_t id;
   muid_t uid;
   mguid_t guid;

@@ -19,6 +19,9 @@ typedef unsigned short mword_t;
 typedef unsigned int mdword_t;
 typedef unsigned _MERRY_LONG_ mqword_t;
 
+typedef char msbyte_t;
+typedef short msword_t;
+typedef int msdword_t;
 typedef _MERRY_LONG_ msqword_t;
 
 // some extra definitions

@@ -6,10 +6,12 @@ SRC_DIR = merry/
 INC_DIRS = ${addprefix -I, ${DIRS}}
 FLAGS += ${flags}
 
-ifeq (${OS},Linux)
+ifeq (${OS}, Windows_NT)
+	# most likey windows
+else
+	# Something that is not Windows
+	# For our makeshift makefile right now, this mess is good enough so the next most likely option is Linux
 	FLAGS += -luring
-else ifeq (${OS},Windows_NT)
-	# Nothing for now
 endif
 
 OUTPUT_DIR = build/
