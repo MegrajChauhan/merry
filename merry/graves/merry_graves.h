@@ -8,7 +8,6 @@
 #include <merry_default_consts.h>
 #include <merry_dynamic_list.h>
 #include <merry_error_stack.h>
-#include <merry_fIO.h>
 #include <merry_graves_core_base.h>
 #include <merry_graves_core_repr.h>
 #include <merry_graves_defs.h>
@@ -40,8 +39,6 @@ struct MerryGraves {
   msize_t return_value;
   msize_t core_count; // for the unique ID
   msize_t active_core_count;
-
-  mbool_t _for_nort;
 
   mcorecreatebase_t HOW_TO_CREATE_BASE[__CORE_TYPE_COUNT];
   mcoredeletebase_t HOW_TO_DESTROY_BASE[__CORE_TYPE_COUNT];

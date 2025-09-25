@@ -9,7 +9,7 @@
 #include <merry_graves_defs.h>
 #include <merry_graves_memory_base.h>
 #include <merry_graves_request_queue.h>
-#include <merry_nort_request.h>
+#include <merry_nort.h>
 #include <merry_protectors.h>
 #include <merry_queue.h>
 #include <merry_ram.h>
@@ -54,9 +54,8 @@ struct MerryCoreBase {
 
   // MerryDynamicQueue *sq; // State Queue
   // MerryDynamicList *all_memory_pages_owned;
-
+  MerryNort *nort;
   MerryGravesRequest *_greq;
-  MerryNortRequest *_nreq;
   mcond_t cond; // Just the condition variable
 
   MerryErrorStack estack; // A personal error stack
