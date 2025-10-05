@@ -30,7 +30,7 @@ typedef unsigned _MERRY_LONG_ msize_t;
 typedef msize_t mid_t;   // ID of something
 typedef msize_t muid_t;  // UID of something
 typedef msize_t mguid_t; // Group ID of something
-typedef msize_t mret_t;
+typedef msbyte_t mret_t;
 
 // define function pointers
 #define _MERRY_DEFINE_FUNC_PTR_(ret, func_name, ...)                           \

@@ -36,6 +36,9 @@ _MERRY_INTERNAL_ MerryHord hords[5];   // 5 workers(Hords) for now
 _MERRY_INTERNAL_ mmutex_t shared_lock; // all workers will share this
 _MERRY_INTERNAL_ MerryDynamicQueue *overflow;
 _MERRY_INTERNAL_ msize_t curr_queue = 0;
+_MERRY_INTERNAL_ mbool_t failed = mfalse;
+_MERRY_INTERNAL_ MerryErrorStack hords_st;
+_MERRY_INTERNAL_ msize_t __internal_bookkeep = 5;
 
 mret_t merry_hord_init(MerryErrorStack *st);
 
@@ -43,7 +46,11 @@ _THRET_T_ merry_hord_run(mptr_t hord);
 
 // void merry_hord_get_status(msize_t res[5]);
 
-mret_t merry_hord_enqueue_task(MerryHordTask *task, MerryErrorStack *st);
+mret_t merry_hord_enqueue_task(MerryHordTask *task);
+
+mbool_t merry_hords_status();
+
+MerryErrorStack *merry_hord_error_status();
 
 void merry_hord_destroy();
 

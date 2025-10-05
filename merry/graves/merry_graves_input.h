@@ -2,7 +2,7 @@
 #define _MERRY_GRAVES_INPUT_
 
 /**
- * Format:
+ * Format(v1):
  * We have to consider that we have multiple core types i.e multiple ISAs to fit
  * into a single file. This is why we will make use of sections. Obviously all
  * of the cores share the same memory so data can have a single section.
@@ -46,133 +46,38 @@
  * It is also better to note that the contents of the file, except for the
  * Identification Header, must be in Little Endian format. Merry will handle
  * endian conversion if necessary.
+ *
+ * Format(v2):
+ * This new format is specifically designed to improve loading time and offload
+ * paging overhead to the operating system. The major pain with this format is
+ * that there will be multiple files to keep track of but the plus points are
+ * just as impressive: startup time is pretty small, and loading is done
+ * efficiently by the operating system on demand, hence, there is little
+ * penalty(other than the OS interferring) and only the needed ones are loaded
+ * at once instead of every file. The metadata file will have the structure: BIG
+ * ENDIAN
+ * <MAGIC NUMBERS:3 bytes> <Number of entries: 5 bytes> -> Information
+ * required: a single core type can only have one entry each.
+ * <CORE_TYPE 1: 8 bytes> [path to the file] -> null-terminated
+ * string[same level as metadata file]
+ * ......
+ * <CORE_TYPE N: 8 bytes>
+ * [path to the file] -> null-terminated string[same level as metadata file]
+ *
+ * That's it! But what about the contents of these files? Well Graves will pass
+ * them on to every core. Each core will have its own format to meet its need.
  * */
 
 #include <errno.h>
 #include <merry_core_types.h>
-#include <merry_error_stack.h>
 #include <merry_graves_defs.h>
-#include <merry_helpers.h>
-#include <merry_ram.h>
+#include <merry_list.h>
 #include <merry_types.h>
 #include <merry_utils.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-typedef struct MerryGravesInput MerryGravesInput;
-typedef struct MerryInstructionTypeIdentificationTableEntry MerryITITEntry;
-typedef struct MerryInstructionTypeIdentificationTable MerryITIT;
-typedef struct MerryFileMetadata MerryFileMetadata;
-typedef struct MerrySection MerrySection;
-typedef struct MerryPortion MerryPortion;
-
-struct MerryInstructionTypeIdentificationTableEntry {
-  mcore_t type;
-  msize_t section_len;
-};
-
-struct MerryInstructionTypeIdentificationTable {
-  MerryITITEntry *entries;
-  msize_t entry_count;
-};
-
-struct MerryFileMetadata {
-  MerryFileType type;
-  mbool_t st_available;
-  msize_t ITIT_len;
-  msize_t total_instructions_len;
-  msize_t data_section_len;
-  msize_t string_section_len;
-  msize_t DI_len; // just for checksum
-};
-
-// Here: A section is equivalent to a RAM Page.
-struct MerrySection {
-  msize_t offset;
-  msize_t section_length;
-};
-
-struct MerryPortion {
-  msize_t off_st, off_ed;
-};
-
-struct MerryGravesInput {
-  FILE *fd;
-  mstr_t file_path;
-  MerryFileMetadata metadata;
-  MerryITIT itit;
-  MerrySection *instruction_offsets[__CORE_TYPE_COUNT];
-  msize_t instruction_offsets_count[__CORE_TYPE_COUNT];
-  MerrySection *data_offsets;
-  msize_t data_offsets_count;
-  MerrySection *string_offsets;
-  msize_t string_offsets_count;
-  MerryPortion qword, dword, word;
-  MerryRAM *data_ram;
-  MerryRAM *iram[__CORE_TYPE_COUNT];
-  msize_t file_size;
-  mbool_t _instruction_for_core_already_read[__CORE_TYPE_COUNT];
-};
-
-mbool_t merry_graves_reader_confirm_input_file(MerryGravesInput *reader,
-                                               MerryErrorStack *st);
-
-MerryGravesInput *merry_graves_initialize_reader(mstr_t inp_path,
-                                                 MerryErrorStack *st);
-
-mret_t merry_graves_reader_read_input(MerryGravesInput *reader,
-                                      MerryErrorStack *st);
-
-void merry_graves_reader_destroy(MerryGravesInput *reader, MerryErrorStack *st);
-
-mret_t merry_graves_reader_parse_identification_header(MerryGravesInput *reader,
-                                                       MerryErrorStack *st);
-
-mret_t merry_graves_reader_parse_ITIT_header(MerryGravesInput *reader,
-                                             MerryErrorStack *st);
-
-mret_t
-merry_graves_reader_parse_data_and_string_header(MerryGravesInput *reader);
-
-mret_t merry_graves_reader_perform_checksum(MerryGravesInput *reader,
-                                            MerryErrorStack *st);
-
-mret_t merry_graves_reader_parse_ITIT(MerryGravesInput *reader,
-                                      MerryErrorStack *st);
-
-mret_t merry_graves_reader_parse_instruction_sections(MerryGravesInput *reader,
-                                                      MerryErrorStack *st);
-
-mret_t merry_graves_reader_parse_data_type_metadata(MerryGravesInput *reader,
-                                                    MerryErrorStack *st);
-
-mret_t merry_graves_reader_parse_data_section(MerryGravesInput *reader,
-                                              MerryErrorStack *st);
-
-mret_t merry_graves_reader_parse_string_section(MerryGravesInput *reader,
-                                                MerryErrorStack *st);
-
-mret_t merry_graves_reader_prep_memory(MerryGravesInput *reader,
-                                       MerryErrorStack *st);
-
-mret_t merry_graves_reader_load_instructions(MerryGravesInput *reader,
-                                             mcore_t c_type, msize_t pgnum,
-                                             MerryErrorStack *st);
-
-mret_t merry_graves_reader_read_qword(MerryGravesInput *reader, msize_t pg_num,
-                                      MerrySection *s, msize_t *tr);
-
-mret_t merry_graves_reader_read_dword(MerryGravesInput *reader, msize_t pg_num,
-                                      MerrySection *s, msize_t *tr);
-
-mret_t merry_graves_reader_read_word(MerryGravesInput *reader, msize_t pg_num,
-                                     MerrySection *s, msize_t *tr);
-
-mret_t merry_graves_reader_load_data(MerryGravesInput *reader, msize_t pgnum,
-                                     MerryErrorStack *st);
-
-MerryRAM *merry_graves_reader_get_data_RAM(MerryGravesInput *reader,
-                                           MerryErrorStack *st);
+mstr_t *merry_graves_parse_metadata_file(mstr_t mfile);
 
 #endif

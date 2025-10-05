@@ -6,7 +6,6 @@ DIRS = merry/utils \
        merry/core \
        merry/graves \
        merry/graves/hord \
-       merry/memory \
        merry/comps \
        merry/interface \
        merry/defs \

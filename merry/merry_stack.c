@@ -1,19 +1,15 @@
 #include <merry_stack.h>
 
-MerryStack *merry_stack_init(msize_t cap, MerryErrorStack *st) {
+MerryStack *merry_stack_init(msize_t cap) {
   merry_check_ptr(st);
   MerryStack *stk = (MerryStack *)malloc(sizeof(MerryStack));
   if (!stk) {
-    PUSH(st, "Memory Allocation Failure", "Failed to allocate memory",
-         "Allocating a new stack");
-    merry_error_stack_fatality(st);
+    MFATAL(NULL, "Failed to allocate memory for stack", NULL);
     return RET_NULL;
   }
   stk->buf = (mptr_t *)malloc(sizeof(mptr_t) * cap);
   if (!stk->buf) {
-    PUSH(st, "Memory Allocation Failure", "Failed to allocate memory",
-         "Allocating stack buffer");
-    merry_error_stack_fatality(st);
+    MFATAL(NULL, "Failed to allocate memory for stack buffer", NULL);
     free(stk);
     return RET_NULL;
   }

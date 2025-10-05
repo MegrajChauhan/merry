@@ -15,6 +15,7 @@
 #include <merry_graves_input.h>
 #include <merry_graves_memory_base.h>
 #include <merry_graves_request_queue.h>
+#include <merry_hord.h>
 #include <merry_memory.h>
 #include <merry_nort.h>
 #include <merry_protectors.h>

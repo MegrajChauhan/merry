@@ -1,82 +1,158 @@
 #ifndef _MERRY_QUEUE_
 #define _MERRY_QUEUE_
 
-#include <merry_error_stack.h>
+#include <merry_logger.h>
 #include <merry_types.h>
 #include <merry_utils.h>
+#include <stdatomic.h>
 #include <stdlib.h>
+#include <string.h>
 
-// The queues store items as pointers
+/*
+ * We will need:
+ * 1. Dynamic Queue using Linked Lists
+ * 2. Static Queue
+ * 3. Lock free static queue
+ * Lock free Dynamic queue will be extremely hard
+ * */
 
-/**
- * MerryDynamicQueue is a dynamic queue whose length is dynamic.
- * It can contain as much data as required as long as there is memory to be
- * fulfill the requests. The drawback of this queue is that it is not that speed
- * efficient. One usecase for this queue may be when:
- * -- We need to pass a series of instructions to something. Here we make a
- * queue of everything to be done at once and send everything at once to make
- * things easier. This queue is useful for cases when we need to use it only
- * once.
- */
-typedef struct MerryDynamicQueue MerryDynamicQueue;
+/*----------DYNAMIC QUEUE------------*/
 
-/**
- * MerryStaticQueue is static in size but more faster on a long-term use.
- * This queue will shine if we need a queue that is used frequently.
- * The main drawback is the high memory consumption that it demands during
- * initialization.
- */
-typedef struct MerryStaticQueue MerryStaticQueue;
+#define _MERRY_DEFINE_QUEUE_(name, type)                                       \
+  typedef struct {                                                             \
+    MerryLL##name##QueueNode *next, *prev;                                     \
+    type data;                                                                 \
+  } MerryLL##name##QueueNode;                                                  \
+  typedef struct {                                                             \
+    MerryLL##name##QueueNode *head, *tail;                                     \
+  } MerryLL##name##Queue;                                                      \
+  MerryLL##name##Queue *merry_##name##_llqueue_init() {                        \
+    MerryLL##name##Queue *queue =                                              \
+        (MerryLL##name##Queue *)malloc(sizeof(MerryLL##name##Queue));          \
+    if (!queue) {                                                              \
+      MFATAL(NULL, "Failed to allocate memory for LL QUEUE", NULL);            \
+      return RET_NULL;                                                         \
+    }                                                                          \
+    queue->head = queue->tail = NULL;                                          \
+    return queue;                                                              \
+  }                                                                            \
+  mret_t merry_##name##_llqueue_push(MerryLL##name##Queue *queue,              \
+                                     type *data) {                             \
+    merry_check_ptr(queue);                                                    \
+    merry_check_ptr(data);                                                     \
+    MerryLL##name##QueueNode *node =                                           \
+        (MerryLL##name##QueueNode *)malloc(sizeof(MerryLL##name##QueueNode));  \
+    if (!node) {                                                               \
+      return RET_FAILURE;                                                      \
+    }                                                                          \
+    node->data = *data;                                                        \
+    if (queue->head == queue->tail == NULL) {                                  \
+      node->next_node = NULL;                                                  \
+      node->prev = NULL;                                                       \
+      queue->head = queue->tail = node;                                        \
+    } else {                                                                   \
+      node->next_node = NULL;                                                  \
+      node->prev = queue->tail;                                                \
+      queue->tail->next_node = node;                                           \
+      queue->tail = node;                                                      \
+    }                                                                          \
+    return RET_SUCCESS;                                                        \
+  }                                                                            \
+  mret_t merry_##name##_llqueue_pop(MerryLL##name##Queue *queue,               \
+                                    type *_store_in) {                         \
+    merry_check_ptr(queue);                                                    \
+    merry_check_ptr(_store_in);                                                \
+    if (queue->head == queue->head == NULL) {                                  \
+      *_store_in = NULL;                                                       \
+      return RET_FAILURE;                                                      \
+    }                                                                          \
+    MerryLL##name##QueueNode *head = queue->head;                              \
+    *_store_in = head->data;                                                   \
+    if (queue->head == queue->tail) {                                          \
+      queue->tail = NULL;                                                      \
+      queue->head = NULL;                                                      \
+    } else {                                                                   \
+      head->next_node->prev = NULL;                                            \
+      queue->head = head->next_node;                                           \
+    }                                                                          \
+    free(head);                                                                \
+    return RET_SUCCESS;                                                        \
+  }                                                                            \
+  void merry_##name##_llqueue_clear(MerryLL##name##Queue *queue) {             \
+    merry_check_ptr(queue);                                                    \
+    merry_assert(!(queue->head && !queue->tail));                              \
+    merry_assert(!(!queue->head && queue->tail));                              \
+    MerryLL##name##QueueNode *curr = queue->head;                              \
+    while (curr != NULL) {                                                     \
+      MerryLL##name##QueueNode *tmp = curr->next_node;                         \
+      free(curr);                                                              \
+      curr = tmp;                                                              \
+    }                                                                          \
+    queue->head = NULL;                                                        \
+    queue->tail = NULL;                                                        \
+  }                                                                            \
+  void merry_##name##_llqueue_destroy(MerryLL##name##Queue *queue) {           \
+    merry_##name##_llqueue_clear(queue);                                       \
+    free(queue);                                                               \
+  }
 
-typedef struct MerryQueueNode MerryQueueNode; // We use Linked-list based queues
+/*----------END DYNAMIC QUEUE------------*/
 
-struct MerryQueueNode {
-  mptr_t data;
-  MerryQueueNode *next_node;
-  MerryQueueNode *prev;
+/*----------STATIC QUEUE------------*/
+typedef struct MerrySQueue MerrySQueue;
+
+struct MerrySQueue {
+  msize_t head, rear;
+  mptr_t *buf;
+  msize_t buf_cap;
+  msize_t elem_len;
 };
 
-struct MerryDynamicQueue {
-  // Linear linked list
-  MerryQueueNode *head;
-  MerryQueueNode *tail;
-  msize_t data_count;
+#define merry_squeue_empty(queue) ((queue)->head == (mqword_t)(-1))
+#define merry_squeue_full(queue)                                               \
+  ((((queue)->rear + 1) % (queue)->buf_cap) == (queue)->head)
+#define merry_squeue_clear(queue)                                              \
+  ((queue)->head = (queue)->rear = (mqword_t)(-1))
+
+MerrySQueue *merry_create_squeue(msize_t cap, msize_t elen);
+
+mptr_t merry_squeue_top(MerrySQueue *queue);
+
+mret_t merry_squeue_enqueue(MerrySQueue *queue, mptr_t elem);
+
+mret_t merry_squeue_dequeue(MerrySQueue *queue, mptr_t elem);
+
+void merry_destroy_squeue(MerrySQueue *queue);
+
+/*----------END STATIC QUEUE------------*/
+
+/*----------LF STATIC QUEUE------------*/
+
+typedef struct MerrySQueueAtm MerrySQueueAtm;
+
+struct MerrySQueueAtm {
+  _Atomic msize_t head, rear;
+  mptr_t *buf;
+  msize_t buf_cap;
+  msize_t elem_len;
 };
 
-struct MerryStaticQueue {
-  // This is a circular linked list
-  MerryQueueNode *head;
-  MerryQueueNode *tail;
-  msize_t data_count;
-  msize_t capacity;
-};
+#define merry_squeue_atm_empty(queue, idx) ((queue)->head == (idx))
+#define merry_squeue_atm_full(queue, idx)                                      \
+  (((idx + 1) % (queue)->buf_cap) == (queue)->head)
+#define merry_squeue_atm_clear(queue)                                          \
+  ((queue)->head = (queue)->rear = (mqword_t)(-1))
 
-#define merry_is_dynamic_queue_empty(queue) ((queue)->data_count == 0)
-#define merry_is_static_queue_empty(queue) ((queue)->data_count == 0)
-#define merry_is_static_queue_full(queue)                                      \
-  ((queue)->data_count >= (queue)->capacity)
+MerrySQueueAtm *merry_create_squeue_atm(msize_t cap, msize_t elen);
 
-MerryDynamicQueue *merry_dynamic_queue_init(MerryErrorStack *st);
+mptr_t merry_squeue_atm_top(MerrySQueueAtm *queue);
 
-mret_t merry_dynamic_queue_push(MerryDynamicQueue *queue, mptr_t data,
-                                MerryErrorStack *st);
+mret_t merry_squeue_atm_enqueue(MerrySQueueAtm *queue, mptr_t elem);
 
-mret_t merry_dynamic_queue_pop(MerryDynamicQueue *queue, mptr_t *_store_in);
+mret_t merry_squeue_atm_dequeue(MerrySQueueAtm *queue, mptr_t elem);
 
-void merry_dynamic_queue_clear(MerryDynamicQueue *queue);
+void merry_destroy_squeue_atm(MerrySQueueAtm *queue);
 
-void merry_dynamic_queue_destroy(MerryDynamicQueue *queue);
-
-// The given capacity is final
-MerryStaticQueue *merry_static_queue_init(msize_t capacity,
-                                          MerryErrorStack *st);
-
-mret_t merry_static_queue_push(MerryStaticQueue *queue, mptr_t data);
-
-mret_t merry_static_queue_pop(MerryStaticQueue *queue, mptr_t *_store_in);
-
-void merry_static_queue_clear(MerryStaticQueue *queue);
-
-void merry_static_queue_destroy(MerryStaticQueue *queue);
+/*----------END LF STATIC QUEUE------------*/
 
 #endif

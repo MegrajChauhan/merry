@@ -1,6 +1,7 @@
 #ifndef _MERRY_UTILS_
 #define _MERRY_UTILS_
 
+#include <merry_logger.h>
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -39,18 +40,14 @@
 
 // tools
 
-// PRINT ANY MESSAGE
-#define merry_talk(f, kind, message, ...)                                      \
-  fprintf(f, kind ": " message "\n", __VA_ARGS__)
-
 // CHECK CONDITION AND IF IT FAILS, THROW ERROR AND EXIT
 #define merry_check_condition_and_exit_on_failure(cond)                        \
   do {                                                                         \
     if (surelyF(!(cond))) {                                                    \
-      merry_talk(stderr, "ERROR",                                              \
-                 "Condition: "_MERRY_STRINGIFY_(                               \
-                     (cond)) ": Failed. Line %d[FILE: %s]\n",                  \
-                 __LINE__, __FILE__);                                          \
+      MFATAL(NULL,                                                             \
+             "Condition: "_MERRY_STRINGIFY_(                                   \
+                 (cond)) ": Failed. Line %d[FILE: %s]\n",                      \
+             __LINE__, __FILE__);                                              \
       exit(-1);                                                                \
     }                                                                          \
   } while (0)
@@ -72,20 +69,11 @@
  */
 #define merry_check_ptr(ptr) merry_assert(ptr != NULL)
 
-#define merry_log(msg, ...) merry_talk(stdout, "LOG", msg, __VA_ARGS__)
-
-#define merry_suggest(msg, ...) merry_talk(stdout, "NOTE", msg, __VA_ARGS__)
-
 #endif
 
-#define merry_err(msg, ...) merry_talk(stderr, "ERROR", msg, __VA_ARGS__)
-
-#define merry_msg(msg, ...) merry_talk(stderr, "MESSAGE", msg, __VA_ARGS__)
-
-#define merry_unreachable(msg, ...)                                            \
+#define merry_unreachable()                                                    \
   do {                                                                         \
-    merry_talk(stderr, "MERRY PANIC", "Unreachable code executed\n\t" msg,     \
-               __VA_ARGS__);                                                   \
+    MFATAL(NULL, "Unreachable code execution: %s %zu", __FILE__, __LINE__)     \
     exit(-1);                                                                  \
   } while (0)
 

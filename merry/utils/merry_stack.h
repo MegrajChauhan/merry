@@ -1,7 +1,6 @@
 #ifndef _MERRY_STACK_
 #define _MERRY_STACK_
 
-#include <merry_error_stack.h>
 #include <merry_types.h>
 #include <merry_utils.h>
 #include <stdlib.h>
@@ -23,7 +22,7 @@ struct MerryStack {
 #define merry_stack_has_space_for(stack, n)                                    \
   (((stack)->sp - (stack)->sp_max) >= (n))
 
-MerryStack *merry_stack_init(msize_t cap, MerryErrorStack *st);
+MerryStack *merry_stack_init(msize_t cap);
 
 mret_t merry_stack_push(MerryStack *stack, mptr_t value);
 

@@ -1,162 +1,129 @@
 #include "merry_list.h"
 
-MerryList *merry_create_list(msize_t capacity, msize_t elem_len,
-                             MerryErrorStack *st) {
-  MerryList *list = (MerryList *)malloc(sizeof(MerryList));
+/*--------------------------STATIC QUEUE---------------------------*/
+
+mptr_t _list_create(msize_t elen, msize_t cap) {
+  msize_t *list =
+      (msize_t *)malloc(elen * cap + _MERRY_LIST_METADATA_LEN_EXCLUDE_BUF_);
   if (!list) {
-    PUSH(st, "Memory Allocation Failure", "Failed to allocate memory",
-         "Allocating a new list");
-    merry_error_stack_fatality(st);
+    MFATAL(NULL, "Failed to allocate memory for a static list", NULL);
     return RET_NULL;
   }
-
-  list->buf = malloc(sizeof(mptr_t) * elem_len + capacity);
-  if (!list->buf) {
-    PUSH(st, "Memory Allocation Failure", "Failed to allocate memory",
-         "Allocating list buffer");
-    merry_error_stack_fatality(st);
-    free(list);
-    return RET_NULL;
-  }
-
-  list->buf_cap = capacity;
-  list->elem_len = elem_len;
-  list->curr_ptr = (msize_t)(-1);
-  list->max_ind = capacity - 1;
-  return list;
+  *(list) = elen;
+  *(list++) = 0;
+  *(list++) = cap;
+  memset(list++, 0, elen * cap);
+  return (mptr_t)(list);
 }
 
-mret_t merry_add_capacity_to_list(MerryList *list, msize_t _additional_cap,
-                                  MerryErrorStack *st) {
-  merry_check_ptr(list);
-  merry_check_ptr(list->buf);
-
-  // even if we fail, the buffer will still be valid
-
-  // The main reason for all this bloated pointer checks and conditions is for
-  // the VM to be secure. The cost is efficiency and speed. These checks will be
-  // invalidated once we build Merry for release before then these checks will
-  // ensure that Merry is safe from itself. There could be cases where Merry,
-  // itself, produces garbage values These "bloats" will help us detect those
-  // problems
-  merry_assert(_additional_cap != 0);
-
-  register mptr_t tmp = list->buf;
-  register msize_t new_cap = list->buf_cap + _additional_cap;
-  register mptr_t new_buf = malloc(sizeof(mptr_t) * list->elem_len + new_cap);
-
-  if (!new_buf) {
-    PUSH(st, "Memory Allocation Failure", "Failed to allocate memory",
-         "Reallocating list buffer");
-    merry_error_stack_fatality(st);
-    return RET_FAILURE;
-  }
-
-  memcpy(new_buf, list->buf, (list->curr_ptr + 1) * list->elem_len);
-  list->buf = new_buf;
-  list->buf_cap = new_cap;
-  list->max_ind = new_cap - 1;
-
-  free(tmp);
-  return RET_SUCCESS;
+void _list_destroy(mptr_t lst) {
+  merry_check_ptr(lst);
+  lst -= 3;
+  free(lst);
 }
 
-mret_t merry_list_resize_list(MerryList *list, msize_t factor,
-                              MerryErrorStack *st) {
-  merry_check_ptr(list);
-  merry_check_ptr(list->buf);
-
-  merry_assert(factor != 0);
-
-  register mptr_t tmp = list->buf;
-  register msize_t new_cap = list->buf_cap * factor;
-  register mptr_t new_buf = malloc(sizeof(mptr_t) * list->elem_len + new_cap);
-
-  if (!new_buf) {
-    PUSH(st, "Memory Allocation Failure", "Failed to allocate memory",
-         "Reallocating list buffer");
-    merry_error_stack_fatality(st);
-    return RET_FAILURE;
-  }
-  memcpy(new_buf, list->buf, (list->curr_ptr + 1) * list->elem_len);
-  list->buf = new_buf;
-  list->buf_cap = new_cap;
-  list->max_ind = new_cap - 1;
-
-  free(tmp);
-  return RET_SUCCESS;
-}
-
-mret_t merry_list_push(MerryList *list, mptr_t elem) {
-  merry_check_ptr(list);
+mret_t _list_push(mptr_t lst, mptr_t elem) {
+  merry_check_ptr(lst);
   merry_check_ptr(elem);
-  merry_check_ptr(list->buf);
 
-  if (surelyF(merry_is_list_full(list)))
+  register msize_t *elen = (lst - 3);
+  register msize_t *curr_ind = (lst - 2);
+  register msize_t *cap = (lst - 1);
+
+  if ((*curr_ind + 1) >= *cap)
     return RET_FAILURE;
 
-  list->curr_ptr++;
-  mptr_t curr_index =
-      (mptr_t)((mstr_t)list->buf + (list->elem_len * list->curr_ptr));
-  memcpy(curr_index, elem, list->elem_len);
+  register msize_t *c = (msize_t *)((mbptr_t)lst + *elen * *curr_ind);
+  memcpy(c, elem, *elen);
+  (*curr_ind)++;
+
   return RET_SUCCESS;
 }
 
-mptr_t merry_list_pop(MerryList *list) {
-  merry_check_ptr(list);
-  merry_check_ptr(list->buf);
+mptr_t _list_pop(mptr_t lst) {
+  merry_check_ptr(lst);
+  register msize_t *elen = (lst - 3);
+  register msize_t *curr_ind = (lst - 2);
 
-  if (surelyF(merry_is_list_empty(list)))
-    return RET_NULL;
+  if ((*curr_ind) == 0)
+    return RET_NULL; // nothing to pop
 
-  register mptr_t res =
-      (mptr_t)((mstr_t)list->buf + (list->elem_len * list->curr_ptr));
-  list->curr_ptr--;
-  return res;
+  (*curr_ind)--;
+  register msize_t *c = (msize_t *)((mbptr_t)lst + *elen * *curr_ind);
+
+  return (mptr_t)c;
 }
 
-mptr_t merry_list_at(MerryList *list, msize_t at) {
-  merry_check_ptr(list);
-  merry_check_ptr(list->buf);
+mptr_t _list_at(mptr_t lst, msize_t ind) {
+  merry_check_ptr(lst);
+  register msize_t *elen = (lst - 3);
+  register msize_t *curr_ind = (lst - 2);
 
-  if (surelyF(merry_is_list_empty(list)))
-    return RET_NULL;
-  if (surelyF(at > list->curr_ptr))
-    merry_unreachable("Access out of bounds[LEN:%zu, IDX=%zu]", list->buf_cap,
-                      at);
-  return (mptr_t)((char *)list->buf + (list->elem_len * at));
+  if ((ind) >= *curr_ind)
+    return RET_NULL; // incorrect index
+
+  register msize_t *c = (msize_t *)((mbptr_t)lst + *elen * *curr_ind);
+
+  return (mptr_t)c;
 }
 
-mret_t merry_list_replace(MerryList *list, mptr_t new_elem, msize_t at) {
-  merry_check_ptr(list);
-  merry_check_ptr(new_elem);
-  merry_check_ptr(list->buf);
+mptr_t _list_resize(mptr_t lst, msize_t resize_factor) {
+  merry_check_ptr(lst);
+  register msize_t *elen = (lst - 3);
+  register msize_t *cap = (lst - 1);
+  mptr_t new_lst = malloc(*elen * *cap * resize_factor +
+                          _MERRY_LIST_METADATA_LEN_EXCLUDE_BUF_);
 
-  if (surelyF(merry_is_list_empty(list)))
+  if (!new_lst)
+    return RET_NULL; // we fail here without errors because this may not be
+                     // fatal
+
+  // success
+  *cap *= resize_factor;
+
+  mempcpy(new_lst, lst - 3,
+          *elen * *cap * resize_factor + _MERRY_LIST_METADATA_LEN_EXCLUDE_BUF_);
+  free(lst);
+  return new_lst + 3;
+}
+
+/*--------------------------STATIC QUEUE END---------------------------*/
+
+mret_t _lf_list_push(mptr_t lst, mptr_t elem) {
+  merry_check_ptr(lst);
+  merry_check_ptr(elem);
+
+  register msize_t *elen = (lst - 3);
+  register msize_t *curr_ind = (lst - 2);
+  register msize_t *cap = (lst - 1);
+
+  register msize_t my_ind = atomic_fetch_add_explicit(
+      (_Atomic msize_t *)curr_ind, 1, memory_order_relaxed);
+
+  if (my_ind >= *cap) {
+    atomic_fetch_sub_explicit((_Atomic msize_t *)curr_ind, 1,
+                              memory_order_relaxed);
     return RET_FAILURE;
+  }
 
-  if (surelyF(!merry_list_has_at_least(list, at)))
-    merry_unreachable("Access out of bounds[LEN:%zu, IDX=%zu]", list->buf_cap,
-                      at);
+  register msize_t *c = (msize_t *)((mbptr_t)lst + *elen * my_ind);
+  memcpy(c, elem, *elen);
 
-  mptr_t old = (mptr_t)((char *)list->buf + (list->elem_len * at));
-  memcpy(old, new_elem, list->elem_len);
   return RET_SUCCESS;
 }
 
-void merry_erase_list(MerryList *list) {
-  merry_check_ptr(list);
-  merry_check_ptr(list->buf);
+mptr_t _lf_list_pop(mptr_t lst) {
+  merry_check_ptr(lst);
+  register msize_t *elen = (lst - 3);
+  register msize_t *curr_ind = (lst - 2);
+  register msize_t my_ind = atomic_fetch_sub_explicit(
+      (_Atomic msize_t *)curr_ind, 1, memory_order_relaxed);
+  if ((my_ind) == 0) {
+    atomic_fetch_add_explicit((_Atomic msize_t *)curr_ind, 1,
+                              memory_order_relaxed);
+    return RET_NULL; // nothing to pop
+  }
+  register msize_t *c = (msize_t *)((mbptr_t)lst + *elen * my_ind);
 
-  list->curr_ptr = (msize_t)(-1);
-}
-
-void merry_destroy_list(MerryList *list) {
-  merry_check_ptr(list);
-  merry_check_ptr(list->buf);
-  // we obviously don't care about the state of the pointers that were stored
-  // if stored that is
-  // This is a general purpose list to store anything
-  free(list->buf);
-  free(list);
+  return (mptr_t)c;
 }

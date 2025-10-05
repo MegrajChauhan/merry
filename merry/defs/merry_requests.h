@@ -43,7 +43,8 @@ enum mgreq_t {
 };
 
 enum msreq_t {
-  _SYS_FAILURE,
+  _SYS_FAILURE,        // The cores failed themselves
+  _GRAVES_HORD_FAILED, // Graves component(Hord) failed
 };
 
 #endif

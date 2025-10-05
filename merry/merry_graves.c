@@ -101,6 +101,8 @@ mret_t merry_graves_init(MerryErrorStack *st) {
 mret_t merry_graves_ready_everything(MerryErrorStack *st) {
   // Here we prepare everything before we boot up the first core
 
+  if (merry_hord_init(st) == RET_FAILURE)
+    return RET_FAILURE;
   // Acquaint with all cores
   merry_graves_acquaint_with_cores();
 
@@ -168,6 +170,7 @@ void merry_graves_destroy(MerryErrorStack *st) {
   merry_cond_destroy(&GRAVES.graves_cond);
   merry_mutex_destroy(&GRAVES.graves_lock);
   merry_graves_req_queue_free();
+  merry_hord_destroy();
   merry_destroy_memory_interface();
 }
 
@@ -319,6 +322,8 @@ void merry_graves_START(mptr_t __) {
     if (merry_graves_wants_work(&req) == RET_FAILURE) {
       if (GRAVES.active_core_count == 0) {
         goto GRAVES_OVERSEER_END;
+      } else if (merry_graves_get_req_queue_error_stack()->fatality) {
+        goto GRAVES_OVERSEER_END;
       }
       merry_cond_wait(&GRAVES.graves_cond, &GRAVES.graves_lock);
     } else {
@@ -334,7 +339,8 @@ void merry_graves_START(mptr_t __) {
         switch (req->stype) {
         case _SYS_FAILURE: {
           // When a core fails in anyway, even if
-          // it was because of a System failure,
+          // it was because of a System failure such
+          // as memory allocation failure then
           // it will handle it in a way it sees
           // fit. It must call KILL_SELF before
           // terminating if it wants to
@@ -342,6 +348,17 @@ void merry_graves_START(mptr_t __) {
           ERROR(&repr->base->estack);
           merry_err("CORE FAILED[SYS FAILURE]", NULL);
           break;
+        }
+        case _GRAVES_HORD_FAILED: {
+          if (merry_hords_status() == mfalse) {
+            // Hords has failed
+            ERROR(merry_hord_error_status());
+            merry_err("HORD FAILED[SYSTEM FAILURE]", NULL);
+            // Hords failing isn't funny and it calls for total
+            // shutdown
+            GRAVES.return_value = -1;
+            goto GRAVES_OVERSEER_END;
+          }
         }
         }
       } else {

@@ -37,9 +37,6 @@ struct MerryCoreBase {
   mbool_t running;   // Set to mfalse iff the core has terminated
   mbool_t interrupt; // the core was just interrupted
   mbool_t terminate; // if set, the core will terminate
-  mbool_t
-      broadcast_wake_up; // If the core was waiting on the request queue but was
-                         // awaken to handle the broadcast, this will be set
 
   // mbool_t pause;     // set to pause the core
   // mbool_t smsqen;    // Switchable Multi-State Queue Enabled?
@@ -57,6 +54,10 @@ struct MerryCoreBase {
   MerryNort *nort;
   MerryGravesRequest *_greq;
   mcond_t cond; // Just the condition variable
+  MerryRequestArgs args;
+
+  MerryDynamicList
+      *task_list; // Store all of the requests that were sent to Hords
 
   MerryErrorStack estack; // A personal error stack
 };

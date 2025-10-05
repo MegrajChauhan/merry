@@ -1,14 +1,12 @@
 #include <merry_platform.h>
 
-mret_t merry_open_pipe(mdataline_t *rline, mdataline_t *wline,
-                       MerryErrorStack *st) {
+mret_t merry_open_pipe(mdataline_t *rline, mdataline_t *wline) {
   merry_check_ptr(rline);
   merry_check_ptr(wline);
 
   mdataline_t lines[2];
 #ifdef _USE_LINUX_
   if (pipe(lines) == -1) {
-    merry_error_stack_errno(st);
     return RET_FAILURE;
   }
 #elif defined(_USE_WIN_)
@@ -18,7 +16,6 @@ mret_t merry_open_pipe(mdataline_t *rline, mdataline_t *wline,
   saAttr.lpSecurityDescriptor = NULL;
 
   if (!CreatePipe(&lines[0], &lines[1], &saAttr, 0)) { // Default size
-    merry_error_stack_errno(st);
     return RET_FAILURE;
   }
 #endif
