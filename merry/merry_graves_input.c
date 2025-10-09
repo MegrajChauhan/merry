@@ -1,10 +1,17 @@
 #include <merry_graves_input.h>
 
 mstr_t *merry_graves_parse_metadata_file(mstr_t mfile) {
+  merry_check_ptr(mfile);
   mstr_t *fnames = merry_list_create(mstr_t, __CORE_TYPE_COUNT);
   if (!fnames) {
     MFATAL("Graves Reader", "Failed to parse metadata file[%s]", mfile);
     return RET_NULL;
+  }
+  if (merry_is_path_a_directory(mfile)) {
+    MFATAL("Graves Reader",
+           "Failed to open file %s: Either it doesn't exist, or is a directory "
+           ", or permission denied",
+           mfile);
   }
   FILE *file = fopen(mfile, "rb");
 
@@ -19,10 +26,122 @@ mstr_t *merry_graves_parse_metadata_file(mstr_t mfile) {
   fseek(file, 0, SEEK_END);
 
   msize_t size = ftell(file);
-  if (size <)
+  if (size < 18) {
+    MFATAL("Graves Reader", "Invalid metadata file structure [%s]", mfile);
+    merry_list_destroy(fnames);
+    fclose(file);
+    return RET_NULL;
+  }
 
-    // Parse the Identification Header
-    mbyte_t magic[3];
+  rewind(file);
 
+  // Parse the Identification Header
+  mbyte_t magic[4] = {0};
+  fread(magic, 1, 3, file);
+
+  if (!(magic[0] == 'M' && magic[1] == 'M' && magic[2] == 'F')) {
+    MFATAL("Graves Reader", "Incorrect MAGIC BYTES '%s' when expected 'MMF'",
+           magic);
+    MLOG("Graves Reader", "Parsing metadata file %s", mfile);
+    merry_list_destroy(fnames);
+    fclose(file);
+    return RET_NULL;
+  }
+
+  // Get the number of entries
+  mbyte_t entries[6];
+  MerryHostMemLayout mem_layout;
+  fread(entries, 1, 6, file);
+  mem_layout.bytes.b2 = entries[0];
+  mem_layout.bytes.b3 = entries[1];
+  mem_layout.bytes.b4 = entries[2];
+  mem_layout.bytes.b5 = entries[3];
+  mem_layout.bytes.b6 = entries[4];
+  mem_layout.bytes.b7 = entries[5];
+  if (mem_layout.whole_word > __CORE_TYPE_COUNT) {
+    MFATAL("Graves Reader",
+           "Number of entries is beyond allowed: GIVEN=%zu, ALLOWED=%zu",
+           mem_layout.whole_word, (msize_t)__CORE_TYPE_COUNT);
+    MLOG("Graves Reader", "Parsing metadata file %s", mfile);
+    merry_list_destroy(fnames);
+    fclose(file);
+    return RET_NULL;
+  }
+
+  // Now we can get the entries
+  for (msize_t i = 0; i < mem_layout.whole_word; i++) {
+    // reading this will be quite slow
+    mbyte_t type[8];
+    MerryHostMemLayout to_type;
+    if (fread(type, 1, 8, file) != 8) {
+      MFATAL("Graves Reader", "Invalid file: Core type section is incomplete",
+             NULL);
+      MLOG("Graves Reader", "Parsing metadata file %s", mfile);
+      merry_list_destroy(fnames);
+      fclose(file);
+      return RET_NULL;
+    }
+    to_type.bytes.b0 = type[0];
+    to_type.bytes.b1 = type[1];
+    to_type.bytes.b2 = type[2];
+    to_type.bytes.b3 = type[3];
+    to_type.bytes.b4 = type[4];
+    to_type.bytes.b5 = type[5];
+    to_type.bytes.b6 = type[6];
+    to_type.bytes.b7 = type[7];
+    if (to_type.whole_word >= __CORE_TYPE_COUNT) {
+      MFATAL("Graves Reader", "Provided CORE TYPE is invalid: GIVEN=%zu",
+             to_type.whole_word);
+      MLOG("Graves Reader", "Parsing metadata file %s", mfile);
+      merry_list_destroy(fnames);
+      fclose(file);
+      return RET_NULL;
+    }
+    // see if a file already exists for the given core type
+    if (merry_list_at(fnames, to_type.whole_word) != RET_NULL) {
+      MFATAL("Graves Reader",
+             "Multiple entries for the same CORE TYPE is not allowed: CORE=%zu",
+             to_type.whole_word);
+      MLOG("Graves Reader", "Parsing metadata file %s", mfile);
+      merry_list_destroy(fnames);
+      fclose(file);
+      return RET_NULL;
+    }
+    // finally read the file name
+    msize_t off_now = ftell(file);
+    msize_t off_then = off_now;
+    mbool_t got_term = mfalse;
+    while (!feof(file)) {
+      if (fgetc(file) == '\0') {
+        got_term = mtrue;
+        break;
+      }
+      off_then++;
+    }
+    msize_t diff = off_then - off_now;
+    if (!got_term || diff == 0) {
+      MFATAL("Graves Reader",
+             "Invalid Entry. File Name is invalid: while reading for CORE=%zu",
+             to_type.whole_word);
+      MLOG("Graves Reader", "Parsing metadata file %s", mfile);
+      merry_list_destroy(fnames);
+      fclose(file);
+      return RET_NULL;
+    }
+    fseek(file, -(diff), SEEK_CUR);
+    mstr_t fname = calloc(diff + 1, 1);
+    if (fname) {
+      MFATAL("Graves Reader", "Failed to allocate memory for file name parsing",
+             NULL);
+      MLOG("Graves Reader", "Parsing metadata file %s", mfile);
+      merry_list_destroy(fnames);
+      fclose(file);
+      return RET_NULL;
+    }
+    fread(fname, diff, 1, file); // will not fail
+    *((mstr_t *)merry_list_at(fnames, to_type.whole_word)) = fname;
+  }
+  MLOG("Graves Reader", "Finished parsing metadata file %s", mfile);
+  fclose(file);
   return fnames;
 }

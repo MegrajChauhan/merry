@@ -10,9 +10,12 @@ mptr_t _list_create(msize_t elen, msize_t cap) {
     return RET_NULL;
   }
   *(list) = elen;
-  *(list++) = 0;
-  *(list++) = cap;
-  memset(list++, 0, elen * cap);
+  list++;
+  *list = 0;
+  list++;
+  *list = cap;
+  list++;
+  memset(list, 0, elen * cap);
   return (mptr_t)(list);
 }
 
@@ -85,6 +88,19 @@ mptr_t _list_resize(mptr_t lst, msize_t resize_factor) {
           *elen * *cap * resize_factor + _MERRY_LIST_METADATA_LEN_EXCLUDE_BUF_);
   free(lst);
   return new_lst + 3;
+}
+
+msize_t _list_size(mptr_t lst) {
+  merry_check_ptr(lst);
+  return *(msize_t *)(lst - 2);
+}
+
+msize_t _list_index_of(mptr_t lst, mptr_t elem) {
+  merry_check_ptr(lst);
+  merry_check_ptr(elem);
+  register msize_t *elen = (lst - 3);
+
+  return (msize_t)((elem - lst) / *elen);
 }
 
 /*--------------------------STATIC QUEUE END---------------------------*/

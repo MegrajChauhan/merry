@@ -3,7 +3,6 @@
 
 // One-way channel
 #include <merry_config.h>
-#include <merry_error_stack.h>
 #include <merry_pipe.h>
 #include <merry_platform.h>
 #include <merry_types.h>
@@ -26,10 +25,8 @@ typedef MerryPipe MerryOWC;
 #define merry_owc_reopen(owc, err_st) merry_merrypipe_reopen(owc, err_st)
 #define merry_owc_become_neutral(owc) merry_pipe_close_both_ends(owc)
 
-mret_t merry_owc_speak(MerryOWC *owc, mbptr_t data, msize_t len,
-                       MerryErrorStack *st);
+minterfaceRet_t merry_owc_speak(MerryOWC *owc, mbptr_t data, msize_t len);
 
-mret_t merry_owc_listen(MerryOWC *owc, mbptr_t buf, msize_t n,
-                        MerryErrorStack *st);
+minterfaceRet_t merry_owc_listen(MerryOWC *owc, mbptr_t buf, msize_t n);
 
 #endif

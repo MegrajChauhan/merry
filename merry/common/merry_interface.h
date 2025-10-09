@@ -1,7 +1,6 @@
 #ifndef _MERRY_INTERFACE_
 #define _MERRY_INTERFACE_
 
-#include <merry_error_stack.h>
 #include <merry_interface_defs.h>
 #include <merry_platform.h>
 #include <merry_types.h>
@@ -17,10 +16,22 @@ struct MerryInterface {
       mfd_t fd;
       mbool_t blocking; // is the file descriptor blocking?
     } file;
+    struct {
+      union {
+        mfd_t pfd[2]; // the file descriptors
+        struct {
+          mdataline_t _read_fd;
+          mdataline_t _write_fd;
+        };
+      };
+      mbool_t _in_use;
+      mbool_t _rclosed;
+      mbool_t _wclosed;
+    } cpipe; // communication pipe
   };
 };
 
-MerryInterface *merry_interface_init(minterface_t type, MerryErrorStack *st);
+MerryInterface *merry_interface_init(minterface_t type);
 
 void merry_interface_destroy(MerryInterface *interface);
 

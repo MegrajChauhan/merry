@@ -73,7 +73,7 @@
 
 #define merry_unreachable()                                                    \
   do {                                                                         \
-    MFATAL(NULL, "Unreachable code execution: %s %zu", __FILE__, __LINE__)     \
+    MFATAL(NULL, "Unreachable code execution: %s %d", __FILE__, __LINE__);     \
     exit(-1);                                                                  \
   } while (0)
 

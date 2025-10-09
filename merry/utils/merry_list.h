@@ -35,6 +35,8 @@
 #define merry_list_pop(lst) _list_pop(lst)
 #define merry_list_at(lst, ind) _list_at(lst, ind)
 #define merry_list_resize(lst, resize_factor) _list_resize(lst, resize_factor)
+#define merry_list_size(lst) _list_size(lst)
+#define merry_list_index_of(lst, elem) _list_index_of(lst, elem)
 
 mptr_t _list_create(msize_t elen, msize_t cap);
 void _list_destroy(mptr_t lst);
@@ -42,6 +44,8 @@ mret_t _list_push(mptr_t lst, mptr_t elem);
 mptr_t _list_pop(mptr_t lst);
 mptr_t _list_at(mptr_t lst, msize_t ind);
 mptr_t _list_resize(mptr_t lst, msize_t resize_factor);
+msize_t _list_size(mptr_t lst);
+msize_t _list_index_of(mptr_t lst, mptr_t elem);
 
 /*-----------------END STATIC LIST--------------------*/
 

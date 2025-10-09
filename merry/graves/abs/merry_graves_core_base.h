@@ -4,15 +4,12 @@
 // This is how Graves will identify each core
 
 #include <merry_consts.h> // We have to properly start using this
-#include <merry_dynamic_list.h>
-#include <merry_error_stack.h>
 #include <merry_graves_defs.h>
-#include <merry_graves_memory_base.h>
-#include <merry_graves_request_queue.h>
+#include <merry_interface.h>
+#include <merry_list.h>
 #include <merry_nort.h>
 #include <merry_protectors.h>
-#include <merry_queue.h>
-#include <merry_ram.h>
+#include <merry_requests.h>
 #include <merry_types.h>
 #include <merry_utils.h>
 
@@ -25,41 +22,28 @@ typedef struct MerryCoreBase MerryCoreBase;
  *
  * */
 struct MerryCoreBase {
-  // Function pointers
   mcorecreate_t createc;
   mcoredeletecore_t deletec;
   mcoreexec_t execc;
   mgetreqargs_t getargs;
   mcorepredel_t predel;
+  mcoresetinp_t setinp;
+  mcoreprepcore_t prepcore;
+  mcoreshareresources_t share_resources;
 
-  // Flags
-  mbool_t req_res;   // The result of a previous request
+  msize_t req_res;   // The result of a previous request
   mbool_t running;   // Set to mfalse iff the core has terminated
   mbool_t interrupt; // the core was just interrupted
   mbool_t terminate; // if set, the core will terminate
 
-  // mbool_t pause;     // set to pause the core
-  // mbool_t smsqen;    // Switchable Multi-State Queue Enabled?
-
-  // Others....
   mid_t id;
   muid_t uid;
   mguid_t guid;
   mcore_t type;
 
-  MerryRAM *ram, *iram;
-
-  // MerryDynamicQueue *sq; // State Queue
-  // MerryDynamicList *all_memory_pages_owned;
+  MerryInterface *interfaces;
   MerryNort *nort;
-  MerryGravesRequest *_greq;
   mcond_t cond; // Just the condition variable
-  MerryRequestArgs args;
-
-  MerryDynamicList
-      *task_list; // Store all of the requests that were sent to Hords
-
-  MerryErrorStack estack; // A personal error stack
 };
 
 /*

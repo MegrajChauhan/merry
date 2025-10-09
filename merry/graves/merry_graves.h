@@ -6,16 +6,14 @@
 #include <merry_consts.h>
 #include <merry_core_types.h>
 #include <merry_default_consts.h>
-#include <merry_dynamic_list.h>
-#include <merry_error_stack.h>
 #include <merry_graves_core_base.h>
 #include <merry_graves_core_repr.h>
 #include <merry_graves_defs.h>
 #include <merry_graves_groups.h>
 #include <merry_graves_input.h>
-#include <merry_graves_memory_base.h>
 #include <merry_graves_request_queue.h>
-#include <merry_hord.h>
+#include <merry_list.h>
+#include <merry_logger.h>
 #include <merry_memory.h>
 #include <merry_nort.h>
 #include <merry_protectors.h>
@@ -24,15 +22,17 @@
 #include <merry_types.h>
 #include <merry_utils.h>
 #include <stdlib.h>
+#include <test_core/tc/tc.h>
 
 typedef struct MerryGraves MerryGraves;
 
 struct MerryGraves {
-  MerryDynamicList *GRPS; // all of the groups
+  MerryGravesGroup **GRPS; // all of the groups
   msize_t overall_core_count;
   msize_t overall_active_core_count;
-  msize_t initial_data_mem_page_count;
-  MerryGravesInput *input;
+  msize_t grp_count;
+  mstr_t *C_ENTRIES;
+  mbool_t DIE;
 
   // needed fields
   mcond_t graves_cond;
@@ -54,16 +54,16 @@ _MERRY_INTERNAL_ MerryGraves GRAVES;
 void Merry_Graves_Run(int argc, char **argv);
 
 // Pre-initialization before initializing Graves
-mret_t merry_graves_pre_init(MerryErrorStack *st);
+mret_t merry_graves_pre_init();
 
 // Read the input file
-mret_t merry_graves_parse_input(MerryErrorStack *st);
+mret_t merry_graves_parse_input();
 
 // Initialize Graves
-mret_t merry_graves_init(MerryErrorStack *st);
+mret_t merry_graves_init();
 
 // Prepare everything now right before running
-mret_t merry_graves_ready_everything(MerryErrorStack *st);
+mret_t merry_graves_ready_everything();
 // Registers all of the Base creation and destruction functions
 void merry_graves_acquaint_with_cores();
 
@@ -71,20 +71,21 @@ void merry_graves_acquaint_with_cores();
 void merry_graves_START(mptr_t __);
 
 // Destroy Graves
-void merry_graves_destroy(MerryErrorStack *st);
+void merry_graves_destroy();
 
 // Step by step clearing of the Graves before basic cleanup
 void merry_graves_cleanup_groups();
 // void merry_graves_pre_destruction();
 
 // Utilities
-
-MerryGravesGroup *merry_graves_add_group(MerryErrorStack *st);
-MerryGravesCoreRepr *merry_graves_add_core(MerryGravesGroup *grp,
-                                           MerryErrorStack *st);
+mcore_t merry_graves_obtain_first_valid_c_entry();
+MerryGravesGroup *merry_graves_add_group();
+MerryGravesCoreRepr *merry_graves_add_core(MerryGravesGroup *grp);
 mret_t merry_graves_init_a_core(MerryGravesCoreRepr *repr, mcore_t type,
-                                maddress_t addr, MerryErrorStack *st);
-mret_t merry_graves_boot_a_core(MerryGravesCoreRepr *repr, MerryErrorStack *st);
+                                maddress_t addr);
+mret_t merry_graves_init_a_core_no_prep(MerryGravesCoreRepr *repr, mcore_t type,
+                                        maddress_t addr);
+mret_t merry_graves_boot_a_core(MerryGravesCoreRepr *repr);
 void merry_graves_give_IDs_to_cores(MerryGravesCoreRepr *repr,
                                     MerryGravesGroup *grp);
 

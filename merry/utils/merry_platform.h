@@ -11,6 +11,7 @@
 #include <liburing.h>
 #include <pthread.h>
 #include <sys/mman.h>
+#include <sys/stat.h>
 #include <unistd.h>
 
 typedef pthread_t mthread_t;
@@ -39,5 +40,7 @@ typedef mptr_t mdlentry_t; // same for windows and linux
 _MERRY_DEFINE_FUNC_PTR_(_THRET_T_, mthexec_t, mptr_t);
 
 mret_t merry_open_pipe(mdataline_t *rline, mdataline_t *wline);
+
+mbool_t merry_is_path_a_directory(mstr_t path);
 
 #endif

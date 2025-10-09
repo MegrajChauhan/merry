@@ -18,14 +18,24 @@
 
 /*----------DYNAMIC QUEUE------------*/
 
-#define _MERRY_DEFINE_QUEUE_(name, type)                                       \
-  typedef struct {                                                             \
-    MerryLL##name##QueueNode *next, *prev;                                     \
+#define _MERRY_DECLARE_QUEUE_(name, type)                                      \
+  typedef struct MerryLL##name##QueueNode MerryLL##name##QueueNode;            \
+  typedef struct MerryLL##name##Queue MerryLL##name##Queue;                    \
+  struct MerryLL##name##QueueNode {                                            \
+    MerryLL##name##QueueNode *next_node, *prev_node;                           \
     type data;                                                                 \
-  } MerryLL##name##QueueNode;                                                  \
-  typedef struct {                                                             \
+  };                                                                           \
+  struct MerryLL##name##Queue {                                                \
     MerryLL##name##QueueNode *head, *tail;                                     \
-  } MerryLL##name##Queue;                                                      \
+  };                                                                           \
+  MerryLL##name##Queue *merry_##name##_llqueue_init();                         \
+  mret_t merry_##name##_llqueue_push(MerryLL##name##Queue *queue, type *data); \
+  mret_t merry_##name##_llqueue_pop(MerryLL##name##Queue *queue,               \
+                                    type *_store_in);                          \
+  void merry_##name##_llqueue_clear(MerryLL##name##Queue *queue);              \
+  void merry_##name##_llqueue_destroy(MerryLL##name##Queue *queue);
+
+#define _MERRY_DEFINE_QUEUE_(name, type)                                       \
   MerryLL##name##Queue *merry_##name##_llqueue_init() {                        \
     MerryLL##name##Queue *queue =                                              \
         (MerryLL##name##Queue *)malloc(sizeof(MerryLL##name##Queue));          \
@@ -48,11 +58,11 @@
     node->data = *data;                                                        \
     if (queue->head == queue->tail == NULL) {                                  \
       node->next_node = NULL;                                                  \
-      node->prev = NULL;                                                       \
+      node->prev_node = NULL;                                                  \
       queue->head = queue->tail = node;                                        \
     } else {                                                                   \
       node->next_node = NULL;                                                  \
-      node->prev = queue->tail;                                                \
+      node->prev_node = queue->tail;                                           \
       queue->tail->next_node = node;                                           \
       queue->tail = node;                                                      \
     }                                                                          \
@@ -63,7 +73,6 @@
     merry_check_ptr(queue);                                                    \
     merry_check_ptr(_store_in);                                                \
     if (queue->head == queue->head == NULL) {                                  \
-      *_store_in = NULL;                                                       \
       return RET_FAILURE;                                                      \
     }                                                                          \
     MerryLL##name##QueueNode *head = queue->head;                              \
@@ -72,7 +81,7 @@
       queue->tail = NULL;                                                      \
       queue->head = NULL;                                                      \
     } else {                                                                   \
-      head->next_node->prev = NULL;                                            \
+      head->next_node->prev_node = NULL;                                       \
       queue->head = head->next_node;                                           \
     }                                                                          \
     free(head);                                                                \

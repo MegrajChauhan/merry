@@ -71,7 +71,9 @@
 #include <errno.h>
 #include <merry_core_types.h>
 #include <merry_graves_defs.h>
+#include <merry_helpers.h>
 #include <merry_list.h>
+#include <merry_platform.h>
 #include <merry_types.h>
 #include <merry_utils.h>
 #include <stdio.h>

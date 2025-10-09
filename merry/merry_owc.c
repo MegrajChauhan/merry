@@ -1,52 +1,42 @@
 #include <merry_owc.h>
 
-mret_t merry_owc_speak(MerryOWC *owc, mbptr_t data, msize_t len,
-                       MerryErrorStack *st) {
+minterfaceRet_t merry_owc_speak(MerryOWC *owc, mbptr_t data, msize_t len) {
   // The OWC will speak for you
   // Send len bytes
   merry_check_ptr(owc);
   merry_check_ptr(data);
-  if (surelyF(!len))
-    return RET_SUCCESS;
+  if (owc->interface_t != INTERFACE_TYPE_PIPE)
+    return INTERFACE_TYPE_INVALID;
 
-  if (surelyF(owc->_wclosed)) {
-    PUSH(st, "Misconfigured OWC",
-         "OWC couldn't speak because it was misconfigured", "OWC Speaking");
-    // What should we do? Since we decided to be strict we should treat this
-    // seriously..?
-    merry_error_stack_fatality(st);
-    return RET_FAILURE; // maybe the channel was configured to be a listener for
-                        // this owner
+  if (surelyF(owc->cpipe._wclosed)) {
+    return INTERFACE_MISCONFIGURED; // maybe the channel was configured to be a
+                                    // listener for this owner
   }
-  if (write(owc->_write_fd, (mptr_t)data, len) == -1) {
-    merry_error_stack_errno(st);
-    PUSH(st, NULL, "Failed to write to OWC", "OWC Speaking");
-    return RET_FAILURE;
+  if (surelyF(!len))
+    return INTERFACE_SUCCESS;
+  if (write(owc->cpipe._write_fd, (mptr_t)data, len) == -1) {
+    return INTERFACE_HOST_FAILURE;
   }
-  return RET_SUCCESS;
+  return INTERFACE_SUCCESS;
 }
 
-mret_t merry_owc_listen(MerryOWC *owc, mbptr_t buf, msize_t n,
-                        MerryErrorStack *st) {
+minterfaceRet_t merry_owc_listen(MerryOWC *owc, mbptr_t buf, msize_t n) {
   // The OWC will listen for you
   // Send len bytes
   merry_check_ptr(owc);
   merry_check_ptr(buf);
+  if (owc->interface_t != INTERFACE_TYPE_PIPE)
+    return INTERFACE_TYPE_INVALID;
+  if (surelyF(owc->cpipe._rclosed)) {
+    return INTERFACE_MISCONFIGURED; // maybe the channel was configured to be a
+                                    // speaker for this owner
+  }
   if (surelyF(!n))
-    return RET_SUCCESS;
-  if (surelyF(owc->_rclosed)) {
-    PUSH(st, "Misconfigured OWC",
-         "OWC couldn't listen because it was misconfigured", "OWC Listening");
-    merry_error_stack_fatality(st);
-    return RET_FAILURE; // maybe the channel was configured to be a speaker for
-                        // this owner
+    return INTERFACE_SUCCESS;
+
+  if (read(owc->cpipe._read_fd, (mptr_t)buf, n) == -1) {
+    return INTERFACE_HOST_FAILURE;
   }
 
-  if (read(owc->_read_fd, (mptr_t)buf, n) == -1) {
-    merry_error_stack_errno(st);
-    PUSH(st, NULL, "Failed to read from OWC", "OWC Listening");
-    return RET_FAILURE;
-  }
-
-  return RET_SUCCESS;
+  return INTERFACE_SUCCESS;
 }

@@ -21,10 +21,8 @@
 
 // Graves actually works with groups
 
-#include <merry_dynamic_list.h>
-#include <merry_error_stack.h>
-#include <merry_graves_core_base.h>
 #include <merry_graves_core_repr.h>
+#include <merry_list.h>
 #include <merry_types.h>
 #include <merry_utils.h>
 #include <stdatomic.h>
@@ -33,22 +31,21 @@
 #define merry_graves_group_register_new_core(grp) ((grp)->active_core_count++)
 #define merry_graves_group_register_dead_core(grp) ((grp)->active_core_count--)
 #define merry_graves_group_index_for(grp, repr)                                \
-  merry_dynamic_list_index_of((grp)->all_cores, (repr))
+  merry_list_index_of((grp)->all_cores, (repr))
 #define merry_graves_group_dead(grp) ((grp)->active_core_count == 0)
 
 typedef struct MerryGravesGroup MerryGravesGroup;
 
 struct MerryGravesGroup {
-  MerryDynamicList *all_cores;
+  MerryGravesCoreRepr *all_cores;
   msize_t core_count;
   msize_t active_core_count;
   msize_t group_id;
 };
 
-MerryGravesGroup *merry_graves_group_create(msize_t gid, MerryErrorStack *st);
+MerryGravesGroup *merry_graves_group_create(msize_t gid);
 
-MerryGravesCoreRepr *merry_graves_group_add_core(MerryGravesGroup *grp,
-                                                 MerryErrorStack *st);
+MerryGravesCoreRepr *merry_graves_group_add_core(MerryGravesGroup *grp);
 
 void merry_graves_group_last_add_failed(MerryGravesGroup *grp);
 

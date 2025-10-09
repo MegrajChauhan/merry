@@ -1,10 +1,9 @@
 #include <merry_file.h>
 
 MerryFile *merry_open_file(mstr_t file_path, mstr_t modes, int flags,
-                           mbool_t *failed, MerryErrorStack *st) {
-  MerryFile *file = (MerryFile *)merry_interface_init(INTERFACE_FILE, st);
+                           mbool_t *failed) {
+  MerryFile *file = (MerryFile *)merry_interface_init(INTERFACE_TYPE_FILE);
   if (!file) {
-    PUSH(st, NULL, "Failed to open a file", "Opening a file");
     *failed = mfalse; // mtrue implies it is not a system error
     return RET_NULL;
   }
@@ -27,8 +26,7 @@ MerryFile *merry_open_file(mstr_t file_path, mstr_t modes, int flags,
 #ifdef _USE_LINUX_
   file->file.fd = open(file_path, mode, flag);
   if (file->file.fd == -1) {
-    *failed = mtrue;
-    merry_error_stack_errno(st);
+    *failed = mfalse;
     merry_interface_destroy(file);
     return RET_NULL;
   }
@@ -77,13 +75,10 @@ mret_t merry_figure_out_file_modes(mstr_t modex, int flags, int *res_mode,
   return RET_SUCCESS;
 }
 
-mret_t merry_close_file(MerryFile *file, MerryErrorStack *st) {
+minterfaceRet_t merry_close_file(MerryFile *file) {
   merry_check_ptr(file);
-  if (file->interface_t != INTERFACE_FILE) {
-    PUSH(st, "Invalid Operation", "\"close\" on a non-file interface",
-         "Closing a File");
-    merry_error_stack_fatality(st);
-    return RET_FAILURE;
+  if (file->interface_t != INTERFACE_TYPE_FILE) {
+    return INTERFACE_TYPE_INVALID;
   }
 #ifdef _USE_LINUX_
   close(file->file.fd);
@@ -91,5 +86,30 @@ mret_t merry_close_file(MerryFile *file, MerryErrorStack *st) {
 // not yet
 #endif
   merry_interface_destroy(file);
-  return RET_SUCCESS;
+  return INTERFACE_SUCCESS;
+}
+
+minterfaceRet_t merry_file_size(MerryFile *file, msize_t *res) {
+  merry_check_ptr(file);
+  if (file->interface_t != INTERFACE_TYPE_FILE)
+    return INTERFACE_TYPE_INVALID;
+#ifdef _USE_LINUX_
+  msqword_t old_pos = lseek(file->file.fd, 0, SEEK_CUR);
+  *res = lseek(file->file.fd, 0, SEEK_END);
+  lseek(file->file.fd, 0, old_pos);
+#endif
+  return INTERFACE_SUCCESS;
+}
+
+minterfaceRet_t merry_file_seek(MerryFile *file, msize_t off, msize_t whence) {
+  merry_check_ptr(file);
+  if (file->interface_t != INTERFACE_TYPE_FILE)
+    return INTERFACE_TYPE_INVALID;
+  if (whence != SEEK_CUR && whence != SEEK_END && whence != SEEK_SET)
+    return INTERFACE_INVALID_ARGS;
+#ifdef _USE_LINUX_
+  if (lseek(file->file.fd, off, whence) == -1)
+    return INTERFACE_FAILURE;
+#endif
+  return INTERFACE_SUCCESS;
 }

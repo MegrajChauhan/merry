@@ -23,3 +23,11 @@ mret_t merry_open_pipe(mdataline_t *rline, mdataline_t *wline) {
   *wline = lines[1];
   return RET_SUCCESS;
 }
+
+mbool_t merry_is_path_a_directory(mstr_t path) {
+  merry_check_ptr(path);
+  struct stat s;
+  if (stat(path, &s) == 0)
+    return S_ISDIR(s.st_mode) ? mtrue : mfalse;
+  return mfalse;
+}

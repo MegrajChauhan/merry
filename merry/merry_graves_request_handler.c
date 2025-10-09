@@ -8,9 +8,9 @@ REQ(kill_self) {
    * - Destroy the base
    * - Register the death
    * */
+  repr->base->predel(repr->core);
   repr->base->deletec(repr->core);
   repr->core = NULL; // Declare dead
-  GRAVES.HOW_TO_DESTROY_BASE[repr->base->type](repr->base);
   merry_graves_group_register_dead_core(grp);
   GRAVES.active_core_count--;
 }
@@ -23,13 +23,9 @@ REQ(create_core) {
    * - Or create a new core in an exisiting group
    * */
   MerryRequestArgs *args = repr->base->getargs(repr->core);
-  MerryErrorStack *st = &repr->base->estack;
   if (args->create_core.new_core_type >= __CORE_TYPE_COUNT) {
     // Locally fatal i.e fatal to the core who will dump its
     // error messages and then terminate
-    PUSH(st, "Invalid Core Type", "Invalid core type provided for new core",
-         "Creating New Core");
-    merry_error_stack_fatality(st);
     repr->base->req_res = mfalse;
     return;
   }
@@ -37,10 +33,8 @@ REQ(create_core) {
   if (args->create_core.new_group == mtrue &&
       args->create_core.same_group == mfalse) {
     // A new group needed
-    MerryGravesGroup *ngrp = merry_graves_add_group(st);
+    MerryGravesGroup *ngrp = merry_graves_add_group();
     if (!ngrp) {
-      PUSH(st, NULL, "Failed to create a new GROUP for a new core",
-           "Creating New Core");
       repr->base->req_res = mfalse;
       return;
     }
@@ -48,38 +42,48 @@ REQ(create_core) {
   } else if (args->create_core.new_group == args->create_core.same_group ==
              mfalse) {
     // use an exisiting group
-    MerryGravesGroup *ogrp =
-        merry_dynamic_list_at(GRAVES.GRPS, args->create_core.gid);
+    MerryGravesGroup **ogrp = merry_list_at(GRAVES.GRPS, args->create_core.gid);
     if (!ogrp) {
-      PUSH(st, NULL, "Invalid GUID given to create a new core",
-           "Creating New Core");
       repr->base->req_res = mfalse;
       return;
     }
-    grp = ogrp;
+    grp = *ogrp;
   } else if (args->create_core.same_group == mtrue) {
   } else {
     // None of the possibilities matches hence an error
-    PUSH(st, "Unknown Possibility", "None of the cases matched",
-         "Creating New Core");
     repr->base->req_res = mfalse;
     return;
   }
-  new_repr = merry_graves_add_core(grp, st);
+  new_repr = merry_graves_add_core(grp);
   if (!new_repr) {
-    PUSH(st, NULL, "Failed to add a new core", "Creating New Core");
     repr->base->req_res = mfalse;
     return;
   }
-  if (merry_graves_init_a_core(new_repr, args->create_core.new_core_type,
-                               args->create_core.st_addr, st) == RET_FAILURE) {
-    PUSH(st, NULL, "New Core Initialization Failed", "Creating New Core");
+  mret_t _r;
+  if (args->create_core.share_resources)
+    _r = merry_graves_init_a_core_no_prep(
+        new_repr, args->create_core.new_core_type, args->create_core.st_addr);
+  else
+    _r = merry_graves_init_a_core(new_repr, args->create_core.new_core_type,
+                                  args->create_core.st_addr);
+  if (!_r) {
     repr->base->req_res = mfalse;
     return;
+  }
+  if (args->create_core.share_resources) {
+    if (repr->base->share_resources(repr->core, new_repr->core) ==
+        RET_FAILURE) {
+      new_repr->base->deletec(new_repr->core);
+      GRAVES.HOW_TO_DESTROY_BASE[args->create_core.new_core_type](
+          new_repr->base);
+      repr->base->req_res = mfalse;
+      return;
+    }
   }
   merry_graves_give_IDs_to_cores(new_repr, grp);
-  if (merry_graves_boot_a_core(new_repr, st) == RET_FAILURE) {
-    PUSH(st, NULL, "New Core BOOTING Failed", "Creating New Core");
+  if (merry_graves_boot_a_core(new_repr) == RET_FAILURE) {
+    new_repr->base->deletec(new_repr->core);
+    GRAVES.HOW_TO_DESTROY_BASE[args->create_core.new_core_type](new_repr->base);
     repr->base->req_res = mfalse;
     return;
   }
@@ -94,10 +98,8 @@ REQ(create_group) {
    * Just create a new group
    * */
   MerryRequestArgs *args = repr->base->getargs(repr->core);
-  MerryErrorStack *st = &repr->base->estack;
-  MerryGravesGroup *ngrp = merry_graves_add_group(st);
+  MerryGravesGroup *ngrp = merry_graves_add_group();
   if (!ngrp) {
-    PUSH(st, NULL, "Failed to create a new GROUP", "Creating New Group");
     repr->base->req_res = mfalse;
     return;
   }
@@ -112,16 +114,13 @@ REQ(get_group_details) {
    * cores that are active in that group
    * */
   MerryRequestArgs *args = repr->base->getargs(repr->core);
-  MerryErrorStack *st = &repr->base->estack;
-  MerryGravesGroup *ngrp = merry_dynamic_list_at(GRAVES.GRPS, repr->base->guid);
+  MerryGravesGroup **ngrp = merry_list_at(GRAVES.GRPS, repr->base->guid);
   if (!ngrp) {
-    PUSH(st, "Invalid GUID", "Group Details Requested but GUID doesn't exisi",
-         "Get Group Details");
     repr->base->req_res = mfalse;
     return;
   }
-  args->get_group_details.core_count = ngrp->core_count;
-  args->get_group_details.active_core_count = ngrp->active_core_count;
+  args->get_group_details.core_count = (*ngrp)->core_count;
+  args->get_group_details.active_core_count = (*ngrp)->active_core_count;
   repr->base->req_res = mtrue; // success
 }
 
@@ -134,7 +133,7 @@ REQ(get_system_details) {
    * just one group.
    * */
   MerryRequestArgs *args = repr->base->getargs(repr->core);
-  args->get_system_details.grp_count = merry_dynamic_list_size(GRAVES.GRPS);
+  args->get_system_details.grp_count = GRAVES.grp_count;
   args->get_system_details.core_count = GRAVES.core_count;
   args->get_system_details.active_core_count = GRAVES.active_core_count;
   // will never fail so don't worry

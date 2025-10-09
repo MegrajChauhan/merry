@@ -1,19 +1,18 @@
 # Variable definitions
 CC = gcc
 FLAGS = -Wall -Wextra -MMD -MP
-DIRS = merry/utils \
-       merry/abs \
-       merry/core \
-       merry/graves \
-       merry/graves/hord \
+DIRS = merry/common \
        merry/comps \
-       merry/interface \
+       merry/core \
+       merry/core/test_core \
        merry/defs \
-       merry/graves/linterfaces \
+       merry/graves \
+       merry/graves/abs \
+       merry/interface \
        merry/lib/defs \
        merry/lib \
-       merry/core/stack_core
-SRC_DIR = merry/
+       merry/utils
+SRC_DIR = merry/ merry/core/test_core/
 INC_DIRS = ${addprefix -I, ${DIRS}}
 FLAGS += ${flags}
 

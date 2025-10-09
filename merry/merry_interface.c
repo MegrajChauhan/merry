@@ -1,11 +1,8 @@
 #include <merry_interface.h>
 
-MerryInterface *merry_interface_init(minterface_t type, MerryErrorStack *st) {
+MerryInterface *merry_interface_init(minterface_t type) {
   MerryInterface *interface = (MerryInterface *)malloc(sizeof(MerryInterface));
   if (!interface) {
-    PUSH(st, "Memory Allocation Failure",
-         "Failed to allocate memory for interface", "Creating Interface");
-    merry_error_stack_fatality(st);
     return RET_NULL;
   }
   interface->interface_t = type;
