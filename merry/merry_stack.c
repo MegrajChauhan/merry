@@ -1,7 +1,6 @@
 #include <merry_stack.h>
 
 MerryStack *merry_stack_init(msize_t cap) {
-  merry_check_ptr(st);
   MerryStack *stk = (MerryStack *)malloc(sizeof(MerryStack));
   if (!stk) {
     MFATAL(NULL, "Failed to allocate memory for stack", NULL);

@@ -3,13 +3,15 @@
 mret_t tc_read_input(mstr_t fname, TCInp *inp) {
   mbool_t res = mfalse;
   inp->file = merry_open_file(fname, _MERRY_FOPEN_READ_, 0, &res);
-  // res shouldn't be mtrue since we pass valid flags
-  if (res)
-    merry_unreachable();
-  if (!inp->file && !res) {
-    MFATAL("TC", "Failed to read input file: FILE=%s because %s", fname,
-           strerror(errno));
-    return RET_FAILURE;
+  if (!inp->file) {
+    if (!res) {
+      MFATAL("TC", "Failed to read input file: FILE=%s because %s", fname,
+             strerror(errno));
+      return RET_FAILURE;
+    } else {
+      // res shouldn't be mtrue since we pass valid flags
+      merry_unreachable();
+    }
   }
   // Now that we have the file
   // Read that file into memory

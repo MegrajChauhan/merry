@@ -57,6 +57,6 @@
 #define _MERRY_LONG_ long long
 #endif
 
-#define _MERRY_RELEASE_
+// #define _MERRY_RELEASE_
 
 #endif

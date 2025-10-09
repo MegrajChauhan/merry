@@ -48,7 +48,7 @@ struct MerryGraves {
 };
 
 // GRAVES has the full authority to terminate the VM
-_MERRY_INTERNAL_ MerryGraves GRAVES;
+extern MerryGraves GRAVES;
 
 // Entry to Graves(doesn't return)
 void Merry_Graves_Run(int argc, char **argv);

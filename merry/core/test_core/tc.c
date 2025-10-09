@@ -7,6 +7,7 @@ mptr_t tc_create_core(MerryCoreBase *base, maddress_t st) {
     return RET_NULL;
   }
   tc->PC = st;
+  tc->base = base;
   return tc;
 }
 
@@ -29,7 +30,13 @@ _THRET_T_ tc_run(mptr_t c) {
         base->running = mfalse;
         tc_make_request(tc, KILL_SELF);
         tc_destroy_base(tc->base);
+        tc_delete_core(c);
         break;
+      }
+      if (base->kill) {
+        base->running = mfalse;
+        break; // the KILL request comes from Graves, so it knows that it is
+               // killing this core
       }
       // other interrupts.....
       base->interrupt = mfalse;

@@ -34,7 +34,10 @@ struct MerryCoreBase {
   msize_t req_res;   // The result of a previous request
   mbool_t running;   // Set to mfalse iff the core has terminated
   mbool_t interrupt; // the core was just interrupted
-  mbool_t terminate; // if set, the core will terminate
+  mbool_t
+      terminate; // if set, the core will terminate(cleaning everything itself)
+  mbool_t kill;  // if set, the core will terminate but won't cleanup everything
+                 // itself
 
   mid_t id;
   muid_t uid;

@@ -3,6 +3,7 @@
 void tc_TEST_1(TC *tc) {
   _MERRY_INTERNAL_ msize_t count = 0;
   MLOG("TC", "TC RUNNING: count=%zu", count);
+  count++;
 }
 
 void tc_TEST_2(TC *tc) {

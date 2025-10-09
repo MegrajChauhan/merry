@@ -3,7 +3,6 @@
 _MERRY_DEFINE_QUEUE_(GravesRequest, MerryGravesRequest);
 
 mret_t merry_graves_req_queue_init() {
-  merry_check_ptr(hdlr);
   if (merry_cond_init(&g_queue.queue_cond) == RET_FAILURE) {
     return RET_FAILURE;
   }

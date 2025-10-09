@@ -39,11 +39,11 @@ MerryFile *merry_open_file(mstr_t file_path, mstr_t modes, int flags,
 
 mret_t merry_figure_out_file_modes(mstr_t modex, int flags, int *res_mode,
                                    int *res_flag) {
-  if (*modex == *_MERRY_FOPEN_APPEND_)
+  if (modex[0] == _MERRY_FOPEN_APPEND_[0])
     *res_mode = __FILE_MODE_APPEND;
-  else if (*modex == *_MERRY_FOPEN_WRITE_)
+  else if (modex[0] == _MERRY_FOPEN_WRITE_[0])
     *res_mode = __FILE_MODE_WRITE;
-  else if (*modex == *_MERRY_FOPEN_WRITE_)
+  else if (modex[0] == _MERRY_FOPEN_READ_[0])
     *res_mode = __FILE_MODE_READ;
   else if (strcmp(modex, _MERRY_FOPEN_READ_WRITE_) == 0)
     *res_mode = __FILE_MODE_READ_WRITE;

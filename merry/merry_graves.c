@@ -1,5 +1,7 @@
 #include <merry_graves.h>
 
+MerryGraves GRAVES;
+
 _MERRY_NO_RETURN_ void Merry_Graves_Run(int argc, char **argv) {
   if (merry_parse_arg(argc, argv) == RET_FAILURE) {
     MFATAL("Graves", "Failed to parse input arguments", NULL);
@@ -177,9 +179,7 @@ void merry_graves_cleanup_groups() {
       if (!repr->core)
         break;
       repr->base->predel(repr->core);
-      repr->base->deletec(repr->core);
       repr->core = NULL;
-      GRAVES.HOW_TO_DESTROY_BASE[repr->base->type](repr->base);
     }
     merry_graves_group_destroy(*grp);
   }
@@ -324,8 +324,8 @@ void merry_graves_START(mptr_t __) {
   // Since the first steps have been successfull
   // Let's extract the first core directly with no shame
   GRAVES.DIE = mfalse;
-  MerryGravesCoreRepr *first_core =
-      merry_graves_group_get_core(merry_list_at(GRAVES.GRPS, 0), 0);
+  MerryGravesCoreRepr *first_core = merry_graves_group_get_core(
+      *(MerryGravesGroup **)merry_list_at(GRAVES.GRPS, 0), 0);
 
   if (merry_graves_boot_a_core(first_core) == RET_FAILURE) {
     MFATAL("Graves", "[<BOOT>] Failed to start the VM [First core boot failed]",

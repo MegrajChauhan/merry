@@ -36,9 +36,6 @@ all: directories ${OUTPUT_FILES_NAME} ${ASM_OUTPUT_FILES_NAME}
 
 WATCH_PROJECT: directories ${OUTPUT_FILES_NAME} ${ASM_OUTPUT_FILES_NAME}
 
-${OUTPUT_DIR}${SRC_DIR}%.o: ${SRC_DIR}%.c 
-	${CC} ${FLAGS} ${INC_DIRS} -c $< -o $@
-
 ${OUTPUT_DIR}%.o: %.c
 	${CC} ${FLAGS} ${INC_DIRS} -c $< -o $@
 

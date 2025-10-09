@@ -9,7 +9,6 @@ REQ(kill_self) {
    * - Register the death
    * */
   repr->base->predel(repr->core);
-  repr->base->deletec(repr->core);
   repr->core = NULL; // Declare dead
   merry_graves_group_register_dead_core(grp);
   GRAVES.active_core_count--;

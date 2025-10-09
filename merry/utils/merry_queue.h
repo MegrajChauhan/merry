@@ -56,7 +56,7 @@
       return RET_FAILURE;                                                      \
     }                                                                          \
     node->data = *data;                                                        \
-    if (queue->head == queue->tail == NULL) {                                  \
+    if (queue->head == NULL && queue->tail == NULL) {                          \
       node->next_node = NULL;                                                  \
       node->prev_node = NULL;                                                  \
       queue->head = queue->tail = node;                                        \
@@ -72,7 +72,7 @@
                                     type *_store_in) {                         \
     merry_check_ptr(queue);                                                    \
     merry_check_ptr(_store_in);                                                \
-    if (queue->head == queue->head == NULL) {                                  \
+    if (queue->head == NULL && queue->tail == NULL) {                          \
       return RET_FAILURE;                                                      \
     }                                                                          \
     MerryLL##name##QueueNode *head = queue->head;                              \
