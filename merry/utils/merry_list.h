@@ -76,7 +76,7 @@ msize_t _list_index_of(mptr_t lst, mptr_t elem);
       MFATAL(NULL, "Failed to allocate memory for a static list", NULL);       \
       return RET_NULL;                                                         \
     }                                                                          \
-    list->buf = (type *)malloc(sizeof(type) * cap);                            \
+    list->buf = (type *)calloc(cap, sizeof(type));                             \
                                                                                \
     if (!list->buf) {                                                          \
       MFATAL(NULL, "Failed to allocate memory for static list buffer", NULL);  \
@@ -164,7 +164,7 @@ msize_t _list_index_of(mptr_t lst, mptr_t elem);
       MFATAL(NULL, "Failed to allocate memory for a lf static list", NULL);    \
       return RET_NULL;                                                         \
     }                                                                          \
-    list->buf = (type *)malloc(sizeof(type) * cap);                            \
+    list->buf = (type *)calloc(cap, sizeof(type));                             \
                                                                                \
     if (!list->buf) {                                                          \
       MFATAL(NULL, "Failed to allocate memory for lf static list buffer",      \
