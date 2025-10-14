@@ -29,15 +29,17 @@ struct MerryCoreBase {
   mcorepredel_t predel;
   mcoresetinp_t setinp;
   mcoreprepcore_t prepcore;
-  mcoreshareresources_t share_resources;
 
   msize_t req_res;   // The result of a previous request
   mbool_t running;   // Set to mfalse iff the core has terminated
   mbool_t interrupt; // the core was just interrupted
-  mbool_t
-      terminate; // if set, the core will terminate(cleaning everything itself)
-  mbool_t kill;  // if set, the core will terminate but won't cleanup everything
-                 // itself
+  /*
+   * Difference between terminate and kill:
+   * terminate: if the core wants to terminate itself
+   * kill: if the core is being told to terminate by Graves
+   * */
+  mbool_t terminate;
+  mbool_t kill;
 
   mid_t id;
   muid_t uid;

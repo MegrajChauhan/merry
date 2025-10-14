@@ -80,6 +80,8 @@
 #include <stdlib.h>
 #include <string.h>
 
-mstr_t *merry_graves_parse_metadata_file(mstr_t mfile);
+_MERRY_DECLARE_STATIC_LIST_(Entry, mstr_t);
+
+MerryEntryList *merry_graves_parse_metadata_file(mstr_t mfile);
 
 #endif

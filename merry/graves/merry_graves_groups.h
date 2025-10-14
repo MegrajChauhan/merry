@@ -31,13 +31,15 @@
 #define merry_graves_group_register_new_core(grp) ((grp)->active_core_count++)
 #define merry_graves_group_register_dead_core(grp) ((grp)->active_core_count--)
 #define merry_graves_group_index_for(grp, repr)                                \
-  merry_list_index_of((grp)->all_cores, (repr))
+  merry_CoreRepr_list_index_of((grp)->all_cores, (repr))
 #define merry_graves_group_dead(grp) ((grp)->active_core_count == 0)
+
+_MERRY_DECLARE_STATIC_LIST_(CoreRepr, MerryGravesCoreRepr);
 
 typedef struct MerryGravesGroup MerryGravesGroup;
 
 struct MerryGravesGroup {
-  MerryGravesCoreRepr *all_cores;
+  MerryCoreReprList *all_cores;
   msize_t core_count;
   msize_t active_core_count;
   msize_t group_id;

@@ -1,5 +1,7 @@
 #include <merry_graves_groups.h>
 
+_MERRY_DEFINE_STATIC_LIST_(CoreRepr, MerryGravesCoreRepr);
+
 MerryGravesGroup *merry_graves_group_create(msize_t gid) {
   MerryGravesGroup *grp = (MerryGravesGroup *)malloc(sizeof(MerryGravesGroup));
 
@@ -8,8 +10,7 @@ MerryGravesGroup *merry_graves_group_create(msize_t gid) {
     return RET_NULL;
   }
 
-  if ((grp->all_cores = merry_list_create(MerryGravesCoreRepr, 10)) ==
-      RET_NULL) {
+  if ((grp->all_cores = merry_CoreRepr_list_create(10)) == RET_NULL) {
     MERROR("Graves Group", "Failed to create a new group", NULL);
     free(grp);
     return RET_NULL;
@@ -30,14 +31,15 @@ MerryGravesCoreRepr *merry_graves_group_add_core(MerryGravesGroup *grp) {
   MerryGravesCoreRepr repr;
   repr.core = NULL;
   repr.base = NULL;
-  if (merry_list_push(grp->all_cores, &repr) == RET_FAILURE) {
+  if (merry_CoreRepr_list_push(grp->all_cores, &repr) == RET_FAILURE) {
     // Not totally fatal
-    if ((grp->all_cores = merry_list_resize(grp->all_cores, 2)) == RET_NULL)
+    MerryCoreReprList *tmp;
+    if ((tmp = merry_CoreRepr_list_resize(grp->all_cores, 2)) == RET_NULL)
       return RET_NULL;
+    grp->all_cores = tmp;
   }
   grp->core_count++;
-  return (MerryGravesCoreRepr *)merry_list_at(grp->all_cores,
-                                              grp->core_count - 1);
+  return merry_CoreRepr_list_at(grp->all_cores, grp->core_count - 1);
 }
 
 void merry_graves_group_last_add_failed(MerryGravesGroup *grp) {
@@ -46,7 +48,7 @@ void merry_graves_group_last_add_failed(MerryGravesGroup *grp) {
 
   // The last core that was added wasn't successfully initialized.
   // KILL it
-  merry_list_pop(grp->all_cores);
+  merry_CoreRepr_list_pop(grp->all_cores);
   grp->core_count--;
   return;
 }
@@ -56,8 +58,7 @@ MerryGravesCoreRepr *merry_graves_group_find_dead_core(MerryGravesGroup *grp) {
   merry_check_ptr(grp->all_cores);
 
   for (msize_t i = 0; i < grp->core_count; i++) {
-    MerryGravesCoreRepr *repr =
-        (MerryGravesCoreRepr *)merry_list_at(grp->all_cores, i);
+    MerryGravesCoreRepr *repr = merry_CoreRepr_list_at(grp->all_cores, i);
     if (!repr->core)
       return repr;
   }
@@ -75,8 +76,7 @@ MerryGravesCoreRepr *merry_graves_group_find_core(MerryGravesGroup *grp,
 
   // "id" basically refers to the core's index into the group's
   // dynamic array
-  MerryGravesCoreRepr *repr =
-      (MerryGravesCoreRepr *)merry_list_at(grp->all_cores, id);
+  MerryGravesCoreRepr *repr = merry_CoreRepr_list_at(grp->all_cores, id);
   if (!repr)
     return RET_NULL;
   if (!repr->core || repr->base->uid != uid) {
@@ -90,7 +90,7 @@ MerryGravesCoreRepr *merry_graves_group_get_core(MerryGravesGroup *grp,
                                                  msize_t id) {
   merry_check_ptr(grp);
   merry_check_ptr(grp->all_cores);
-  return (MerryGravesCoreRepr *)merry_list_at(grp->all_cores, id);
+  return merry_CoreRepr_list_at(grp->all_cores, id);
 }
 
 void merry_graves_group_destroy(MerryGravesGroup *grp) {
@@ -100,6 +100,6 @@ void merry_graves_group_destroy(MerryGravesGroup *grp) {
   merry_check_ptr(grp);
   merry_check_ptr(grp->all_cores);
 
-  merry_list_destroy(grp->all_cores);
+  merry_CoreRepr_list_destroy(grp->all_cores);
   free(grp);
 }

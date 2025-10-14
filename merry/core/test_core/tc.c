@@ -8,6 +8,7 @@ mptr_t tc_create_core(MerryCoreBase *base, maddress_t st) {
   }
   tc->PC = st;
   tc->base = base;
+  tc->req_failed = mfalse;
   return tc;
 }
 
@@ -28,7 +29,6 @@ _THRET_T_ tc_run(mptr_t c) {
                              memory_order_relaxed)) {
       if (base->terminate) {
         base->running = mfalse;
-        tc_make_request(tc, KILL_SELF);
         tc_destroy_base(tc->base);
         tc_delete_core(c);
         break;
@@ -56,8 +56,30 @@ _THRET_T_ tc_run(mptr_t c) {
     case TEST_2:
       tc_TEST_2(tc);
       break;
+    case TEST_3:
+      tc_TEST_3(tc);
+      break;
+    case TEST_4:
+      tc_TEST_4(tc);
+      break;
+    case TEST_5:
+      tc_TEST_5(tc);
+      break;
+    case TEST_6:
+      tc_TEST_6(tc);
+      break;
+    case TEST_7:
+      tc_TEST_7(tc);
+      break;
+    case TEST_8:
+      tc_TEST_8(tc);
+      break;
+    case TEST_9:
+      tc_TEST_9(tc);
+      break;
     default:
-      MLOG("TC", "Unknown INSTRUCTION %u", curr);
+      MLOG("TC", "[ID=%zu, UID=%zu, GUID=%zu] Unknown INSTRUCTION %u", base->id,
+           base->uid, base->guid, curr);
     }
     tc->PC++;
   }
@@ -84,7 +106,6 @@ MerryCoreBase *tc_create_base() {
   base->predel = tc_pre_delete_core;
   base->setinp = tc_set_inp;
   base->prepcore = tc_prep_core;
-  base->share_resources = tc_share_resources;
 
   return base;
 }
@@ -128,9 +149,8 @@ mret_t tc_prep_core(mptr_t c) {
   return (tc->mem == RET_NULL) ? RET_FAILURE : RET_SUCCESS;
 }
 
-mret_t tc_share_resources(mptr_t c1, mptr_t c2) { return RET_SUCCESS; }
-
 void tc_make_request(TC *tc, mgreq_t req) {
   tc->_greq.type = req;
-  merry_SEND_REQUEST(&tc->_greq, &tc->base->cond);
+  if (merry_SEND_REQUEST(&tc->_greq, &tc->base->cond) == RET_FAILURE)
+    tc->req_failed = mtrue;
 }

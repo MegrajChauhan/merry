@@ -24,6 +24,5 @@ _MERRY_DEFINE_FUNC_PTR_(union MerryRequestArgs *, mgetreqargs_t, mptr_t);
 _MERRY_DEFINE_FUNC_PTR_(void, mcorepredel_t, mptr_t);
 _MERRY_DEFINE_FUNC_PTR_(mret_t, mcoresetinp_t, mptr_t, mstr_t);
 _MERRY_DEFINE_FUNC_PTR_(mret_t, mcoreprepcore_t, mptr_t);
-_MERRY_DEFINE_FUNC_PTR_(mret_t, mcoreshareresources_t, mptr_t, mptr_t);
 
 #endif

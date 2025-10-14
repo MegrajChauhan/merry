@@ -2,6 +2,8 @@
 
 MerryGraves GRAVES;
 
+_MERRY_DEFINE_STATIC_LIST_(Group, MerryGravesGroup *);
+
 _MERRY_NO_RETURN_ void Merry_Graves_Run(int argc, char **argv) {
   if (merry_parse_arg(argc, argv) == RET_FAILURE) {
     MFATAL("Graves", "Failed to parse input arguments", NULL);
@@ -59,7 +61,7 @@ mret_t merry_graves_parse_input() {
 }
 
 mret_t merry_graves_init() {
-  GRAVES.GRPS = merry_list_create(MerryGravesGroup *, 5);
+  GRAVES.GRPS = merry_Group_list_create(5);
   if (!GRAVES.GRPS) {
     MFATAL("Graves", "Failed to initialize MERRY: Graves Initialization", NULL);
     return RET_FAILURE;
@@ -100,20 +102,18 @@ mret_t merry_graves_ready_everything() {
   merry_graves_acquaint_with_cores();
 
   // Create a new group[FIRST GROUP: 0]
-  MerryGravesGroup **grp = merry_list_at(GRAVES.GRPS, 0);
-  *grp = merry_graves_group_create(0);
-  if (!(*grp)) {
+  MerryGravesGroup *grp = merry_graves_add_group();
+  if (!(grp)) {
     MFATAL("Graves", "Failed to create first GROUP", NULL);
     return RET_FAILURE;
   }
-  GRAVES.grp_count++;
 
   // Add the first core
-  MerryGravesCoreRepr *first_core = merry_graves_group_add_core(*grp);
+  MerryGravesCoreRepr *first_core = merry_graves_add_core(grp);
 
   if (!first_core) {
     MFATAL("Graves", "Failed to add first CORE", NULL);
-    merry_graves_group_destroy(*grp);
+    merry_graves_group_destroy(grp);
     return RET_FAILURE;
   }
 
@@ -125,21 +125,20 @@ mret_t merry_graves_ready_everything() {
   if (merry_graves_init_a_core(first_core, first_core_type, 0x00) ==
       RET_FAILURE) {
     MFATAL("Graves", "Failed to initialize the first core...", NULL);
-    merry_graves_group_destroy(*grp);
+    merry_graves_group_destroy(grp);
     return RET_FAILURE;
   }
-
-  merry_graves_give_IDs_to_cores(first_core, *grp);
+  merry_graves_give_IDs_to_cores(first_core, grp);
 
   // Finally Initialize the Request Queue
   if (merry_graves_req_queue_init() == RET_FAILURE) {
     MFATAL("Graves", "Failed to initialize REQUEST QUEUE HANDLER", NULL);
     first_core->base->deletec(first_core->core);
     first_core->core = NULL;
-    merry_graves_group_destroy(*grp);
+    merry_graves_group_destroy(grp);
     return RET_FAILURE;
   }
-  merry_graves_req_register_wakeup(&GRAVES.graves_cond);
+  merry_graves_req_register_wakeup(&GRAVES.graves_cond, &GRAVES.graves_lock);
 
   return RET_SUCCESS;
 }
@@ -155,13 +154,13 @@ void merry_graves_destroy() {
   // The cleanup step is comprised of mutliple steps
   // This is the last step
   if (GRAVES.GRPS)
-    merry_list_destroy(GRAVES.GRPS);
+    merry_Group_list_destroy(GRAVES.GRPS);
   if (GRAVES.C_ENTRIES) {
     for (msize_t i = 0; i < __CORE_TYPE_COUNT; i++) {
-      if (GRAVES.C_ENTRIES[i])
-        free(GRAVES.C_ENTRIES[i]);
+      if (GRAVES.C_ENTRIES->buf[i])
+        free(GRAVES.C_ENTRIES->buf[i]);
     }
-    merry_list_destroy(GRAVES.C_ENTRIES);
+    merry_Entry_list_destroy(GRAVES.C_ENTRIES);
   }
   merry_cond_destroy(&GRAVES.graves_cond);
   merry_mutex_destroy(&GRAVES.graves_lock);
@@ -172,13 +171,18 @@ void merry_graves_cleanup_groups() {
   // Before this function is called, it is necessary that
   // all of the cores have terminated execution
   for (msize_t i = 0; i < GRAVES.grp_count; i++) {
-    MerryGravesGroup **grp = merry_list_at(GRAVES.GRPS, i);
+    MerryGravesGroup **grp = merry_Group_list_at(GRAVES.GRPS, i);
     MerryGravesCoreRepr *repr;
     for (msize_t j = 0;; j++) {
       repr = merry_graves_group_get_core(*grp, j);
       if (!repr->core)
         break;
+      repr->base->kill = mtrue;
+      atomic_store_explicit((_Atomic mbool_t *)&repr->base->interrupt, mtrue,
+                            memory_order_release);
       repr->base->predel(repr->core);
+      repr->base->deletec(repr->core);
+      GRAVES.HOW_TO_DESTROY_BASE[repr->base->type](repr->base);
       repr->core = NULL;
     }
     merry_graves_group_destroy(*grp);
@@ -191,7 +195,13 @@ MerryGravesGroup *merry_graves_add_group() {
     MERROR("Graves", "Failed to add a new group: GUID: %zu", GRAVES.grp_count);
     return RET_NULL;
   }
-  if (merry_list_push(GRAVES.GRPS, (mptr_t)&grp) == RET_FAILURE) {
+  if (merry_Group_list_push(GRAVES.GRPS, &grp) == RET_FAILURE) {
+    MerryGroupList *grps;
+    if ((grps = merry_Group_list_resize(GRAVES.GRPS, 2)) == RET_NULL) {
+      MERROR("Graves", "Failed to resize the GROUP LIST", NULL);
+      return RET_NULL;
+    }
+    GRAVES.GRPS = grps;
     merry_graves_group_destroy(grp);
     MERROR("Graves", "Failed to add a new group: GUID: %zu", GRAVES.grp_count);
     return RET_NULL;
@@ -243,14 +253,9 @@ mret_t merry_graves_init_a_core(MerryGravesCoreRepr *repr, mcore_t type,
     return RET_FAILURE;
   }
 
-  if (repr->base->setinp(repr->core, GRAVES.C_ENTRIES[type]) == RET_FAILURE) {
-    MERROR("Graves", "A core failed to initialize", NULL);
-    repr->base->deletec(repr->core);
-    GRAVES.HOW_TO_DESTROY_BASE[type](repr->base);
-    return RET_FAILURE;
-  }
-
-  if (repr->base->prepcore(repr->core) == RET_FAILURE) {
+  if (repr->base->setinp(repr->core,
+                         *merry_Entry_list_at(GRAVES.C_ENTRIES, type)) ==
+      RET_FAILURE) {
     MERROR("Graves", "A core failed to initialize", NULL);
     repr->base->deletec(repr->core);
     GRAVES.HOW_TO_DESTROY_BASE[type](repr->base);
@@ -260,46 +265,28 @@ mret_t merry_graves_init_a_core(MerryGravesCoreRepr *repr, mcore_t type,
   return RET_SUCCESS;
 }
 
-mret_t merry_graves_init_a_core_no_prep(MerryGravesCoreRepr *repr, mcore_t type,
-                                        maddress_t addr) {
-  merry_check_ptr(repr);
-
-  if (type >= __CORE_TYPE_COUNT) {
-    MERROR("Graves", "Invalid Core Type for a new core: TYPE=%zu",
-           (msize_t)type);
-    return RET_FAILURE;
-  }
-
-  repr->base = GRAVES.HOW_TO_CREATE_BASE[type]();
-
-  if (!repr->base) {
-    MERROR("Graves", "Failed to obtain a CORE BASE for a new core: TYPE=%zu",
-           (msize_t)type);
-    return RET_FAILURE;
-  }
-
-  repr->core = repr->base->createc(repr->base, addr);
-
-  if (!repr->core) {
-    MERROR("Graves", "A core failed to initialize", NULL);
-    GRAVES.HOW_TO_DESTROY_BASE[type](repr->base);
-    return RET_FAILURE;
-  }
-
-  return RET_SUCCESS;
-}
 mret_t merry_graves_boot_a_core(MerryGravesCoreRepr *repr) {
   merry_check_ptr(repr);
   merry_check_ptr(repr->base);
   merry_check_ptr(repr->core);
 
-  mthread_t th;
-  if (merry_create_detached_thread(&th, repr->base->execc, repr->core) ==
-      RET_FAILURE) {
+  if (repr->base->prepcore(repr->core) == RET_FAILURE) {
+    MERROR("Graves", "A core failed to BOOT", NULL);
+    repr->base->deletec(repr->core);
+    GRAVES.HOW_TO_DESTROY_BASE[repr->base->type](repr->base);
     return RET_FAILURE;
   }
 
-  MerryGravesGroup **grp = merry_list_at(GRAVES.GRPS, repr->base->guid);
+  mthread_t th;
+  if (merry_create_detached_thread(&th, repr->base->execc, repr->core) ==
+      RET_FAILURE) {
+    MERROR("Graves", "A core failed to BOOT", NULL);
+    repr->base->deletec(repr->core);
+    GRAVES.HOW_TO_DESTROY_BASE[repr->base->type](repr->base);
+    return RET_FAILURE;
+  }
+
+  MerryGravesGroup **grp = merry_Group_list_at(GRAVES.GRPS, repr->base->guid);
   merry_graves_group_register_new_core(*grp);
   GRAVES.active_core_count++;
 
@@ -319,13 +306,17 @@ void merry_graves_give_IDs_to_cores(MerryGravesCoreRepr *repr,
   repr->base->uid = GRAVES.core_count++;
 }
 
+_MERRY_ALWAYS_INLINE_ void merry_graves_failed_core_booting() {
+  GRAVES.core_count--;
+}
+
 void merry_graves_START(mptr_t __) {
   // Boot the first core
   // Since the first steps have been successfull
   // Let's extract the first core directly with no shame
   GRAVES.DIE = mfalse;
-  MerryGravesCoreRepr *first_core = merry_graves_group_get_core(
-      *(MerryGravesGroup **)merry_list_at(GRAVES.GRPS, 0), 0);
+  MerryGravesCoreRepr *first_core =
+      merry_graves_group_get_core(*merry_Group_list_at(GRAVES.GRPS, 0), 0);
 
   if (merry_graves_boot_a_core(first_core) == RET_FAILURE) {
     MFATAL("Graves", "[<BOOT>] Failed to start the VM [First core boot failed]",
@@ -337,24 +328,31 @@ void merry_graves_START(mptr_t __) {
   while (1) {
     if (GRAVES.DIE)
       goto GRAVES_OVERSEER_END;
+    merry_mutex_lock(&GRAVES.graves_lock);
     if (merry_graves_wants_work(&req) == RET_FAILURE) {
-      if (GRAVES.active_core_count == 0)
+      if (GRAVES.active_core_count == 0) {
+        merry_mutex_unlock(&GRAVES.graves_lock);
         goto GRAVES_OVERSEER_END;
+      }
       merry_cond_wait(&GRAVES.graves_cond, &GRAVES.graves_lock);
+      merry_mutex_unlock(&GRAVES.graves_lock);
     } else {
       // Hanling Requests
-      MerryGravesGroup **grp = merry_list_at(GRAVES.GRPS, req.guid);
+      merry_mutex_unlock(&GRAVES.graves_lock);
+      MerryGravesGroup **grp = merry_Group_list_at(GRAVES.GRPS, req.guid);
       MerryGravesCoreRepr *repr =
           merry_graves_group_find_core(*grp, req.uid, req.id, &is_dead_tmp);
       /*
        * Since a core cannot change any of its IDs and nor can it be
        * dead if it is making a request, the above won't fail
        * */
+      MLOG("GRAVES", "REQUEST: ID=%zu, UID=%zu, GUID=%zu", req.id, req.uid,
+           req.guid);
       switch (req.type) {
         // .. Requests
       case KILL_SELF:
         req_kill_self(repr, *grp);
-        continue;
+        break;
       case CREATE_CORE:
         req_create_core(repr, *grp);
         break;
@@ -384,7 +382,7 @@ GRAVES_OVERSEER_END:
 
 mcore_t merry_graves_obtain_first_valid_c_entry() {
   for (msize_t i = 0; i < (msize_t)__CORE_TYPE_COUNT; i++) {
-    if (GRAVES.C_ENTRIES[i])
+    if (GRAVES.C_ENTRIES->buf[i])
       return (mcore_t)i;
   }
   return __CORE_TYPE_COUNT;

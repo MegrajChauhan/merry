@@ -64,16 +64,6 @@ union MerryRequestArgs {
     maddress_t st_addr;
     mbool_t same_group; // If this is set, gid and new_group are ignored else
     mbool_t new_group;  // If set and !same_group then a new group is created by
-    mbool_t share_resources; // If the requesting core wants to share some
-                             // resources to the new core In this case, sharing
-                             // resources implies if the new core, if same type
-                             // as the requester, should re-parse the input file
-                             // and setup everything or if it can share what the
-                             // requester is using. Sharing other resources will
-                             // prove to be hard specially if both cores are of
-                             // different types. Hence until we come
-                             // up with something to share resources,
-                             // this is it
     // ignoring gid
     mguid_t gid; // if !same_group and !new_group use this to find a group
     // Results

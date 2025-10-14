@@ -12,8 +12,7 @@ _MERRY_DECLARE_QUEUE_(GravesRequest, MerryGravesRequest);
 
 struct MerryGravesRequestQueueHandler {
   MerryLLGravesRequestQueue *req_queue;
-  mcond_t queue_cond;
-  mmutex_t queue_lock;
+  mmutex_t *owner_lock;
   mcond_t *owner_cond;
   MerryGravesRequest req;
   mbool_t accept_requests;
@@ -23,7 +22,8 @@ _MERRY_LOCAL_ MerryGravesRequestQueueHandler g_queue;
 
 mret_t merry_graves_req_queue_init();
 
-void merry_graves_req_register_wakeup(mcond_t *owner_cond);
+void merry_graves_req_register_wakeup(mcond_t *owner_cond,
+                                      mmutex_t *owner_lock);
 
 mret_t merry_SEND_REQUEST(MerryGravesRequest *creq, mcond_t *cond);
 

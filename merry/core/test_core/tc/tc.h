@@ -17,6 +17,7 @@ struct TC {
   MerryCoreBase *base;
   MerryGravesRequest _greq;
   MerryRequestArgs args;
+  mbool_t req_failed;
 };
 
 mptr_t tc_create_core(MerryCoreBase *base, maddress_t st);
@@ -37,11 +38,27 @@ mret_t tc_set_inp(mptr_t c, mstr_t fname);
 
 mret_t tc_prep_core(mptr_t c);
 
-mret_t tc_share_resources(mptr_t c1, mptr_t c2);
-
 void tc_make_request(TC *tc, mgreq_t req);
 
 void tc_TEST_1(TC *tc);
 void tc_TEST_2(TC *tc);
+void tc_TEST_3(TC *tc);
+void tc_TEST_4(TC *tc);
+void tc_TEST_5(TC *tc);
+void tc_TEST_6(TC *tc);
+void tc_TEST_7(TC *tc);
+void tc_TEST_8(TC *tc);
+void tc_TEST_9(TC *tc);
+void tc_TEST_10(TC *tc);
+void tc_TEST_11(TC *tc);
+void tc_TEST_12(TC *tc);
+void tc_TEST_13(TC *tc);
+void tc_TEST_14(TC *tc);
+void tc_TEST_15(TC *tc);
+void tc_TEST_16(TC *tc);
+void tc_TEST_17(TC *tc);
+void tc_TEST_18(TC *tc);
+void tc_TEST_19(TC *tc);
+void tc_TEST_20(TC *tc);
 
 #endif

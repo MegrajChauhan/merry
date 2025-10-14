@@ -8,7 +8,8 @@ REQ(kill_self) {
    * - Destroy the base
    * - Register the death
    * */
-  repr->base->predel(repr->core);
+  repr->base->interrupt = mtrue;
+  repr->base->terminate = mtrue;
   repr->core = NULL; // Declare dead
   merry_graves_group_register_dead_core(grp);
   GRAVES.active_core_count--;
@@ -38,10 +39,11 @@ REQ(create_core) {
       return;
     }
     grp = ngrp;
-  } else if (args->create_core.new_group == args->create_core.same_group ==
-             mfalse) {
+  } else if (args->create_core.new_group == mfalse &&
+             args->create_core.same_group == mfalse) {
     // use an exisiting group
-    MerryGravesGroup **ogrp = merry_list_at(GRAVES.GRPS, args->create_core.gid);
+    MerryGravesGroup **ogrp =
+        merry_Group_list_at(GRAVES.GRPS, args->create_core.gid);
     if (!ogrp) {
       repr->base->req_res = mfalse;
       return;
@@ -58,32 +60,18 @@ REQ(create_core) {
     repr->base->req_res = mfalse;
     return;
   }
-  mret_t _r;
-  if (args->create_core.share_resources)
-    _r = merry_graves_init_a_core_no_prep(
-        new_repr, args->create_core.new_core_type, args->create_core.st_addr);
-  else
-    _r = merry_graves_init_a_core(new_repr, args->create_core.new_core_type,
-                                  args->create_core.st_addr);
+  mret_t _r = merry_graves_init_a_core(
+      new_repr, args->create_core.new_core_type, args->create_core.st_addr);
   if (!_r) {
     repr->base->req_res = mfalse;
     return;
-  }
-  if (args->create_core.share_resources) {
-    if (repr->base->share_resources(repr->core, new_repr->core) ==
-        RET_FAILURE) {
-      new_repr->base->deletec(new_repr->core);
-      GRAVES.HOW_TO_DESTROY_BASE[args->create_core.new_core_type](
-          new_repr->base);
-      repr->base->req_res = mfalse;
-      return;
-    }
   }
   merry_graves_give_IDs_to_cores(new_repr, grp);
   if (merry_graves_boot_a_core(new_repr) == RET_FAILURE) {
     new_repr->base->deletec(new_repr->core);
     GRAVES.HOW_TO_DESTROY_BASE[args->create_core.new_core_type](new_repr->base);
     repr->base->req_res = mfalse;
+    merry_graves_failed_core_booting();
     return;
   }
   repr->base->req_res = mtrue; // success
@@ -113,7 +101,8 @@ REQ(get_group_details) {
    * cores that are active in that group
    * */
   MerryRequestArgs *args = repr->base->getargs(repr->core);
-  MerryGravesGroup **ngrp = merry_list_at(GRAVES.GRPS, repr->base->guid);
+  MerryGravesGroup **ngrp =
+      merry_Group_list_at(GRAVES.GRPS, args->get_group_details.guid);
   if (!ngrp) {
     repr->base->req_res = mfalse;
     return;

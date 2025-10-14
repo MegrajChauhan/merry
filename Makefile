@@ -1,6 +1,6 @@
 # Variable definitions
 CC = gcc
-FLAGS = -Wall -Wextra -MMD -MP
+FLAGS = -Wall -Wextra -MMD -MP -g -fsanitize=address -fno-omit-frame-pointer
 DIRS = merry/common \
        merry/comps \
        merry/core \

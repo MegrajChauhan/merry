@@ -24,14 +24,16 @@
 #include <stdlib.h>
 #include <test_core/tc/tc.h>
 
+_MERRY_DECLARE_STATIC_LIST_(Group, MerryGravesGroup *);
+
 typedef struct MerryGraves MerryGraves;
 
 struct MerryGraves {
-  MerryGravesGroup **GRPS; // all of the groups
+  MerryGroupList *GRPS; // all of the groups
   msize_t overall_core_count;
   msize_t overall_active_core_count;
   msize_t grp_count;
-  mstr_t *C_ENTRIES;
+  MerryEntryList *C_ENTRIES;
   mbool_t DIE;
 
   // needed fields
@@ -83,11 +85,10 @@ MerryGravesGroup *merry_graves_add_group();
 MerryGravesCoreRepr *merry_graves_add_core(MerryGravesGroup *grp);
 mret_t merry_graves_init_a_core(MerryGravesCoreRepr *repr, mcore_t type,
                                 maddress_t addr);
-mret_t merry_graves_init_a_core_no_prep(MerryGravesCoreRepr *repr, mcore_t type,
-                                        maddress_t addr);
 mret_t merry_graves_boot_a_core(MerryGravesCoreRepr *repr);
 void merry_graves_give_IDs_to_cores(MerryGravesCoreRepr *repr,
                                     MerryGravesGroup *grp);
+void merry_graves_failed_core_booting();
 
 /* Request Handlers */
 REQ(kill_self);

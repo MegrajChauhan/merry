@@ -23,4 +23,5 @@ _MERRY_ALWAYS_INLINE_ mret_t tc_read(TCMem *mem, maddress_t addr,
   if (addr >= mem->len)
     return RET_FAILURE;
   *store_in = mem->all_instructions[addr];
+  return RET_SUCCESS;
 }

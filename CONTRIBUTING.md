@@ -1,6 +1,6 @@
-# Contributing to GNOME-Nepal
+# Contributing to Merry Nexus
 
-Thank you for showing an interest in contributing to Evaluate It! All kinds of contributions are valuable to us. In this guide, we will cover how you can quickly onboard and make your first contribution.
+Thank you for showing an interest in contributing to Merry Nexus! All kinds of contributions are valuable to us. In this guide, we will cover how you can quickly onboard and make your first contribution.
 
 ## Table of Contents
 
@@ -35,14 +35,14 @@ You can contribute in several ways:
 2. **Clone the forked repository:**
 
    ```bash
-   git clone https://github.com/MegrajChauhan/Evaluate-it.git
+   git clone https://github.com/MegrajChauhan/merry.git
    cd website
    ```
 
 3. **Set up the upstream remote:**
 
    ```bash
-   git remote add upstream https://github.com/MegrajChauhan/Evaluate-it.git
+   git remote add upstream https://github.com/MegrajChauhan/merry.git
    ```
 
 4. **Create a branch for your changes:**
@@ -91,7 +91,7 @@ You can contribute in several ways:
 
 ## Reporting Issues
 
-If you encounter any issues, please report them using the [Issue Tracker](https://github.com/MegrajChauhan/Evaluate-it.git/issues). When reporting an issue, please include:
+If you encounter any issues, please report them using the [Issue Tracker](https://github.com/MegrajChauhan/merry.git/issues). When reporting an issue, please include:
 
 - A clear and descriptive title
 - A detailed description of the problem
