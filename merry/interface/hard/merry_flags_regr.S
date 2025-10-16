@@ -4,32 +4,29 @@
 // We believe that every machine that Merry runs on uses 2's complement for negative number representation and
 // IEEE representation for floating point numbers
 
-// void merry_update_flags_regr(MerryFlagRegr *reg)
-.global merry_update_flags_regr
+// mqword_t merry_obtain_flags_regr()
+.global merry_obtain_flags_regr
 
-// void merry_compare_two_values(mqword_t val1, mqword_t val2, struct MerryFlagRegr *reg)
+// void merry_compare_two_values(mqword_t val1, mqword_t val2)
 .global merry_compare_two_values
 
 #if defined(_MERRY_HOST_CPU_x86_64_ARCH_)
-merry_update_flags_regr:
+merry_obtain_flags_regr:
    pushfq          // push the flags register unto the stack
-   pop rax        // pop the flags
-   mov [rdi], rax // save the values back such that we have the flags value
-   ret
+   pop rax         // pop the flags
+   ret             // return the flags value in RAX
 
 #if defined(_USE_LINUX_)
 merry_compare_two_values:
    cmp rdi, rsi
    mov rdi, rdx
-   call merry_update_flags_regr 
-   ret
+   ret         // Now use the above to obtain the flags register
 #endif
 
 #if defined(_USE_WIN_)
 merry_compare_two_values:
    cmp rcx, rdx
    mov rdi, r8
-   call merry_update_flags_regr
    ret
 #endif
 

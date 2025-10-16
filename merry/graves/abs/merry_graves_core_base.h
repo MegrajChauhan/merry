@@ -7,7 +7,6 @@
 #include <merry_graves_defs.h>
 #include <merry_interface.h>
 #include <merry_list.h>
-#include <merry_nort.h>
 #include <merry_protectors.h>
 #include <merry_requests.h>
 #include <merry_types.h>
@@ -47,7 +46,6 @@ struct MerryCoreBase {
   mcore_t type;
 
   MerryInterface *interfaces;
-  MerryNort *nort;
   mcond_t cond; // Just the condition variable
 };
 

@@ -14,7 +14,8 @@ struct MerryInterface {
   union {
     struct {
       mfd_t fd;
-      mbool_t blocking; // is the file descriptor blocking?
+      mbool_t file_opened;
+      msqword_t res;
     } file;
     struct {
       union {

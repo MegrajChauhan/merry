@@ -171,21 +171,7 @@ void merry_graves_cleanup_groups() {
   // Before this function is called, it is necessary that
   // all of the cores have terminated execution
   for (msize_t i = 0; i < GRAVES.grp_count; i++) {
-    MerryGravesGroup **grp = merry_Group_list_at(GRAVES.GRPS, i);
-    MerryGravesCoreRepr *repr;
-    for (msize_t j = 0;; j++) {
-      repr = merry_graves_group_get_core(*grp, j);
-      if (!repr->core)
-        break;
-      repr->base->kill = mtrue;
-      atomic_store_explicit((_Atomic mbool_t *)&repr->base->interrupt, mtrue,
-                            memory_order_release);
-      repr->base->predel(repr->core);
-      repr->base->deletec(repr->core);
-      GRAVES.HOW_TO_DESTROY_BASE[repr->base->type](repr->base);
-      repr->core = NULL;
-    }
-    merry_graves_group_destroy(*grp);
+    merry_graves_group_destroy(*merry_Group_list_at(GRAVES.GRPS, i));
   }
 }
 
@@ -314,7 +300,6 @@ void merry_graves_START(mptr_t __) {
   // Boot the first core
   // Since the first steps have been successfull
   // Let's extract the first core directly with no shame
-  GRAVES.DIE = mfalse;
   MerryGravesCoreRepr *first_core =
       merry_graves_group_get_core(*merry_Group_list_at(GRAVES.GRPS, 0), 0);
 
@@ -326,8 +311,6 @@ void merry_graves_START(mptr_t __) {
   MerryGravesRequest req;
   mbool_t is_dead_tmp;
   while (1) {
-    if (GRAVES.DIE)
-      goto GRAVES_OVERSEER_END;
     merry_mutex_lock(&GRAVES.graves_lock);
     if (merry_graves_wants_work(&req) == RET_FAILURE) {
       if (GRAVES.active_core_count == 0) {

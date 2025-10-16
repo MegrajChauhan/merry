@@ -16,12 +16,6 @@ MerryFile *merry_open_file(mstr_t file_path, mstr_t modes, int flags,
   }
 
   // With modes and flags, we can continue
-  if (flags & _MERRY_FOPEN_NONBLOCK_) {
-    // non block
-    file->file.blocking = mfalse;
-  } else {
-    file->file.blocking = mtrue;
-  }
 
 #ifdef _USE_LINUX_
   file->file.fd = open(file_path, mode, flag);
@@ -33,7 +27,7 @@ MerryFile *merry_open_file(mstr_t file_path, mstr_t modes, int flags,
 #else
 // not yet
 #endif
-
+  file->file.file_opened = mtrue;
   return file;
 }
 
@@ -93,6 +87,8 @@ minterfaceRet_t merry_file_size(MerryFile *file, msize_t *res) {
   merry_check_ptr(file);
   if (file->interface_t != INTERFACE_TYPE_FILE)
     return INTERFACE_TYPE_INVALID;
+  if (!file->file.file_opened)
+    return INTERFACE_MISCONFIGURED;
 #ifdef _USE_LINUX_
   msqword_t old_pos = lseek(file->file.fd, 0, SEEK_CUR);
   *res = lseek(file->file.fd, 0, SEEK_END);
@@ -105,11 +101,59 @@ minterfaceRet_t merry_file_seek(MerryFile *file, msize_t off, msize_t whence) {
   merry_check_ptr(file);
   if (file->interface_t != INTERFACE_TYPE_FILE)
     return INTERFACE_TYPE_INVALID;
+  if (!file->file.file_opened)
+    return INTERFACE_MISCONFIGURED;
   if (whence != SEEK_CUR && whence != SEEK_END && whence != SEEK_SET)
     return INTERFACE_INVALID_ARGS;
 #ifdef _USE_LINUX_
   if (lseek(file->file.fd, off, whence) == -1)
     return INTERFACE_FAILURE;
 #endif
+  return INTERFACE_SUCCESS;
+}
+
+minterfaceRet_t merry_file_tell(MerryFile *file, msize_t *off) {
+  merry_check_ptr(file);
+  merry_check_ptr(off);
+  if (file->interface_t != INTERFACE_TYPE_FILE)
+    return INTERFACE_TYPE_INVALID;
+  if (!file->file.file_opened)
+    return INTERFACE_MISCONFIGURED;
+#ifdef _USE_LINUX_
+  if ((msqword_t)(*off = lseek(file->file.fd, 0, SEEK_CUR)) == -1)
+    return INTERFACE_FAILURE;
+#endif
+  return INTERFACE_SUCCESS;
+}
+
+minterfaceRet_t merry_file_read(MerryFile *file, mbptr_t buf,
+                                msize_t num_of_bytes) {
+  merry_check_ptr(file);
+  merry_check_ptr(buf);
+  if (file->interface_t != INTERFACE_TYPE_FILE)
+    return INTERFACE_TYPE_INVALID;
+  if (!file->file.file_opened)
+    return INTERFACE_MISCONFIGURED;
+  if (!num_of_bytes)
+    return INTERFACE_SUCCESS;
+
+  file->file.res = read(file->file.fd, buf, num_of_bytes);
+
+  return INTERFACE_SUCCESS;
+}
+
+minterfaceRet_t merry_file_write(MerryFile *file, mbptr_t buf,
+                                 msize_t num_of_bytes) {
+  merry_check_ptr(file);
+  merry_check_ptr(buf);
+  if (file->interface_t != INTERFACE_TYPE_FILE)
+    return INTERFACE_TYPE_INVALID;
+  if (!file->file.file_opened)
+    return INTERFACE_MISCONFIGURED;
+  if (!num_of_bytes)
+    return INTERFACE_SUCCESS;
+
+  file->file.res = write(file->file.fd, buf, num_of_bytes);
+
   return INTERFACE_SUCCESS;
 }

@@ -12,7 +12,7 @@
 /*
  * structure: 8-bits and different flags
  * bit-0: create new file if not exists
- * bit-1: blocking(0) and non-blocking(1)
+ * bit-1: reserve
  * bit-2: read permission for user
  * bit-3: write permission for user
  * bit-4: execute permission for user
@@ -24,7 +24,7 @@
  * bit-10: execute permission for others
  * */
 #define _MERRY_FOPEN_CREATE_ 0x01
-#define _MERRY_FOPEN_NONBLOCK_ 0x02
+// #define _MERRY_FOPEN_NONBLOCK_ 0x02
 
 // permissions for new files
 #define _MERRY_FOPEN_READ_PERMISSION_USR_ 0x04

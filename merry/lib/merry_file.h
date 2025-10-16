@@ -29,4 +29,12 @@ minterfaceRet_t merry_file_size(MerryFile *file, msize_t *res);
 
 minterfaceRet_t merry_file_seek(MerryFile *file, msize_t off, msize_t whence);
 
+minterfaceRet_t merry_file_tell(MerryFile *file, msize_t *off);
+
+minterfaceRet_t merry_file_read(MerryFile *file, mbptr_t buf,
+                                msize_t num_of_bytes);
+
+minterfaceRet_t merry_file_write(MerryFile *file, mbptr_t buf,
+                                 msize_t num_of_bytes);
+
 #endif
