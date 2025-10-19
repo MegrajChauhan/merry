@@ -25,9 +25,11 @@ mret_t merry_figure_out_file_modes(mstr_t modex, int flags, int *res_mode,
 
 minterfaceRet_t merry_close_file(MerryFile *file);
 
+minterfaceRet_t merry_destroy_file(MerryFile *file);
+
 minterfaceRet_t merry_file_size(MerryFile *file, msize_t *res);
 
-minterfaceRet_t merry_file_seek(MerryFile *file, msize_t off, msize_t whence);
+minterfaceRet_t merry_file_seek(MerryFile *file, msqword_t off, msize_t whence);
 
 minterfaceRet_t merry_file_tell(MerryFile *file, msize_t *off);
 

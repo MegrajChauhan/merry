@@ -67,7 +67,7 @@
  * So during the testing, if we figure out which pointers are freed and how, we
  * can solve the issue and this macro is  useless in the release mode.
  */
-#define merry_check_ptr(ptr) merry_assert(ptr != NULL)
+#define merry_check_ptr(ptr) merry_assert((mptr_t)(ptr) != NULL)
 
 #endif
 

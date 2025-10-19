@@ -14,8 +14,14 @@ struct MerryInterface {
   union {
     struct {
       mfd_t fd;
-      mbool_t file_opened;
       msqword_t res;
+      struct {
+        mbyte_t file_opened : 1;
+        mbyte_t read : 1;
+        mbyte_t write : 1;
+        mbyte_t append : 1;
+        mbyte_t resb : 4;
+      } flags;
     } file;
     struct {
       union {
@@ -28,6 +34,7 @@ struct MerryInterface {
       mbool_t _in_use;
       mbool_t _rclosed;
       mbool_t _wclosed;
+      mbool_t resb;
     } cpipe; // communication pipe
   };
 };
