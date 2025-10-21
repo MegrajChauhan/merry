@@ -11,7 +11,6 @@
 
 typedef struct RBCFile RBCFile;
 
-// RBC will support buffering for writes only at the moment
 struct RBCFile {
   MerryFile *file;
 

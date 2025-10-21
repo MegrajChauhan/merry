@@ -20,7 +20,7 @@ mret_t tc_read_input(mstr_t fname, TCInp *inp) {
     merry_unreachable();
   if (fsize == 0) {
     MFATAL("TC", "File is empty! Nothing to execute! FILE=%s", fname);
-    merry_close_file(inp->file);
+    merry_destroy_file(inp->file);
     return RET_FAILURE;
   }
   inp->mem = (mbptr_t)merry_get_anonymous_memory(
@@ -29,13 +29,13 @@ mret_t tc_read_input(mstr_t fname, TCInp *inp) {
               // structure at all so we don't care
   if (!inp->mem) {
     MFATAL("TC", "Failed to obtain memory for execution: FILE=%s", fname);
-    merry_close_file(inp->file);
+    merry_destroy_file(inp->file);
     return RET_FAILURE;
   }
 
   if (merry_map_file(inp->mem, inp->file) == RET_FAILURE) {
     MFATAL("TC", "Failed to map memory for execution: FILE=%s", fname);
-    merry_close_file(inp->file);
+    merry_destroy_file(inp->file);
     merry_return_memory(inp->mem, fsize);
     return RET_FAILURE;
   }
@@ -47,5 +47,5 @@ void tc_destroy_input(TCInp *inp) {
   msize_t fsize = 0;
   merry_file_size(inp->file, &fsize);
   merry_return_memory(inp->mem, fsize);
-  merry_close_file(inp->file);
+  merry_destroy_file(inp->file);
 }

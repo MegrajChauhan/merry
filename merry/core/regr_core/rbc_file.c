@@ -33,7 +33,7 @@ RBCFile *rbc_file_open(mstr_t fpath, mstr_t mode, int flags) {
     free(file);
     return RET_NULL;
   }
-  file->BP = -1;
+  file->BP = 0;
   file->usable_bytes_in_buffer = 0;
   merry_file_tell(file->file, &file->actual_file_off);
   return file;
@@ -58,10 +58,9 @@ RBCFile *rbc_file_reopen(RBCFile *file, mstr_t fpath, mstr_t mode, int flags) {
     } else {
       MFATAL("RBC<LIB:fs>", "Failed to open file: PATH=%s", fpath);
     }
-    free(file);
     return RET_NULL;
   }
-  file->BP = -1;
+  file->BP = 0;
   file->usable_bytes_in_buffer = 0;
   merry_file_tell(file->file, &file->actual_file_off);
   return file;
@@ -73,14 +72,15 @@ minterfaceRet_t rbc_fseek(RBCFile *file, msqword_t off, msize_t whence) {
   // If there is anything in the buffer, write it back
   if (!file->file->file.flags.file_opened)
     return INTERFACE_INVALID_STATE;
-  if (file->file->file.flags.read && !file->file->file.flags.write) {
-    file->BP = -1;
+  if (file->file->file.flags.read && !file->file->file.flags.write &&
+      !file->file->file.flags.append) {
+    file->BP = 0;
     file->usable_bytes_in_buffer = 0;
     merry_file_seek(file->file, file->actual_file_off, SEEK_SET);
   } else if ((!file->file->file.flags.read && file->file->file.flags.write) ||
              file->file->file.flags.append) {
     minterfaceRet_t res;
-    if (file->BP != -1) {
+    if (file->BP != 0) {
       res = rbc_file_flush(file); // this will update the fields
       if (res != INTERFACE_SUCCESS)
         return res;
@@ -93,18 +93,19 @@ minterfaceRet_t rbc_fseek(RBCFile *file, msqword_t off, msize_t whence) {
     if (file->last_oper == _RBC_LAST_OPER_WRITE_) {
       // The buffer is in write state
       minterfaceRet_t res;
-      if (file->BP != -1) {
+      if (file->BP != 0) {
         res = rbc_file_flush(file); // this will update the fields
         if (res != INTERFACE_SUCCESS)
           return res;
       }
     } else {
       // The buffer is in read state
-      file->BP = -1;
+      file->BP = 0;
       file->usable_bytes_in_buffer = 0;
       merry_file_seek(file->file, file->actual_file_off, SEEK_SET);
     }
-  }
+  } else
+    return INTERFACE_INVALID_STATE;
   // update actual_file_off as well
   minterfaceRet_t ret = merry_file_seek(file->file, off, whence);
   if (ret != INTERFACE_SUCCESS)
@@ -121,7 +122,7 @@ minterfaceRet_t rbc_ftell(RBCFile *file, msize_t *off) {
     return INTERFACE_INVALID_STATE;
   if (!file->file->file.flags.read && file->file->file.flags.write) {
     minterfaceRet_t res;
-    if (file->BP != -1) {
+    if (file->BP != 0) {
       res = rbc_file_flush(file);
       if (res != INTERFACE_SUCCESS)
         return res;
@@ -129,14 +130,13 @@ minterfaceRet_t rbc_ftell(RBCFile *file, msize_t *off) {
   } else if (file->file->file.flags.read && file->file->file.flags.write) {
     if (file->last_oper == _RBC_FMODE_WRITE_) {
       minterfaceRet_t res;
-      if (file->BP != -1) {
+      if (file->BP != 0) {
         res = rbc_file_flush(file);
         if (res != INTERFACE_SUCCESS)
           return res;
       }
     }
   }
-  *off = file->actual_file_off;
   return merry_file_tell(file->file, off);
 }
 
@@ -153,13 +153,13 @@ _MERRY_ALWAYS_INLINE_ minterfaceRet_t rbc_fread(RBCFile *file, mbptr_t buf,
     file->file->file.res = 0;
     return INTERFACE_SUCCESS;
   }
-  if (file->file->file.flags.write || file->file->file.flags.append) {
+  if (file->file->file.flags.write) {
     // Opened for read and write
     if (file->last_oper == _RBC_LAST_OPER_WRITE_) {
       // Last operation was a write so reset it
       // for read mode again
       minterfaceRet_t res;
-      if (file->BP != -1) {
+      if (file->BP != 0) {
         res = rbc_file_flush(file);
         if (res != INTERFACE_SUCCESS)
           return res;
@@ -182,15 +182,15 @@ _MERRY_ALWAYS_INLINE_ minterfaceRet_t rbc_fread(RBCFile *file, mbptr_t buf,
       // We won't populate the buffer here with multiple
       // reads. The reason being: num_of_bytes may as
       // well be n*_RBC_FILE_BUF_LEN_ and it won't be
-      // intelligence to handle that
+      // intelligent to handle that
       file->file->file.res += file->usable_bytes_in_buffer;
       file->actual_file_off += num_of_bytes;
       file->usable_bytes_in_buffer = 0;
-      file->BP = -1;
+      file->BP = 0;
     } else {
       memcpy(buf, file->buf + file->BP, num_of_bytes);
       file->file->file.res = num_of_bytes; // how many bytes was read
-      file->BP = -1;
+      file->BP += num_of_bytes;
       file->usable_bytes_in_buffer -= num_of_bytes;
     }
   } else {
@@ -205,7 +205,7 @@ _MERRY_ALWAYS_INLINE_ minterfaceRet_t rbc_fread(RBCFile *file, mbptr_t buf,
         return ret;
       file->actual_file_off += file->file->file.res;
     } else {
-      // We will buffer the read and the required data to
+      // We will buffer the read and give the required data to
       // the buffer
       ret = merry_file_read(file->file, file->buf, _RBC_FILE_BUF_LEN_);
       if (ret != INTERFACE_SUCCESS)
@@ -217,7 +217,7 @@ _MERRY_ALWAYS_INLINE_ minterfaceRet_t rbc_fread(RBCFile *file, mbptr_t buf,
       file->BP = 0;
       if (file->usable_bytes_in_buffer < num_of_bytes) {
         memcpy(buf, file->buf, file->usable_bytes_in_buffer);
-        file->BP = -1;
+        file->BP = 0;
         file->usable_bytes_in_buffer = 0;
       } else {
         memcpy(buf, file->buf, num_of_bytes);
@@ -274,15 +274,14 @@ minterfaceRet_t rbc_fwrite(RBCFile *file, mbptr_t buf, msize_t num_of_bytes) {
     // maybe now we can fit it?
     if (num_of_bytes <= _RBC_FILE_BUF_LEN_) {
       memcpy(file->buf, buf, num_of_bytes);
-      file->actual_file_off += num_of_bytes;
-      file->BP += num_of_bytes;
+      file->BP = num_of_bytes;
     } else {
       // rbc_file_flush will reset the fields obviously
       ret = merry_file_write(file->file, buf, num_of_bytes);
       if (ret != INTERFACE_SUCCESS)
         return ret;
-      file->actual_file_off += num_of_bytes;
     }
+    file->actual_file_off += num_of_bytes;
   }
   return ret;
 }
@@ -290,8 +289,14 @@ minterfaceRet_t rbc_fwrite(RBCFile *file, mbptr_t buf, msize_t num_of_bytes) {
 _MERRY_ALWAYS_INLINE_ minterfaceRet_t rbc_file_close(RBCFile *file) {
   // Just close the file and not free the resources(for re-use)
   merry_check_ptr(file);
-  minterfaceRet_t ret = merry_close_file(file->file);
-  file->file = NULL;
+  if (!file->file->file.flags.file_opened)
+    return INTERFACE_INVALID_STATE;
+  minterfaceRet_t ret = INTERFACE_SUCCESS;
+  if (file->BP != 0 || file->usable_bytes_in_buffer != 0)
+    ret = rbc_file_flush(file);
+  if (ret != INTERFACE_SUCCESS)
+    return ret;
+  ret = merry_close_file(file->file);
   return ret;
 }
 
@@ -314,13 +319,15 @@ minterfaceRet_t rbc_file_flush(RBCFile *file) {
     return INTERFACE_MISCONFIGURED;
   if (file->file->file.flags.read) {
     // in r/w mode
-    if (file->last_oper == _RBC_LAST_OPER_READ_)
+    if (file->last_oper == _RBC_LAST_OPER_READ_) {
+      file->usable_bytes_in_buffer = 0;
       return INTERFACE_SUCCESS; // we can't do anything here
+    }
   }
   // now it means we are in write or append mode so
   minterfaceRet_t ret = merry_file_write(file->file, file->buf, file->BP);
   if (ret != INTERFACE_SUCCESS)
     return ret;
-  file->BP = -1;
+  file->BP = 0;
   return ret;
 }

@@ -28,27 +28,33 @@ MerryFile *merry_open_file(mstr_t file_path, mstr_t modes, int flags,
 // not yet
 #endif
   file->file.flags.file_opened = 1;
-  file->file.flags.read = mode & __FILE_MODE_READ;
-  file->file.flags.write = mode & __FILE_MODE_WRITE;
-  file->file.flags.append = mode & __FILE_MODE_APPEND;
-  if (mode & __FILE_MODE_READ_WRITE) {
+  file->file.flags.append = 0;
+  file->file.flags.read = 0;
+  file->file.flags.write = 0;
+  if (modes[0] == _MERRY_FOPEN_APPEND_[0])
+    file->file.flags.append = 1;
+  else if (modes[0] == _MERRY_FOPEN_WRITE_[0])
+    file->file.flags.write = 1;
+  else if (strcmp(modes, _MERRY_FOPEN_READ_WRITE_) == 0) {
     file->file.flags.read = 1;
     file->file.flags.write = 1;
-  }
+  } else if (modes[0] == _MERRY_FOPEN_READ_[0])
+    file->file.flags.read = 1;
   return file;
 }
 
 mret_t merry_figure_out_file_modes(mstr_t modex, int flags, int *res_mode,
                                    int *res_flag) {
-  if (modex[0] == _MERRY_FOPEN_APPEND_[0])
+  if (modex[0] == _MERRY_FOPEN_APPEND_[0]) {
     *res_mode = __FILE_MODE_APPEND;
-  else if (modex[0] == _MERRY_FOPEN_WRITE_[0])
+    *res_mode |= __FILE_MODE_WRITE;
+  } else if (modex[0] == _MERRY_FOPEN_WRITE_[0]) {
     *res_mode = __FILE_MODE_WRITE;
-  else if (modex[0] == _MERRY_FOPEN_READ_[0])
-    *res_mode = __FILE_MODE_READ;
-  else if (strcmp(modex, _MERRY_FOPEN_READ_WRITE_) == 0)
+  } else if (strcmp(modex, _MERRY_FOPEN_READ_WRITE_) == 0) {
     *res_mode = __FILE_MODE_READ_WRITE;
-  else
+  } else if (modex[0] == _MERRY_FOPEN_READ_[0]) {
+    *res_mode = __FILE_MODE_READ;
+  } else
     return RET_FAILURE;
 
   if (flags & _MERRY_FOPEN_CREATE_) {
@@ -81,6 +87,8 @@ minterfaceRet_t merry_close_file(MerryFile *file) {
   if (file->interface_t != INTERFACE_TYPE_FILE) {
     return INTERFACE_TYPE_INVALID;
   }
+  if (!file->file.flags.file_opened)
+    return INTERFACE_MISCONFIGURED;
 #ifdef _USE_LINUX_
   close(file->file.fd);
 #else
@@ -96,11 +104,7 @@ minterfaceRet_t merry_destroy_file(MerryFile *file) {
     return INTERFACE_TYPE_INVALID;
   }
   if (file->file.flags.file_opened) {
-#ifdef _USE_LINUX_
-    close(file->file.fd);
-#else
-// not yet
-#endif
+    merry_close_file(file);
   }
   merry_interface_destroy(file);
   return INTERFACE_SUCCESS;
@@ -131,7 +135,7 @@ minterfaceRet_t merry_file_seek(MerryFile *file, msqword_t off,
     return INTERFACE_INVALID_ARGS;
 #ifdef _USE_LINUX_
   if ((file->file.res = lseek(file->file.fd, off, whence)) == -1)
-    return INTERFACE_FAILURE;
+    return INTERFACE_HOST_FAILURE;
 #endif
   return INTERFACE_SUCCESS;
 }
@@ -145,7 +149,7 @@ minterfaceRet_t merry_file_tell(MerryFile *file, msize_t *off) {
     return INTERFACE_MISCONFIGURED;
 #ifdef _USE_LINUX_
   if ((msqword_t)(*off = lseek(file->file.fd, 0, SEEK_CUR)) == -1)
-    return INTERFACE_FAILURE;
+    return INTERFACE_HOST_FAILURE;
 #endif
   return INTERFACE_SUCCESS;
 }
@@ -162,6 +166,8 @@ minterfaceRet_t merry_file_read(MerryFile *file, mbptr_t buf,
     return INTERFACE_SUCCESS;
 
   file->file.res = read(file->file.fd, buf, num_of_bytes);
+  if (file->file.res == -1)
+    return INTERFACE_HOST_FAILURE;
 
   return INTERFACE_SUCCESS;
 }
@@ -172,13 +178,15 @@ minterfaceRet_t merry_file_write(MerryFile *file, mbptr_t buf,
   merry_check_ptr(buf);
   if (file->interface_t != INTERFACE_TYPE_FILE)
     return INTERFACE_TYPE_INVALID;
-  if (!file->file.flags.file_opened || !file->file.flags.write ||
-      !file->file.flags.append)
+  if (!file->file.flags.file_opened ||
+      (!file->file.flags.write && !file->file.flags.append))
     return INTERFACE_MISCONFIGURED;
   if (!num_of_bytes)
     return INTERFACE_SUCCESS;
 
   file->file.res = write(file->file.fd, buf, num_of_bytes);
+  if (file->file.res == -1)
+    return INTERFACE_HOST_FAILURE;
 
   return INTERFACE_SUCCESS;
 }
