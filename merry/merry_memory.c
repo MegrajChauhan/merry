@@ -31,3 +31,17 @@ mret_t merry_map_file(mptr_t map, MerryInterface *file) {
 #endif
   return RET_SUCCESS;
 }
+
+mret_t merry_map_file_explicit(mptr_t map, msize_t off, msize_t len,
+                               MerryInterface *file) {
+  merry_check_ptr(map);
+  merry_check_ptr(file);
+  if (file->interface_t != INTERFACE_TYPE_FILE)
+    return RET_FAILURE;
+#ifdef _USE_LINUX_
+  if (mmap(map, len, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_FIXED,
+           file->file.fd, off) == MAP_FAILED)
+    return RET_FAILURE;
+#endif
+  return RET_SUCCESS;
+}

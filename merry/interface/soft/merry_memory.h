@@ -22,4 +22,7 @@ void merry_return_memory(mptr_t mem, msize_t len);
 
 mret_t merry_map_file(mptr_t map, MerryInterface *file);
 
+mret_t merry_map_file_explicit(mptr_t map, msize_t off, msize_t len,
+                               MerryInterface *file);
+
 #endif

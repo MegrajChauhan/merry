@@ -13,6 +13,7 @@ struct RBCMemPage {
     mdptr_t dwords;
     mqptr_t qwords;
   } repr;
+  mbool_t pg_independant_map;
 };
 
 #endif
