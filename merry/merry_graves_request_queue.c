@@ -1,6 +1,6 @@
 #include "merry_graves_request_queue.h"
 
-_MERRY_DEFINE_QUEUE_(GravesRequest, MerryGravesRequest);
+_MERRY_DEFINE_QUEUE_(GravesRequest, MerryGravesRequest *);
 
 mret_t merry_graves_req_queue_init() {
 
@@ -12,29 +12,33 @@ mret_t merry_graves_req_queue_init() {
   return RET_SUCCESS;
 }
 
-mret_t merry_SEND_REQUEST(MerryGravesRequest *creq, mcond_t *cond) {
+void merry_SEND_REQUEST(MerryGravesRequest *creq) {
   merry_mutex_lock(g_queue.owner_lock);
   if (g_queue.accept_requests == mfalse) {
     merry_mutex_unlock(g_queue.owner_lock);
-    return RET_FAILURE;
+    creq->res = GREQUEST_FAILURE;
+    creq->failed.mfailure = GREQUEST_REQ_QUEUE_DISABLED;
+    return;
   }
 
   /*
    * We have decided to be strict
    * */
-  if (merry_GravesRequest_llqueue_push(g_queue.req_queue, creq) ==
+  if (merry_GravesRequest_llqueue_push(g_queue.req_queue, &creq) ==
       RET_FAILURE) {
+    creq->res = GREQUEST_FAILURE;
+    creq->failed.mfailure = GREQUEST_REQ_QUEUE_FAILED;
     merry_cond_signal(g_queue.owner_cond);
     merry_mutex_unlock(g_queue.owner_lock);
-    return RET_FAILURE;
+    return;
   }
   merry_cond_signal(g_queue.owner_cond);
-  merry_cond_wait(cond, g_queue.owner_lock);
+  merry_cond_wait(creq->used_cond, g_queue.owner_lock);
   merry_mutex_unlock(g_queue.owner_lock);
-  return RET_SUCCESS;
+  return;
 }
 
-mret_t merry_graves_wants_work(MerryGravesRequest *req) {
+mret_t merry_graves_wants_work(MerryGravesRequest **req) {
   mret_t res = merry_GravesRequest_llqueue_pop(g_queue.req_queue, req);
   return res;
 }

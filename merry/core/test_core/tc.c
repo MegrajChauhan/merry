@@ -8,7 +8,7 @@ mptr_t tc_create_core(MerryCoreBase *base, maddress_t st) {
   }
   tc->PC = st;
   tc->base = base;
-  tc->req_failed = mfalse;
+  tc->terminate = mfalse;
   return tc;
 }
 
@@ -27,20 +27,15 @@ _THRET_T_ tc_run(mptr_t c) {
   while (1) {
     if (atomic_load_explicit((_Atomic mbool_t *)&base->interrupt,
                              memory_order_relaxed)) {
-      if (base->terminate) {
+      if (tc->terminate) {
         base->running = mfalse;
         tc_destroy_base(tc->base);
         tc_delete_core(c);
         break;
       }
-      if (base->kill) {
-        base->running = mfalse;
-        break; // the KILL request comes from Graves, so it knows that it is
-               // killing this core
-      }
-      // other interrupts.....
       base->interrupt = mfalse;
     }
+    // other interrupts.....
     if (tc_read(tc->mem, tc->PC, &curr) == RET_FAILURE) {
       // Done
       MLOG("TC", "End of accessible memory reached", NULL);
@@ -102,7 +97,6 @@ MerryCoreBase *tc_create_base() {
   base->createc = tc_create_core;
   base->deletec = tc_delete_core;
   base->execc = tc_run;
-  base->getargs = tc_get_args;
   base->predel = tc_pre_delete_core;
   base->setinp = tc_set_inp;
   base->prepcore = tc_prep_core;
@@ -125,7 +119,7 @@ void tc_pre_delete_core(mptr_t c) {
   // a state suited for deletion.
   TC *tc = (TC *)c;
   tc->base->interrupt = mtrue;
-  tc->base->terminate = mtrue;
+  tc->terminate = mtrue;
   merry_cond_signal(&tc->base->cond); // if it is waiting
 }
 
@@ -136,13 +130,12 @@ mret_t tc_set_inp(mptr_t c, mstr_t fname) {
 
 mret_t tc_prep_core(mptr_t c) {
   TC *tc = (TC *)c;
-  tc->base->req_res = mtrue;
   tc->base->running = mfalse;
   tc->base->interrupt = mfalse;
-  tc->base->terminate = mfalse;
-  tc->_greq.guid = tc->base->guid;
-  tc->_greq.id = tc->base->id;
-  tc->_greq.uid = tc->base->uid;
+  tc->terminate = mfalse;
+  tc->_greq.base = tc->base;
+  tc->_greq.used_cond = &tc->base->cond;
+  tc->_greq.args = &tc->args;
   msize_t fsize = 0;
   merry_file_size(tc->inp.file, &fsize);
   tc->mem = tc_mem_init(tc->inp.mem, fsize);
@@ -151,6 +144,5 @@ mret_t tc_prep_core(mptr_t c) {
 
 void tc_make_request(TC *tc, mgreq_t req) {
   tc->_greq.type = req;
-  if (merry_SEND_REQUEST(&tc->_greq, &tc->base->cond) == RET_FAILURE)
-    tc->req_failed = mtrue;
+  merry_SEND_REQUEST(&tc->_greq);
 }

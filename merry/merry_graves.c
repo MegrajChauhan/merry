@@ -308,7 +308,7 @@ void merry_graves_START(mptr_t __) {
            NULL);
     goto GRAVES_OVERSEER_END;
   }
-  MerryGravesRequest req;
+  MerryGravesRequest *req;
   mbool_t is_dead_tmp;
   while (1) {
     merry_mutex_lock(&GRAVES.graves_lock);
@@ -322,39 +322,40 @@ void merry_graves_START(mptr_t __) {
     } else {
       // Hanling Requests
       merry_mutex_unlock(&GRAVES.graves_lock);
-      MerryGravesGroup **grp = merry_Group_list_at(GRAVES.GRPS, req.guid);
-      MerryGravesCoreRepr *repr =
-          merry_graves_group_find_core(*grp, req.uid, req.id, &is_dead_tmp);
+      MerryGravesGroup **grp =
+          merry_Group_list_at(GRAVES.GRPS, req->base->guid);
+      MerryGravesCoreRepr *repr = merry_graves_group_find_core(
+          *grp, req->base->uid, req->base->id, &is_dead_tmp);
       /*
        * Since a core cannot change any of its IDs and nor can it be
        * dead if it is making a request, the above won't fail
        * */
-      MLOG("GRAVES", "REQUEST: ID=%zu, UID=%zu, GUID=%zu", req.id, req.uid,
-           req.guid);
-      switch (req.type) {
+      MLOG("GRAVES", "REQUEST: ID=%zu, UID=%zu, GUID=%zu", req->base->id,
+           req->base->uid, req->base->guid);
+      switch (req->type) {
         // .. Requests
       case KILL_SELF:
-        req_kill_self(repr, *grp);
+        req_kill_self(repr, *grp, req);
         break;
       case CREATE_CORE:
-        req_create_core(repr, *grp);
+        req_create_core(repr, *grp, req);
         break;
       case CREATE_GROUP:
-        req_create_group(repr, *grp);
+        req_create_group(repr, *grp, req);
         break;
       case GET_GROUP_DETAILS:
-        req_get_group_details(repr, *grp);
+        req_get_group_details(repr, *grp, req);
         break;
       case GET_SYSTEM_DETAILS:
-        req_get_system_details(repr, *grp);
+        req_get_system_details(repr, *grp, req);
         break;
       default:
         // Unknown requests will result in a panic by default
         MLOG("Graves", "Unknown REQUEST made: ID=%zu, UID=%zu, GUID=%zu",
-             req.id, req.uid, req.guid);
+             req->base->id, req->base->uid, req->base->guid);
       }
       // After handling the request
-      merry_cond_signal(&repr->base->cond);
+      merry_cond_signal(req->used_cond);
     }
   }
 

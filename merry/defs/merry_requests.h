@@ -27,9 +27,24 @@
  * */
 
 #include <merry_core_types.h>
+#include <merry_protectors.h>
 #include <merry_types.h>
 
 typedef enum mgreq_t mgreq_t;
+typedef enum mgreqres_t mgreqres_t;
+typedef enum mgreqfailure_t mgreqfailure_t;
+
+enum mgreqres_t {
+  GREQUEST_SUCCESS,
+  GREQUEST_FAILURE,
+  GREQUEST_MERRY_FAILURE,
+};
+
+enum mgreqfailure_t {
+  GREQUEST_INVALID_ARGS,
+  GREQUEST_REQ_QUEUE_DISABLED,
+  GREQUEST_REQ_QUEUE_FAILED,
+};
 
 enum mgreq_t {
   KILL_SELF,          // A core killing itself
@@ -47,11 +62,18 @@ enum mgreq_t {
 typedef struct MerryGravesRequest MerryGravesRequest;
 typedef union MerryRequestArgs MerryRequestArgs;
 
+struct MerryCoreBase;
+
 struct MerryGravesRequest {
   mgreq_t type;
-  mid_t id;
-  muid_t uid;
-  mguid_t guid;
+  struct MerryCoreBase *base;
+  mcond_t *used_cond;
+  MerryRequestArgs *args;
+  mgreqres_t res;
+  union {
+    mgreqfailure_t mfailure;
+    int errno_if_err;
+  } failed;
 };
 
 /*

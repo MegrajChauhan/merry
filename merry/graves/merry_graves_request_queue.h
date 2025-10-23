@@ -8,7 +8,7 @@
 #include <merry_requests.h>
 
 typedef struct MerryGravesRequestQueueHandler MerryGravesRequestQueueHandler;
-_MERRY_DECLARE_QUEUE_(GravesRequest, MerryGravesRequest);
+_MERRY_DECLARE_QUEUE_(GravesRequest, MerryGravesRequest *);
 
 struct MerryGravesRequestQueueHandler {
   MerryLLGravesRequestQueue *req_queue;
@@ -25,9 +25,9 @@ mret_t merry_graves_req_queue_init();
 void merry_graves_req_register_wakeup(mcond_t *owner_cond,
                                       mmutex_t *owner_lock);
 
-mret_t merry_SEND_REQUEST(MerryGravesRequest *creq, mcond_t *cond);
+void merry_SEND_REQUEST(MerryGravesRequest *creq);
 
-mret_t merry_graves_wants_work(MerryGravesRequest *req);
+mret_t merry_graves_wants_work(MerryGravesRequest **req);
 
 void merry_graves_req_no_more_requests();
 

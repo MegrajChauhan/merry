@@ -24,28 +24,18 @@ struct MerryCoreBase {
   mcorecreate_t createc;
   mcoredeletecore_t deletec;
   mcoreexec_t execc;
-  mgetreqargs_t getargs;
   mcorepredel_t predel;
   mcoresetinp_t setinp;
   mcoreprepcore_t prepcore;
 
-  msize_t req_res;   // The result of a previous request
   mbool_t running;   // Set to mfalse iff the core has terminated
   mbool_t interrupt; // the core was just interrupted
-  /*
-   * Difference between terminate and kill:
-   * terminate: if the core wants to terminate itself
-   * kill: if the core is being told to terminate by Graves
-   * */
-  mbool_t terminate;
-  mbool_t kill;
 
   mid_t id;
   muid_t uid;
   mguid_t guid;
   mcore_t type;
 
-  MerryInterface *interfaces;
   mcond_t cond; // Just the condition variable
 };
 

@@ -5,7 +5,8 @@
 #include <merry_types.h>
 
 #define REQ(name)                                                              \
-  void req_##name(MerryGravesCoreRepr *repr, MerryGravesGroup *grp)
+  void req_##name(MerryGravesCoreRepr *repr, MerryGravesGroup *grp,            \
+                  MerryGravesRequest *req)
 
 struct MerryCoreBase;
 union MerryRequestArgs;
@@ -20,7 +21,6 @@ _MERRY_DEFINE_FUNC_PTR_(void, mcoredeletecore_t, mptr_t);
 _MERRY_DEFINE_FUNC_PTR_(_THRET_T_, mcoreexec_t, mptr_t);
 _MERRY_DEFINE_FUNC_PTR_(struct MerryCoreBase *, mcorecreatebase_t);
 _MERRY_DEFINE_FUNC_PTR_(void, mcoredeletebase_t, struct MerryCoreBase *);
-_MERRY_DEFINE_FUNC_PTR_(union MerryRequestArgs *, mgetreqargs_t, mptr_t);
 _MERRY_DEFINE_FUNC_PTR_(void, mcorepredel_t, mptr_t);
 _MERRY_DEFINE_FUNC_PTR_(mret_t, mcoresetinp_t, mptr_t, mstr_t);
 _MERRY_DEFINE_FUNC_PTR_(mret_t, mcoreprepcore_t, mptr_t);

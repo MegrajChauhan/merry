@@ -17,7 +17,7 @@ struct TC {
   MerryCoreBase *base;
   MerryGravesRequest _greq;
   MerryRequestArgs args;
-  mbool_t req_failed;
+  mbool_t terminate;
 };
 
 mptr_t tc_create_core(MerryCoreBase *base, maddress_t st);
@@ -29,8 +29,6 @@ _THRET_T_ tc_run(mptr_t c);
 MerryCoreBase *tc_create_base();
 
 void tc_destroy_base(MerryCoreBase *base);
-
-MerryRequestArgs *tc_get_args(mptr_t c);
 
 void tc_pre_delete_core(mptr_t c);
 
