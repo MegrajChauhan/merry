@@ -20,6 +20,7 @@
 #include <merry_threads.h>
 #include <merry_types.h>
 #include <merry_utils.h>
+#include <regr_core/internal/rbc.h>
 #include <stdlib.h>
 #include <test_core/tc/tc.h>
 

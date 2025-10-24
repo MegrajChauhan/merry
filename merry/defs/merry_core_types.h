@@ -6,6 +6,7 @@ typedef enum mcore_t mcore_t;
 enum mcore_t {
   __TEST_CORE,
   // We can have many more types here
+  __REGR_CORE,
   __CORE_TYPE_COUNT,
 };
 

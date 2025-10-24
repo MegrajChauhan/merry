@@ -83,8 +83,6 @@ _THRET_T_ tc_run(mptr_t c) {
 
 MerryCoreBase *tc_create_base() {
   MerryCoreBase *base = (MerryCoreBase *)malloc(sizeof(MerryCoreBase));
-  // nort is not necessary for us right now so ignore
-  // interfaces array also useless
   if (!base) {
     MFATAL("TC", "Failed to initialize core base", NULL);
     return RET_NULL;
@@ -108,10 +106,6 @@ void tc_destroy_base(MerryCoreBase *base) {
   merry_check_ptr(base);
   merry_cond_destroy(&base->cond);
   free(base);
-}
-
-_MERRY_ALWAYS_INLINE_ MerryRequestArgs *tc_get_args(mptr_t c) {
-  return &((TC *)c)->args;
 }
 
 void tc_pre_delete_core(mptr_t c) {

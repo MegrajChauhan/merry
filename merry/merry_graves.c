@@ -147,6 +147,8 @@ void merry_graves_acquaint_with_cores() {
   // empty for now
   GRAVES.HOW_TO_CREATE_BASE[__TEST_CORE] = tc_create_base;
   GRAVES.HOW_TO_DESTROY_BASE[__TEST_CORE] = tc_destroy_base;
+  GRAVES.HOW_TO_CREATE_BASE[__REGR_CORE] = rbc_master_core_create_base;
+  GRAVES.HOW_TO_DESTROY_BASE[__REGR_CORE] = rbc_master_core_destroy_base;
 }
 
 void merry_graves_destroy() {
