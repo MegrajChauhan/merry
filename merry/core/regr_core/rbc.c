@@ -1,4 +1,5 @@
 #include <internal/rbc.h>
+#include <internal/rbc_instruction_handler.h>
 
 mptr_t rbc_master_core_create(MerryCoreBase *base, maddress_t st_addr) {
   merry_check_ptr(base);
@@ -65,13 +66,14 @@ _THRET_T_ rbc_master_core_run(mptr_t c) {
   merry_check_ptr(c);
 
   RBCMasterCore *core = (RBCMasterCore *)c;
-  register msize_t check_after = 3; // we check flags after every 3 instructions
   register MerryCoreBase *base = core->base;
-  register RBCCoreBase cbase = core->rbc_cbase;
+  RBCCoreBase cbase = core->rbc_cbase;
   MerryHostMemLayout layout;
 
   while (mtrue) {
-    if (!surelyF(check_after)) {
+    if (!surelyF(cbase.check_after)) {
+      if (core->kill_core)
+        break;
       if (surelyF(atomic_load_explicit((_Atomic mbool_t *)&base->interrupt,
                                        memory_order_relaxed))) {
         if (cbase.terminate)
@@ -79,7 +81,7 @@ _THRET_T_ rbc_master_core_run(mptr_t c) {
         // interrupts....(coming soon...)
         base->interrupt = mfalse;
       }
-      check_after = 3;
+      cbase.check_after = 3;
     }
     if (surelyF(
             rbc_memory_read_qword(cbase.iram, cbase.PC, &layout.whole_word) ==
@@ -89,15 +91,28 @@ _THRET_T_ rbc_master_core_run(mptr_t c) {
           "Memory access invalid: Accessing address that doesn't exist PC=%zu",
           cbase.PC);
       cbase.terminate = mtrue;
-      check_after = 0;
+      cbase.check_after = 0;
       base->interrupt = mtrue;
     } else {
       switch (layout.bytes.b0) {
       case RBC_OP_NOP:
         break;
+      case RBC_OP_HALT:
+        cbase.terminate = mtrue;
+        base->interrupt = mtrue;
+        cbase.check_after = 0;
+        break;
+      case RBC_OP_SYSINT:
+        rbc_isysint(&cbase, &core->kill_core);
+        break;
+      case RBC_OP_MINT:
+        rbc_imint(&cbase, &core->kill_core);
+        break;
       default:
         break;
       }
+      cbase.PC++;
+      cbase.check_after--;
     }
   }
   core->terminate = mtrue;
@@ -222,6 +237,9 @@ mret_t rbc_master_core_prepare_core(mptr_t c) {
   core->terminate = mfalse;
   core->pause = mfalse;
   core->rbc_cbase.terminate = mfalse;
+  core->kill_core = mfalse;
+
+  core->rbc_cbase.check_after = 3;
 
   return RET_SUCCESS;
 }

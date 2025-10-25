@@ -8,6 +8,7 @@
  * thread will have its own private states and everything.
  * */
 
+#include <merry_flags_regr.h>
 #include <merry_graves_core_base.h>
 #include <merry_list.h>
 #include <merry_logger.h>
@@ -19,6 +20,8 @@
 #include <regr_core/comp/inp/rbc_inp_reader.h>
 #include <regr_core/comp/mem/rbc_ram.h>
 #include <regr_core/def/consts/rbc_opcodes.h>
+#include <regr_core/def/consts/rbc_registers.h>
+#include <regr_core/def/consts/rbc_sysint.h>
 #include <regr_core/def/declr/rbc_internals.h>
 #include <stdlib.h>
 
@@ -36,6 +39,7 @@ typedef struct RBCMasterCore RBCMasterCore;
 struct RBCCoreBase {
   MerryRBCThreadList *child_threads;
   MerryInterfaceList *interfaces;
+  mqword_t REGISTER_FILE[RBC_REG_COUNT];
   MerryGravesRequest req;
   MerryRequestArgs args;
   mstr_t inp_path;
@@ -44,6 +48,7 @@ struct RBCCoreBase {
   RBCFlagsRegr flags;
   RBCFFlagsRegr fflags;
   mbool_t terminate;
+  msize_t check_after;
 };
 
 struct RBCMasterCore {
@@ -57,6 +62,8 @@ struct RBCMasterCore {
   _Atomic mbool_t interrupt;
   _Atomic mbool_t pause;
   _Atomic mbool_t terminate;
+
+  _Atomic mbool_t kill_core; // comes from within
 };
 
 struct RBCCore {
@@ -67,6 +74,8 @@ struct RBCCore {
   _Atomic mbool_t *interrupt;
   _Atomic mbool_t *pause;
   _Atomic mbool_t *terminate;
+
+  _Atomic mbool_t *kill_core;
 };
 
 // We will need the API functions that use the master core
