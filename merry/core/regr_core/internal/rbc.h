@@ -14,6 +14,7 @@
 #include <merry_logger.h>
 #include <merry_protectors.h>
 #include <merry_requests.h>
+#include <merry_stack.h>
 #include <merry_threads.h>
 #include <merry_types.h>
 #include <merry_utils.h>
@@ -30,7 +31,8 @@
  * */
 _MERRY_DECLARE_STATIC_LIST_(RBCThread, mthread_t);
 _MERRY_DECLARE_STATIC_LIST_(Interface, MerryInterface *);
-/* We are going to need so many more different lists! Oh Lord! */
+_MERRY_DECLARE_STACK_(RBCProcFrame, RBCStackFrame);
+/* We are going to need so many more different lists and stacks! Oh Lord! */
 
 typedef struct RBCCoreBase RBCCoreBase;
 typedef struct RBCCore RBCCore;
@@ -45,6 +47,9 @@ struct RBCCoreBase {
   mstr_t inp_path;
   RBCMemory *iram, *dram;
   maddress_t PC;
+  maddress_t SP, BP;
+  mqptr_t stack;
+  MerryRBCProcFrameStack *stack_frames;
   RBCFlagsRegr flags;
   RBCFFlagsRegr fflags;
   mbool_t terminate;

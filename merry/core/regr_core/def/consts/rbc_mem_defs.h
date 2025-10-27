@@ -2,6 +2,8 @@
 #define _RBC_MEM_DEFS_
 
 #define _RBC_PAGE_LEN_IN_BYTES_ 32768 // 32KB
+#define _RBC_STACK_LEN_ 1048576       // 1MB
+#define _RBC_CALL_DEPTH_ 50
 
 typedef enum rbcmemOperRes_t rbcmemOperRes_t;
 
