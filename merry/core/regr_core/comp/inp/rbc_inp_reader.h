@@ -5,6 +5,7 @@
 #include <merry_helpers.h>
 #include <merry_logger.h>
 #include <merry_memory.h>
+#include <merry_mmem.h>
 #include <merry_types.h>
 #include <merry_utils.h>
 #include <regr_core/def/consts/rbc_mem_defs.h>
@@ -46,6 +47,7 @@ typedef struct RBCInput RBCInput;
 
 struct RBCInput {
   MerryFile *input_file;
+  MerryMMem *mapped;
   mbptr_t instructions;
   msize_t instruction_len;
   mbptr_t data;

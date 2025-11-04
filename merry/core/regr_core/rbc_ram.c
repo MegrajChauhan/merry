@@ -1,5 +1,7 @@
 #include <regr_core/comp/mem/rbc_ram.h>
 
+_MERRY_DEFINE_STATIC_LIST_(RBCMemPage, RBCMemPage);
+
 RBCMemory *rbc_memory_init() {
   RBCMemory *mem = (RBCMemory *)malloc(sizeof(RBCMemory));
   if (!mem) {
@@ -17,7 +19,11 @@ mret_t rbc_memory_populate(RBCMemory *mem, msize_t space_len,
   merry_check_ptr(addr_space);
 
   msize_t pg_count =
-      space_len / _RBC_PAGE_LEN_IN_BYTES_; // space_len will always be aligned
+      space_len /
+      _RBC_PAGE_LEN_IN_BYTES_; // space_len should be aligned most of the time
+                               // until instruction len is extremely small
+  if (space_len && (space_len < _RBC_PAGE_LEN_IN_BYTES_))
+    pg_count = 1;
 
   mem->pg_list = merry_RBCMemPage_list_create(pg_count);
   if (!mem->pg_list) {
@@ -281,6 +287,18 @@ rbcmemOperRes_t rbc_memory_write_bulk(RBCMemory *mem, maddress_t addr,
     pg++;
   }
 
+  return RBC_MEM_OPER_SUCCESS;
+}
+
+rbcmemOperRes_t rbc_memory_cmpxchg(RBCMemory *mem, maddress_t addr, mbyte_t exp,
+                                   mbyte_t des) {
+  merry_check_ptr(mem);
+  if (surelyF(addr >= mem->max_address))
+    return RBC_MEM_OPER_ACCESS_INVALID;
+  atomic_compare_exchange_strong(
+      (_Atomic mbyte_t *)&mem->pg_list->buf[addr / _RBC_PAGE_LEN_IN_BYTES_]
+          .repr.bytes[addr % _RBC_PAGE_LEN_IN_BYTES_],
+      &exp, des);
   return RBC_MEM_OPER_SUCCESS;
 }
 

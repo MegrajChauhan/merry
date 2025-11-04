@@ -71,7 +71,7 @@ minterfaceRet_t rbc_fseek(RBCFile *file, msqword_t off, msize_t whence) {
   merry_check_ptr(file->file);
   // If there is anything in the buffer, write it back
   if (!file->file->file.flags.file_opened)
-    return INTERFACE_INVALID_STATE;
+    return INTERFACE_MISCONFIGURED;
   if (file->file->file.flags.read && !file->file->file.flags.write &&
       !file->file->file.flags.append) {
     file->BP = 0;
@@ -105,7 +105,7 @@ minterfaceRet_t rbc_fseek(RBCFile *file, msqword_t off, msize_t whence) {
       merry_file_seek(file->file, file->actual_file_off, SEEK_SET);
     }
   } else
-    return INTERFACE_INVALID_STATE;
+    return INTERFACE_MISCONFIGURED;
   // update actual_file_off as well
   minterfaceRet_t ret = merry_file_seek(file->file, off, whence);
   if (ret != INTERFACE_SUCCESS)
@@ -119,7 +119,7 @@ minterfaceRet_t rbc_ftell(RBCFile *file, msize_t *off) {
   merry_check_ptr(file->file);
   // If there is anything in the buffer, write it back
   if (!file->file->file.flags.file_opened)
-    return INTERFACE_INVALID_STATE;
+    return INTERFACE_MISCONFIGURED;
   if (!file->file->file.flags.read && file->file->file.flags.write) {
     minterfaceRet_t res;
     if (file->BP != 0) {
@@ -146,7 +146,7 @@ _MERRY_ALWAYS_INLINE_ minterfaceRet_t rbc_fread(RBCFile *file, mbptr_t buf,
   merry_check_ptr(file->file);
   merry_check_ptr(buf);
   if (!file->file->file.flags.file_opened)
-    return INTERFACE_INVALID_STATE;
+    return INTERFACE_MISCONFIGURED;
   if (!file->file->file.flags.read)
     return INTERFACE_MISCONFIGURED;
   if (num_of_bytes == 0) {
@@ -236,7 +236,7 @@ minterfaceRet_t rbc_fwrite(RBCFile *file, mbptr_t buf, msize_t num_of_bytes) {
   merry_check_ptr(file->file);
   merry_check_ptr(buf);
   if (!file->file->file.flags.file_opened)
-    return INTERFACE_INVALID_STATE;
+    return INTERFACE_MISCONFIGURED;
   if (!file->file->file.flags.write && !file->file->file.flags.append)
     return INTERFACE_MISCONFIGURED;
   if (num_of_bytes == 0) {
@@ -290,7 +290,7 @@ _MERRY_ALWAYS_INLINE_ minterfaceRet_t rbc_file_close(RBCFile *file) {
   // Just close the file and not free the resources(for re-use)
   merry_check_ptr(file);
   if (!file->file->file.flags.file_opened)
-    return INTERFACE_INVALID_STATE;
+    return INTERFACE_MISCONFIGURED;
   minterfaceRet_t ret = INTERFACE_SUCCESS;
   if (file->BP != 0 || file->usable_bytes_in_buffer != 0)
     ret = rbc_file_flush(file);
@@ -314,7 +314,7 @@ minterfaceRet_t rbc_file_flush(RBCFile *file) {
   merry_check_ptr(file);
   merry_check_ptr(file->file);
   if (!file->file->file.flags.file_opened)
-    return INTERFACE_INVALID_STATE;
+    return INTERFACE_MISCONFIGURED;
   if (!file->file->file.flags.write && !file->file->file.flags.append)
     return INTERFACE_MISCONFIGURED;
   if (file->file->file.flags.read) {

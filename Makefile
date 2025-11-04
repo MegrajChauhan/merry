@@ -14,7 +14,7 @@ DIRS = merry/common \
        merry/lib/defs \
        merry/lib \
        merry/utils
-SRC_DIR = merry/ merry/core/test_core/
+SRC_DIR = merry/ merry/core/test_core/ merry/core/regr_core/
 ASM_DIR = merry/interface/hard/
 INC_DIRS = ${addprefix -I, ${DIRS}}
 FLAGS += ${flags}

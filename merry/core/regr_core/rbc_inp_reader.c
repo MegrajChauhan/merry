@@ -122,7 +122,7 @@ mret_t rbc_input_read(RBCInput *inp, mstr_t path) {
   merry_check_ptr(path);
 
   mbool_t res = mfalse;
-  inp->input_file = merry_open_file(path, _MERRY_FOPEN_READ_, 0, &res);
+  inp->input_file = merry_open_file(path, _MERRY_FOPEN_READ_WRITE_, 0, &res);
   if (!inp->input_file) {
     if (!res) {
       MFATAL("RBC", "Failed to read input file: FILE=%s because %s", path,
@@ -147,55 +147,35 @@ mret_t rbc_input_read(RBCInput *inp, mstr_t path) {
     return RET_FAILURE;
   }
 
-  msize_t original_ilen = inp->instruction_len;
-
-  inp->instruction_len =
-      rbc_align(inp->instruction_len, _RBC_PAGE_LEN_IN_BYTES_);
   inp->data_len = rbc_align(inp->data_len, _RBC_PAGE_LEN_IN_BYTES_);
 
-  msize_t curr_pos = 0;
-
-  if (merry_file_tell(inp->input_file, &curr_pos) != INTERFACE_SUCCESS) {
-    // Most likely INTERFACE_HOST_FAILURE
-    MFATAL("RBC",
-           "Couldn't deduce file position for some reason: PATH=%s, ERRNO=%s",
-           path, strerror(errno));
-    merry_destroy_file(inp->input_file);
-    return RET_FAILURE;
-  }
-
   // Now finally allocate the memory
-  inp->instructions = (mbptr_t)merry_get_anonymous_memory(inp->instruction_len);
-  if (!inp->instructions) {
-    MFATAL("RBC", "Failed to obtain memory for instructions: PATH=%s", path);
+  msize_t total_len = inp->data_len + inp->instruction_len + 32;
+  mptr_t mem = merry_get_anonymous_memory(total_len);
+  if (!mem) {
+    MFATAL("RBC", "Failed to obtain memory for program: PATH=%s", path);
     merry_destroy_file(inp->input_file);
     return RET_FAILURE;
   }
 
-  if (merry_map_file_explicit(inp->instructions, curr_pos, inp->instruction_len,
-                              inp->input_file) == RET_FAILURE) {
-    MFATAL("TC", "Failed to map memory for execution: PATH=%s", path);
+  if (!(inp->mapped = merry_map_memory(mem, total_len))) {
+    MFATAL("RBC", "Failed to obtain memory for program: PATH=%s", path);
     merry_destroy_file(inp->input_file);
-    merry_return_memory(inp->instructions, inp->instruction_len);
+    merry_return_memory(mem, total_len);
     return RET_FAILURE;
   }
 
-  inp->data = (mbptr_t)merry_get_anonymous_memory(inp->data_len);
-  if (!inp->data) {
-    MFATAL("RBC", "Failed to obtain memory for data: PATH=%s", path);
-    merry_return_memory(inp->instructions, inp->instruction_len);
+  // We need a much better way of doing this
+  if (merry_map_file(inp->mapped->memory_map.map, inp->input_file) ==
+      RET_FAILURE) {
+    MFATAL("RBC", "Failed to populate memory for execution: PATH=%s", path);
     merry_destroy_file(inp->input_file);
+    merry_return_memory(inp->instructions, inp->instruction_len);
     return RET_FAILURE;
   }
+  inp->instructions = inp->mapped->memory_map.map + 32;
+  inp->data = inp->mapped->memory_map.map + 32 + inp->instruction_len;
 
-  if (merry_map_file_explicit(inp->instructions, curr_pos + original_ilen,
-                              inp->data_len, inp->input_file) == RET_FAILURE) {
-    MFATAL("RBC", "Failed to map memory for execution: PATH=%s", path);
-    merry_destroy_file(inp->input_file);
-    merry_return_memory(inp->instructions, inp->instruction_len);
-    merry_return_memory(inp->data, inp->data_len);
-    return RET_FAILURE;
-  }
   return RET_SUCCESS;
 }
 
@@ -205,8 +185,7 @@ void rbc_input_destroy(RBCInput *inp) {
   merry_check_ptr(inp->data);
   merry_check_ptr(inp->instructions);
 
-  merry_return_memory(inp->data, inp->data_len);
-  merry_return_memory(inp->instructions, inp->instruction_len);
+  merry_unmap_memory(inp->mapped);
   merry_destroy_file(inp->input_file);
   free(inp);
 }

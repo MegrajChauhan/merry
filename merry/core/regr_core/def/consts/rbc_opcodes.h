@@ -169,18 +169,18 @@ enum rbcRBC_OP_t {
   RBC_OP_CALL_REG, // 87
   RBC_OP_JMP_REGR, // 88 address in register
 
-  RBC_OP_INTR, // 89
+  RBC_OP_RES23, // 89
 
   /*------------------------ Stack-Based Instructions-------------------*/
 
-  RBC_OP_PUSH_IMM8,  // 8a
-  RBC_OP_PUSH_IMM16, // 8b
-  RBC_OP_PUSH_IMM32, // 8c
+  RBC_OP_RES11,      // 8a
+  RBC_OP_RES12,      // 8b
+  RBC_OP_RES13,      // 8c
   RBC_OP_PUSH_IMM64, // 8d
   RBC_OP_PUSH_REG,   // 8e
-  RBC_OP_POP8,       // 8f
-  RBC_OP_POP16,      // 90
-  RBC_OP_POP32,      // 91
+  RBC_OP_RES14,      // 8f
+  RBC_OP_RES15,      // 90
+  RBC_OP_RES16,      // 91
   RBC_OP_POP64,      // 92
   RBC_OP_PUSHA,      // 93 R0, R1, R2, ......
   RBC_OP_POPA,       // 94 In reverse
@@ -194,14 +194,14 @@ enum rbcRBC_OP_t {
   RBC_OP_POP_MEMD,  // 9b
   RBC_OP_POP_MEMQ,  // 9c
 
-  RBC_OP_LOADSB, // 9d loadsb R0, 5 -> Load whatever byte is at BP+5 into R0
-  RBC_OP_LOADSW, // 9e
-  RBC_OP_LOADSD, // 9f
+  RBC_OP_RES17,  // 9d loadsb R0, 5 -> Load whatever byte is at BP+5 into R0
+  RBC_OP_RES18,  // 9e
+  RBC_OP_RES19,  // 9f
   RBC_OP_LOADSQ, // a0
 
-  RBC_OP_STORESB, // a1 storesb R0, 5 -> Store the lowest byte of R0 at BP+5
-  RBC_OP_STORESW, // a2
-  RBC_OP_STORESD, // a3
+  RBC_OP_RES20,   // a1 storesb R0, 5 -> Store the lowest byte of R0 at BP+5
+  RBC_OP_RES21,   // a2
+  RBC_OP_RES22,   // a3
   RBC_OP_STORESQ, // a4
 
   /*--------------------Logical Instructions--------------------------*/

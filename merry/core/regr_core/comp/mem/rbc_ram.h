@@ -74,6 +74,9 @@ rbcmemOperRes_t rbc_memory_write_qword_atm(RBCMemory *mem, maddress_t addr,
 rbcmemOperRes_t rbc_memory_write_bulk(RBCMemory *mem, maddress_t addr,
                                       msize_t len, mbptr_t store);
 
+rbcmemOperRes_t rbc_memory_cmpxchg(RBCMemory *mem, maddress_t addr, mbyte_t exp,
+                                   mbyte_t des);
+
 void rbc_memory_destroy(RBCMemory *mem);
 
 #endif

@@ -36,6 +36,14 @@ struct MerryInterface {
       mbool_t _wclosed;
       mbool_t resb;
     } cpipe; // communication pipe
+    struct {
+      // For now, we don't care about the type of mapping
+      // and let the OS care for us
+      mptr_t map;
+      msize_t len;
+      _Atomic msize_t children_count;
+      MerryInterface *parent;
+    } memory_map;
   };
 };
 

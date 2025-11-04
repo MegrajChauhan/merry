@@ -92,6 +92,7 @@ MerryCoreBase *tc_create_base() {
     free(base);
     return RET_NULL;
   }
+  base->type = __TEST_CORE;
   base->createc = tc_create_core;
   base->deletec = tc_delete_core;
   base->execc = tc_run;

@@ -9,6 +9,7 @@ typedef enum minterfaceRet_t minterfaceRet_t;
 enum minterface_t {
   INTERFACE_TYPE_FILE,
   INTERFACE_TYPE_PIPE,
+  INTERFACE_TYPE_MEM_MAP,
 };
 
 enum minterfaceRet_t {
@@ -18,5 +19,6 @@ enum minterfaceRet_t {
   INTERFACE_HOST_FAILURE,
   INTERFACE_MISCONFIGURED,
   INTERFACE_INVALID_ARGS,
+  INTERFACE_ACTION_DANGEROUS,
 };
 #endif

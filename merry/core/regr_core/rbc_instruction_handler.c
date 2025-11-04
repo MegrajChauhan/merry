@@ -1,5 +1,3 @@
-#include <float.h>
-#include <math.h>
 #include <regr_core/internal/rbc_instruction_handler.h>
 
 void rbc_compare_f32(float a, float b, RBCFFlagsRegr *regr) {
@@ -157,7 +155,7 @@ rbc_ihdlrX(add_imm) {
 }
 
 rbc_ihdlrX(add_reg) {
-  register mbyte_t op1 = instruction & RBC_R15;
+  register mbyte_t op1 = (instruction >> 4) & RBC_R15;
   register mbyte_t op2 = instruction & RBC_R15;
   base->REGISTER_FILE[op1] += base->REGISTER_FILE[op2];
   base->flags.regr = merry_obtain_flags_regr();
@@ -180,7 +178,7 @@ rbc_ihdlrX(sub_imm) {
 }
 
 rbc_ihdlrX(sub_reg) {
-  register mbyte_t op1 = instruction & RBC_R15;
+  register mbyte_t op1 = (instruction >> 4) & RBC_R15;
   register mbyte_t op2 = instruction & RBC_R15;
   base->REGISTER_FILE[op1] -= base->REGISTER_FILE[op2];
   base->flags.regr = merry_obtain_flags_regr();
@@ -203,7 +201,7 @@ rbc_ihdlrX(mul_imm) {
 }
 
 rbc_ihdlrX(mul_reg) {
-  register mbyte_t op1 = instruction & RBC_R15;
+  register mbyte_t op1 = (instruction >> 4) & RBC_R15;
   register mbyte_t op2 = instruction & RBC_R15;
   base->REGISTER_FILE[op1] *= base->REGISTER_FILE[op2];
   base->flags.regr = merry_obtain_flags_regr();
@@ -229,7 +227,7 @@ rbc_ihdlrX(div_imm) {
 }
 
 rbc_ihdlrX(div_reg) {
-  register mbyte_t op1 = instruction & RBC_R15;
+  register mbyte_t op1 = (instruction >> 4) & RBC_R15;
   register mbyte_t op2 = instruction & RBC_R15;
   if (base->REGISTER_FILE[op2] == 0) {
     *kcore = mtrue;
@@ -262,7 +260,7 @@ rbc_ihdlrX(mod_imm) {
 }
 
 rbc_ihdlrX(mod_reg) {
-  register mbyte_t op1 = instruction & RBC_R15;
+  register mbyte_t op1 = (instruction >> 4) & RBC_R15;
   register mbyte_t op2 = instruction & RBC_R15;
   if (base->REGISTER_FILE[op2] == 0) {
     *kcore = mtrue;
@@ -281,7 +279,7 @@ rbc_ihdlrX(mod_reg) {
 }
 
 rbc_ihdlrX(fadd) {
-  register mqword_t op1 = (instruction)&RBC_R15;
+  register mqword_t op1 = (instruction >> 4) & RBC_R15;
   register mqword_t op2 = (instruction)&RBC_R15;
   register MerryDoubleToQword a;
   register MerryDoubleToQword b;
@@ -293,7 +291,7 @@ rbc_ihdlrX(fadd) {
 }
 
 rbc_ihdlrX(fsub) {
-  register mqword_t op1 = (instruction)&RBC_R15;
+  register mqword_t op1 = (instruction >> 4) & RBC_R15;
   register mqword_t op2 = (instruction)&RBC_R15;
   register MerryDoubleToQword a;
   register MerryDoubleToQword b;
@@ -305,7 +303,7 @@ rbc_ihdlrX(fsub) {
 }
 
 rbc_ihdlrX(fmul) {
-  register mqword_t op1 = (instruction)&RBC_R15;
+  register mqword_t op1 = (instruction >> 4) & RBC_R15;
   register mqword_t op2 = (instruction)&RBC_R15;
   register MerryDoubleToQword a;
   register MerryDoubleToQword b;
@@ -317,7 +315,7 @@ rbc_ihdlrX(fmul) {
 }
 
 rbc_ihdlrX(fdiv) {
-  register mqword_t op1 = (instruction)&RBC_R15;
+  register mqword_t op1 = (instruction >> 4) & RBC_R15;
   register mqword_t op2 = (instruction)&RBC_R15;
   register MerryDoubleToQword a;
   register MerryDoubleToQword b;
@@ -334,7 +332,7 @@ rbc_ihdlrX(fdiv) {
 }
 
 rbc_ihdlrX(fadd32) {
-  register mqword_t op1 = (instruction)&RBC_R15;
+  register mqword_t op1 = (instruction >> 4) & RBC_R15;
   register mqword_t op2 = (instruction)&RBC_R15;
   register MerryFloatToDword a;
   register MerryFloatToDword b;
@@ -346,7 +344,7 @@ rbc_ihdlrX(fadd32) {
 }
 
 rbc_ihdlrX(fsub32) {
-  register mqword_t op1 = (instruction)&RBC_R15;
+  register mqword_t op1 = (instruction >> 4) & RBC_R15;
   register mqword_t op2 = (instruction)&RBC_R15;
   register MerryFloatToDword a;
   register MerryFloatToDword b;
@@ -358,7 +356,7 @@ rbc_ihdlrX(fsub32) {
 }
 
 rbc_ihdlrX(fmul32) {
-  register mqword_t op1 = (instruction)&RBC_R15;
+  register mqword_t op1 = (instruction >> 4) & RBC_R15;
   register mqword_t op2 = (instruction)&RBC_R15;
   register MerryFloatToDword a;
   register MerryFloatToDword b;
@@ -370,7 +368,7 @@ rbc_ihdlrX(fmul32) {
 }
 
 rbc_ihdlrX(fdiv32) {
-  register mqword_t op1 = (instruction)&RBC_R15;
+  register mqword_t op1 = (instruction >> 4) & RBC_R15;
   register mqword_t op2 = (instruction)&RBC_R15;
   register MerryFloatToDword a;
   register MerryFloatToDword b;
@@ -387,7 +385,7 @@ rbc_ihdlrX(fdiv32) {
 }
 
 rbc_ihdlrX(add_memb) {
-  register mqword_t op1 = (instruction)&RBC_R15;
+  register mqword_t op1 = (instruction >> 48) & RBC_R15;
   register maddress_t addr = (instruction & 0xFFFFFFFFFFFF);
   mbyte_t temp = 0;
   if (rbc_memory_read_byte(base->dram, addr, &temp) != RBC_MEM_OPER_SUCCESS) {
@@ -402,7 +400,7 @@ rbc_ihdlrX(add_memb) {
 }
 
 rbc_ihdlrX(add_memw) {
-  register mqword_t op1 = (instruction)&RBC_R15;
+  register mqword_t op1 = (instruction >> 48) & RBC_R15;
   register maddress_t addr = (instruction & 0xFFFFFFFFFFFF);
   mword_t temp = 0;
   if (rbc_memory_read_word(base->dram, addr, &temp) != RBC_MEM_OPER_SUCCESS) {
@@ -417,7 +415,7 @@ rbc_ihdlrX(add_memw) {
 }
 
 rbc_ihdlrX(add_memd) {
-  register mqword_t op1 = (instruction)&RBC_R15;
+  register mqword_t op1 = (instruction >> 48) & RBC_R15;
   register maddress_t addr = (instruction & 0xFFFFFFFFFFFF);
   mdword_t temp = 0;
   if (rbc_memory_read_dword(base->dram, addr, &temp) != RBC_MEM_OPER_SUCCESS) {
@@ -432,7 +430,7 @@ rbc_ihdlrX(add_memd) {
 }
 
 rbc_ihdlrX(add_memq) {
-  register mqword_t op1 = (instruction)&RBC_R15;
+  register mqword_t op1 = (instruction >> 48) & RBC_R15;
   register maddress_t addr = (instruction & 0xFFFFFFFFFFFF);
   mqword_t temp = 0;
   if (rbc_memory_read_qword(base->dram, addr, &temp) != RBC_MEM_OPER_SUCCESS) {
@@ -447,7 +445,7 @@ rbc_ihdlrX(add_memq) {
 }
 
 rbc_ihdlrX(sub_memb) {
-  register mqword_t op1 = (instruction)&RBC_R15;
+  register mqword_t op1 = (instruction >> 48) & RBC_R15;
   register maddress_t addr = (instruction & 0xFFFFFFFFFFFF);
   mbyte_t temp = 0;
   if (rbc_memory_read_byte(base->dram, addr, &temp) != RBC_MEM_OPER_SUCCESS) {
@@ -462,7 +460,7 @@ rbc_ihdlrX(sub_memb) {
 }
 
 rbc_ihdlrX(sub_memw) {
-  register mqword_t op1 = (instruction)&RBC_R15;
+  register mqword_t op1 = (instruction >> 48) & RBC_R15;
   register maddress_t addr = (instruction & 0xFFFFFFFFFFFF);
   mword_t temp = 0;
   if (rbc_memory_read_word(base->dram, addr, &temp) != RBC_MEM_OPER_SUCCESS) {
@@ -477,7 +475,7 @@ rbc_ihdlrX(sub_memw) {
 }
 
 rbc_ihdlrX(sub_memd) {
-  register mqword_t op1 = (instruction)&RBC_R15;
+  register mqword_t op1 = (instruction >> 48) & RBC_R15;
   register maddress_t addr = (instruction & 0xFFFFFFFFFFFF);
   mdword_t temp = 0;
   if (rbc_memory_read_dword(base->dram, addr, &temp) != RBC_MEM_OPER_SUCCESS) {
@@ -492,7 +490,7 @@ rbc_ihdlrX(sub_memd) {
 }
 
 rbc_ihdlrX(sub_memq) {
-  register mqword_t op1 = (instruction)&RBC_R15;
+  register mqword_t op1 = (instruction >> 48) & RBC_R15;
   register maddress_t addr = (instruction & 0xFFFFFFFFFFFF);
   mqword_t temp = 0;
   if (rbc_memory_read_qword(base->dram, addr, &temp) != RBC_MEM_OPER_SUCCESS) {
@@ -507,7 +505,7 @@ rbc_ihdlrX(sub_memq) {
 }
 
 rbc_ihdlrX(mul_memb) {
-  register mqword_t op1 = (instruction)&RBC_R15;
+  register mqword_t op1 = (instruction >> 48) & RBC_R15;
   register maddress_t addr = (instruction & 0xFFFFFFFFFFFF);
   mbyte_t temp = 0;
   if (rbc_memory_read_byte(base->dram, addr, &temp) != RBC_MEM_OPER_SUCCESS) {
@@ -522,7 +520,7 @@ rbc_ihdlrX(mul_memb) {
 }
 
 rbc_ihdlrX(mul_memw) {
-  register mqword_t op1 = (instruction)&RBC_R15;
+  register mqword_t op1 = (instruction >> 48) & RBC_R15;
   register maddress_t addr = (instruction & 0xFFFFFFFFFFFF);
   mword_t temp = 0;
   if (rbc_memory_read_word(base->dram, addr, &temp) != RBC_MEM_OPER_SUCCESS) {
@@ -537,7 +535,7 @@ rbc_ihdlrX(mul_memw) {
 }
 
 rbc_ihdlrX(mul_memd) {
-  register mqword_t op1 = (instruction)&RBC_R15;
+  register mqword_t op1 = (instruction >> 48) & RBC_R15;
   register maddress_t addr = (instruction & 0xFFFFFFFFFFFF);
   mdword_t temp = 0;
   if (rbc_memory_read_dword(base->dram, addr, &temp) != RBC_MEM_OPER_SUCCESS) {
@@ -552,7 +550,7 @@ rbc_ihdlrX(mul_memd) {
 }
 
 rbc_ihdlrX(mul_memq) {
-  register mqword_t op1 = (instruction)&RBC_R15;
+  register mqword_t op1 = (instruction >> 48) & RBC_R15;
   register maddress_t addr = (instruction & 0xFFFFFFFFFFFF);
   mqword_t temp = 0;
   if (rbc_memory_read_qword(base->dram, addr, &temp) != RBC_MEM_OPER_SUCCESS) {
@@ -567,7 +565,7 @@ rbc_ihdlrX(mul_memq) {
 }
 
 rbc_ihdlrX(div_memb) {
-  register mqword_t op1 = (instruction)&RBC_R15;
+  register mqword_t op1 = (instruction >> 48) & RBC_R15;
   register maddress_t addr = (instruction & 0xFFFFFFFFFFFF);
   mbyte_t temp = 0;
   if (rbc_memory_read_byte(base->dram, addr, &temp) != RBC_MEM_OPER_SUCCESS) {
@@ -587,7 +585,7 @@ rbc_ihdlrX(div_memb) {
 }
 
 rbc_ihdlrX(div_memw) {
-  register mqword_t op1 = (instruction)&RBC_R15;
+  register mqword_t op1 = (instruction >> 48) & RBC_R15;
   register maddress_t addr = (instruction & 0xFFFFFFFFFFFF);
   mword_t temp = 0;
   if (rbc_memory_read_word(base->dram, addr, &temp) != RBC_MEM_OPER_SUCCESS) {
@@ -607,7 +605,7 @@ rbc_ihdlrX(div_memw) {
 }
 
 rbc_ihdlrX(div_memd) {
-  register mqword_t op1 = (instruction)&RBC_R15;
+  register mqword_t op1 = (instruction >> 48) & RBC_R15;
   register maddress_t addr = (instruction & 0xFFFFFFFFFFFF);
   mdword_t temp = 0;
   if (rbc_memory_read_dword(base->dram, addr, &temp) != RBC_MEM_OPER_SUCCESS) {
@@ -627,7 +625,7 @@ rbc_ihdlrX(div_memd) {
 }
 
 rbc_ihdlrX(div_memq) {
-  register mqword_t op1 = (instruction)&RBC_R15;
+  register mqword_t op1 = (instruction >> 48) & RBC_R15;
   register maddress_t addr = (instruction & 0xFFFFFFFFFFFF);
   mqword_t temp = 0;
   if (rbc_memory_read_qword(base->dram, addr, &temp) != RBC_MEM_OPER_SUCCESS) {
@@ -647,7 +645,7 @@ rbc_ihdlrX(div_memq) {
 }
 
 rbc_ihdlrX(mod_memb) {
-  register mqword_t op1 = (instruction)&RBC_R15;
+  register mqword_t op1 = (instruction >> 48) & RBC_R15;
   register maddress_t addr = (instruction & 0xFFFFFFFFFFFF);
   mbyte_t temp = 0;
   if (rbc_memory_read_byte(base->dram, addr, &temp) != RBC_MEM_OPER_SUCCESS) {
@@ -667,7 +665,7 @@ rbc_ihdlrX(mod_memb) {
 }
 
 rbc_ihdlrX(mod_memw) {
-  register mqword_t op1 = (instruction)&RBC_R15;
+  register mqword_t op1 = (instruction >> 48) & RBC_R15;
   register maddress_t addr = (instruction & 0xFFFFFFFFFFFF);
   mword_t temp = 0;
   if (rbc_memory_read_word(base->dram, addr, &temp) != RBC_MEM_OPER_SUCCESS) {
@@ -687,7 +685,7 @@ rbc_ihdlrX(mod_memw) {
 }
 
 rbc_ihdlrX(mod_memd) {
-  register mqword_t op1 = (instruction)&RBC_R15;
+  register mqword_t op1 = (instruction >> 48) & RBC_R15;
   register maddress_t addr = (instruction & 0xFFFFFFFFFFFF);
   mdword_t temp = 0;
   if (rbc_memory_read_dword(base->dram, addr, &temp) != RBC_MEM_OPER_SUCCESS) {
@@ -707,7 +705,7 @@ rbc_ihdlrX(mod_memd) {
 }
 
 rbc_ihdlrX(mod_memq) {
-  register mqword_t op1 = (instruction)&RBC_R15;
+  register mqword_t op1 = (instruction >> 48) & RBC_R15;
   register maddress_t addr = (instruction & 0xFFFFFFFFFFFF);
   mqword_t temp = 0;
   if (rbc_memory_read_qword(base->dram, addr, &temp) != RBC_MEM_OPER_SUCCESS) {
@@ -727,7 +725,7 @@ rbc_ihdlrX(mod_memq) {
 }
 
 rbc_ihdlrX(fadd64_mem) {
-  register mqword_t op1 = (instruction)&RBC_R15;
+  register mqword_t op1 = (instruction >> 48) & RBC_R15;
   register mqword_t addr = (instruction & 0xFFFFFFFFFFFF);
   MerryDoubleToQword temp;
   if (rbc_memory_read_qword(base->dram, addr, &temp.q_val) !=
@@ -747,7 +745,7 @@ rbc_ihdlrX(fadd64_mem) {
 }
 
 rbc_ihdlrX(fsub64_mem) {
-  register mqword_t op1 = (instruction)&RBC_R15;
+  register mqword_t op1 = (instruction >> 48) & RBC_R15;
   register mqword_t addr = (instruction & 0xFFFFFFFFFFFF);
   MerryDoubleToQword temp;
   if (rbc_memory_read_qword(base->dram, addr, &temp.q_val) !=
@@ -767,7 +765,7 @@ rbc_ihdlrX(fsub64_mem) {
 }
 
 rbc_ihdlrX(fmul64_mem) {
-  register mqword_t op1 = (instruction)&RBC_R15;
+  register mqword_t op1 = (instruction >> 48) & RBC_R15;
   register mqword_t addr = (instruction & 0xFFFFFFFFFFFF);
   MerryDoubleToQword temp;
   if (rbc_memory_read_qword(base->dram, addr, &temp.q_val) !=
@@ -787,7 +785,7 @@ rbc_ihdlrX(fmul64_mem) {
 }
 
 rbc_ihdlrX(fdiv64_mem) {
-  register mqword_t op1 = (instruction)&RBC_R15;
+  register mqword_t op1 = (instruction >> 48) & RBC_R15;
   register mqword_t addr = (instruction & 0xFFFFFFFFFFFF);
   MerryDoubleToQword temp;
   if (rbc_memory_read_qword(base->dram, addr, &temp.q_val) !=
@@ -812,7 +810,7 @@ rbc_ihdlrX(fdiv64_mem) {
 }
 
 rbc_ihdlrX(fadd32_mem) {
-  register mqword_t op1 = (instruction)&RBC_R15;
+  register mqword_t op1 = (instruction >> 48) & RBC_R15;
   register mqword_t addr = (instruction & 0xFFFFFFFFFFFF);
   MerryFloatToDword temp;
   if (rbc_memory_read_dword(base->dram, addr, &temp.d_val) !=
@@ -833,7 +831,7 @@ rbc_ihdlrX(fadd32_mem) {
 }
 
 rbc_ihdlrX(fsub32_mem) {
-  register mqword_t op1 = (instruction)&RBC_R15;
+  register mqword_t op1 = (instruction >> 48) & RBC_R15;
   register mqword_t addr = (instruction & 0xFFFFFFFFFFFF);
   MerryFloatToDword temp;
   if (rbc_memory_read_dword(base->dram, addr, &temp.d_val) !=
@@ -854,7 +852,7 @@ rbc_ihdlrX(fsub32_mem) {
 }
 
 rbc_ihdlrX(fmul32_mem) {
-  register mqword_t op1 = (instruction)&RBC_R15;
+  register mqword_t op1 = (instruction >> 48) & RBC_R15;
   register mqword_t addr = (instruction & 0xFFFFFFFFFFFF);
   MerryFloatToDword temp;
   if (rbc_memory_read_dword(base->dram, addr, &temp.d_val) !=
@@ -875,7 +873,7 @@ rbc_ihdlrX(fmul32_mem) {
 }
 
 rbc_ihdlrX(fdiv32_mem) {
-  register mqword_t op1 = (instruction)&RBC_R15;
+  register mqword_t op1 = (instruction >> 48) & RBC_R15;
   register mqword_t addr = (instruction & 0xFFFFFFFFFFFF);
   MerryFloatToDword temp;
   if (rbc_memory_read_dword(base->dram, addr, &temp.d_val) !=
@@ -935,49 +933,49 @@ rbc_ihdlrX(movf32) {
 }
 
 rbc_ihdlrX(movesx_imm8) {
-  register mbyte_t op1 = instruction & RBC_R15;
-  register mqword_t op2 = instruction;
+  register mbyte_t op1 = (instruction >> 48) & RBC_R15;
+  register mqword_t op2 = instruction & 0xFF;
   sign_extend8(op2);
   base->REGISTER_FILE[op1] = op2;
 }
 
 rbc_ihdlrX(movesx_imm16) {
-  register mbyte_t op1 = instruction & RBC_R15;
-  register mqword_t op2 = instruction.half_half_words.w3;
+  register mbyte_t op1 = (instruction >> 48) & RBC_R15;
+  register mqword_t op2 = instruction & 0xFFFF;
   sign_extend16(op2);
   base->REGISTER_FILE[op1] = op2;
 }
 
 rbc_ihdlrX(movesx_imm32) {
-  register mbyte_t op1 = instruction & RBC_R15;
-  register mqword_t op2 = instruction.half_words.w1;
+  register mbyte_t op1 = (instruction >> 48) & RBC_R15;
+  register mqword_t op2 = instruction & 0xFFFFFFFF;
   sign_extend32(op2);
   base->REGISTER_FILE[op1] = op2;
 }
 
 rbc_ihdlrX(movesx_reg8) {
-  register mbyte_t op1 = instruction & RBC_R15;
+  register mbyte_t op1 = (instruction >> 4) & RBC_R15;
   register mbyte_t op2 = instruction & RBC_R15;
   sign_extend8(base->REGISTER_FILE[op2]);
   base->REGISTER_FILE[op1] = op2;
 }
 
 rbc_ihdlrX(movesx_reg16) {
-  register mbyte_t op1 = instruction & RBC_R15;
+  register mbyte_t op1 = (instruction >> 4) & RBC_R15;
   register mbyte_t op2 = instruction & RBC_R15;
   sign_extend16(base->REGISTER_FILE[op2]);
   base->REGISTER_FILE[op1] = op2;
 }
 
 rbc_ihdlrX(movesx_reg32) {
-  register mbyte_t op1 = instruction & RBC_R15;
+  register mbyte_t op1 = (instruction >> 4) & RBC_R15;
   register mbyte_t op2 = instruction & RBC_R15;
   sign_extend32(base->REGISTER_FILE[op2]);
   base->REGISTER_FILE[op1] = op2;
 }
 
 rbc_ihdlrX(excg) {
-  register mbyte_t op1 = instruction & RBC_R15;
+  register mbyte_t op1 = (instruction >> 4) & RBC_R15;
   register mbyte_t op2 = instruction & RBC_R15;
   register mqword_t temp = base->REGISTER_FILE[op1];
   base->REGISTER_FILE[op1] = base->REGISTER_FILE[op2];
@@ -985,7 +983,7 @@ rbc_ihdlrX(excg) {
 }
 
 rbc_ihdlrX(excg8) {
-  register mbyte_t op1 = instruction & RBC_R15;
+  register mbyte_t op1 = (instruction >> 4) & RBC_R15;
   register mbyte_t op2 = instruction & RBC_R15;
   register mqword_t r1 = base->REGISTER_FILE[op1];
   base->REGISTER_FILE[op1] |= base->REGISTER_FILE[op2] & 0x00000000000000FF;
@@ -993,7 +991,7 @@ rbc_ihdlrX(excg8) {
 }
 
 rbc_ihdlrX(excg16) {
-  register mbyte_t op1 = instruction & RBC_R15;
+  register mbyte_t op1 = (instruction >> 4) & RBC_R15;
   register mbyte_t op2 = instruction & RBC_R15;
   register mqword_t r1 = base->REGISTER_FILE[op1];
   base->REGISTER_FILE[op1] |= base->REGISTER_FILE[op2] & 0x000000000000FFFF;
@@ -1001,7 +999,7 @@ rbc_ihdlrX(excg16) {
 }
 
 rbc_ihdlrX(excg32) {
-  register mbyte_t op1 = instruction & RBC_R15;
+  register mbyte_t op1 = (instruction >> 4) & RBC_R15;
   register mbyte_t op2 = instruction & RBC_R15;
   register mqword_t r1 = base->REGISTER_FILE[op1];
   base->REGISTER_FILE[op1] |= base->REGISTER_FILE[op2] & 0x00000000FFFFFFFF;
@@ -1010,595 +1008,303 @@ rbc_ihdlrX(excg32) {
 
 rbc_ihdlrX(call) {
   mqword_t addr = instruction & 0xFFFFFFFFFFFF;
-  if (merry_stack_push(core->tbs, (mptr_t)base->PC) != RBC_MEM_OPER_SUCCESS) {
-
+  RBCStackFrame frame;
+  frame.FRAME_BP = base->SP;
+  frame.JMP_TO = addr;
+  frame.RET_ADDR = base->PC;
+  if (merry_is_stack_full(base->stack_frames)) {
+    MFATAL("RBC", "Call depth reached: PC=%zu. Terminating...", base->PC);
+    *kcore = mtrue;
     return;
   }
-  if (merry_stack_push(core->cstack, (mptr_t)addr) != RBC_MEM_OPER_SUCCESS) {
-
+  if (merry_RBCProcFrame_stack_push(base->stack_frames, &frame) ==
+      RET_FAILURE) {
+    *kcore = mtrue;
+    MFATAL("RBC", "Failed to create stack frame: PC=%zu, PROC=%zu", base->PC,
+           addr);
     return;
   }
-  base->PC =
-      addr - 8; // the address to the first instructionruction of the procedure
+  base->BP = base->SP;
+  base->PC = addr; // the address to the first instruction of the procedure
 }
 
 rbc_ihdlrX(ret) {
-  MerryPtrToQword a;
+  RBCStackFrame *frame;
 
-  // restore PC
-  if ((a.ptr = merry_stack_pop(core->tbs)) == RET_NULL) {
-
-    merry_assign_state(core->base->state, _MERRY_PROGRAM_ERROR_,
-                       _INVALID_PROCEDURE_RETURN_);
-    merry_provide_context(core->base->state, _MERRY_CORE_EXECUTING_);
-    core->req->type = PROBLEM_ENCOUNTERED;
-    merry_SEND_REQUEST(core->req);
+  if (merry_is_stack_empty(base->stack_frames)) {
+    *kcore = mtrue;
+    MFATAL("RBC", "Invalid RET instruction: PC=%zu", base->PC);
     return;
   }
 
-  // if the above failed then this will also fail and the failure
-  // of above won't reach this
-  if ((merry_stack_pop(core->cstack)) == RET_NULL) {
-
+  if ((frame = merry_RBCProcFrame_stack_pop(base->stack_frames)) == RET_NULL) {
+    *kcore = mtrue;
+    MFATAL("RBC", "Failed to restore stack frame: PC=%zu", base->PC);
     return;
   }
-
-  base->PC = a.qword;
+  base->SP = base->BP;
+  base->PC = frame->RET_ADDR;
+  base->BP = frame->FRAME_BP;
 }
 
 rbc_ihdlrX(call_reg) {
-  MerryPtrToQword addr;
-  addr.qword = base->REGISTER_FILE[instruction & RBC_R15];
-  if (merry_stack_push(core->tbs, (mqptr_t)base->PC) != RBC_MEM_OPER_SUCCESS) {
-
+  maddress_t addr = base->REGISTER_FILE[instruction & RBC_R15];
+  RBCStackFrame frame;
+  frame.FRAME_BP = base->SP;
+  frame.JMP_TO = addr;
+  frame.RET_ADDR = base->PC;
+  if (merry_is_stack_full(base->stack_frames)) {
+    MFATAL("RBC", "Call depth reached: PC=%zu. Terminating...", base->PC);
+    *kcore = mtrue;
     return;
   }
-  if (merry_stack_push(core->cstack, addr.ptr) != RBC_MEM_OPER_SUCCESS) {
-
-    return;
-  }
-  base->PC = addr.qword - 8;
-}
-
-rbc_ihdlrX(push_immb) {
-  MerryHostMemLayout imm;
-  base->PC += 8;
-  if (rbc_memory_read_qword(base->iram, base->PC, &imm.whole_word) ==
+  if (merry_RBCProcFrame_stack_push(base->stack_frames, &frame) ==
       RET_FAILURE) {
-
+    *kcore = mtrue;
+    MFATAL("RBC", "Failed to create stack frame: PC=%zu, PROC=%zu", base->PC,
+           addr);
     return;
   }
-  if (merry_RAM_write_byte(core->stack, base->REGISTER_FILE[SP],
-                           imm.bytes.b7, ) != RBC_MEM_OPER_SUCCESS) {
-    merry_assign_state(core->base->state, _MERRY_INTERNAL_SYSTEM_ERROR_,
-                       _MERRY_STACK_OVERFLOW_);
-    merry_provide_context(core->base->state, _MERRY_CORE_EXECUTING_);
-    core->req->type = PROBLEM_ENCOUNTERED;
-    merry_SEND_REQUEST(core->req);
-
-    return;
-  }
-  base->REGISTER_FILE[SP]++;
-}
-
-rbc_ihdlrX(push_immw) {
-  MerryHostMemLayout imm;
-  base->PC += 8;
-  if (rbc_memory_read_qword(base->iram, base->PC, &imm.whole_word) ==
-      RET_FAILURE) {
-
-    return;
-  }
-  if (merry_RAM_write_word(core->stack, base->REGISTER_FILE[SP],
-                           imm.half_half_words.w3, ) != RBC_MEM_OPER_SUCCESS) {
-    merry_assign_state(core->base->state, _MERRY_INTERNAL_SYSTEM_ERROR_,
-                       _MERRY_STACK_OVERFLOW_);
-    merry_provide_context(core->base->state, _MERRY_CORE_EXECUTING_);
-    core->req->type = PROBLEM_ENCOUNTERED;
-    merry_SEND_REQUEST(core->req);
-
-    return;
-  }
-  base->REGISTER_FILE[SP] += 2;
-}
-
-rbc_ihdlrX(push_immd) {
-  MerryHostMemLayout imm;
-  base->PC += 8;
-  if (rbc_memory_read_qword(base->iram, base->PC, &imm.whole_word) ==
-      RET_FAILURE) {
-
-    return;
-  }
-  if (merry_RAM_write_dword(core->stack, base->REGISTER_FILE[SP],
-                            imm.half_words.w1, ) != RBC_MEM_OPER_SUCCESS) {
-    merry_assign_state(core->base->state, _MERRY_INTERNAL_SYSTEM_ERROR_,
-                       _MERRY_STACK_OVERFLOW_);
-    merry_provide_context(core->base->state, _MERRY_CORE_EXECUTING_);
-    core->req->type = PROBLEM_ENCOUNTERED;
-    merry_SEND_REQUEST(core->req);
-
-    return;
-  }
-  base->REGISTER_FILE[SP] += 4;
+  base->BP = base->SP;
+  base->PC = addr;
 }
 
 rbc_ihdlrX(push_immq) {
   MerryHostMemLayout imm;
+  if (base->SP >= (_RBC_STACK_LEN_ / 8)) {
+    *kcore = mtrue;
+    MFATAL("RBC", "Stack Overflow. Terminating...", NULL);
+    return;
+  }
   base->PC += 8;
   if (rbc_memory_read_qword(base->iram, base->PC, &imm.whole_word) ==
       RET_FAILURE) {
-
+    *kcore = mtrue;
+    MFATAL("RBC",
+           "MEM READ Failed at PC=%zu likely because the access was invalid",
+           base->PC);
     return;
   }
-  if (merry_RAM_write_qword(core->stack, base->REGISTER_FILE[SP],
-                            imm.whole_word, ) != RBC_MEM_OPER_SUCCESS) {
-    merry_assign_state(core->base->state, _MERRY_INTERNAL_SYSTEM_ERROR_,
-                       _MERRY_STACK_OVERFLOW_);
-    merry_provide_context(core->base->state, _MERRY_CORE_EXECUTING_);
-    core->req->type = PROBLEM_ENCOUNTERED;
-    merry_SEND_REQUEST(core->req);
-
-    return;
-  }
-  base->REGISTER_FILE[SP] += 8;
+  base->stack[base->SP] = imm.whole_word;
+  base->SP++;
 }
 
 rbc_ihdlrX(push_reg) {
-  if (merry_RAM_write_qword(core->stack, base->REGISTER_FILE[SP],
-                            base->REGISTER_FILE[instruction & RBC_R15], ) ==
-      RET_FAILURE) {
-    merry_assign_state(core->base->state, _MERRY_INTERNAL_SYSTEM_ERROR_,
-                       _MERRY_STACK_OVERFLOW_);
-    merry_provide_context(core->base->state, _MERRY_CORE_EXECUTING_);
-    core->req->type = PROBLEM_ENCOUNTERED;
-    merry_SEND_REQUEST(core->req);
-
+  mqword_t imm = base->REGISTER_FILE[instruction & RBC_R15];
+  if (base->SP >= (_RBC_STACK_LEN_ / 8)) {
+    *kcore = mtrue;
+    MFATAL("RBC", "Stack Overflow. Terminating...", NULL);
     return;
   }
-  base->REGISTER_FILE[SP] += 8;
-}
-
-rbc_ihdlrX(popb) {
-  if (base->REGISTER_FILE[SP] == 0) {
-    merry_assign_state(core->base->state, _MERRY_INTERNAL_SYSTEM_ERROR_,
-                       _MERRY_STACK_UNDERFLOW_);
-  }
-  mbyte_t tmp = 0;
-  if (merry_RAM_read_byte(core->stack, base->REGISTER_FILE[SP], &tmp, ) ==
-      RET_FAILURE) {
-    // This will not fail at all
-    // i.e this section should never be executed
-
-    return;
-  }
-  base->REGISTER_FILE[instruction & RBC_R15] = tmp;
-  base->REGISTER_FILE[SP] -= 1;
-}
-
-rbc_ihdlrX(popw) {
-  if (base->REGISTER_FILE[SP] == 0) {
-    merry_assign_state(core->base->state, _MERRY_INTERNAL_SYSTEM_ERROR_,
-                       _MERRY_STACK_UNDERFLOW_);
-  }
-  mword_t tmp = 0;
-  if (merry_RAM_read_word(core->stack, base->REGISTER_FILE[SP], &tmp, ) ==
-      RET_FAILURE) {
-    // This will not fail at all
-    // i.e this section should never be executed
-
-    return;
-  }
-  base->REGISTER_FILE[instruction & RBC_R15] = tmp;
-  base->REGISTER_FILE[SP] -= 2;
-}
-
-rbc_ihdlrX(popd) {
-  if (base->REGISTER_FILE[SP] == 0) {
-    merry_assign_state(core->base->state, _MERRY_INTERNAL_SYSTEM_ERROR_,
-                       _MERRY_STACK_UNDERFLOW_);
-  }
-  mdword_t tmp = 0;
-  if (merry_RAM_read_dword(core->stack, base->REGISTER_FILE[SP], &tmp, ) ==
-      RET_FAILURE) {
-    // This will not fail at all
-    // i.e this section should never be executed
-
-    return;
-  }
-  base->REGISTER_FILE[instruction & RBC_R15] = tmp;
-  base->REGISTER_FILE[SP] -= 4;
+  base->stack[base->SP] = imm;
+  base->SP++;
+  return;
 }
 
 rbc_ihdlrX(popq) {
-  if (base->REGISTER_FILE[SP] == 0) {
-    merry_assign_state(core->base->state, _MERRY_INTERNAL_SYSTEM_ERROR_,
-                       _MERRY_STACK_UNDERFLOW_);
-  }
-  if (merry_RAM_read_qword(core->stack, base->REGISTER_FILE[SP],
-                           &base->REGISTER_FILE[instruction & RBC_R15], ) ==
-      RET_FAILURE) {
-    // This will not fail at all
-    // i.e this section should never be executed
-
+  if (base->SP == 0) {
+    *kcore = mtrue;
+    MFATAL("RBC", "Stack Underflow. Terminating...", NULL);
     return;
   }
-  base->REGISTER_FILE[SP] -= 8;
+  base->SP--;
+  base->REGISTER_FILE[instruction & RBC_R15] = base->stack[base->SP];
 }
 
 rbc_ihdlrX(pusha) {
-  for (msize_t i = 0; i < REG_COUNT_GPC_64; i++) {
-    if (merry_RAM_write_qword(core->stack, base->REGISTER_FILE[SP],
-                              base->REGISTER_FILE[i], ) !=
-        RBC_MEM_OPER_SUCCESS) {
-      merry_assign_state(core->base->state, _MERRY_INTERNAL_SYSTEM_ERROR_,
-                         _MERRY_STACK_OVERFLOW_);
-      merry_provide_context(core->base->state, _MERRY_CORE_EXECUTING_);
-      core->req->type = PROBLEM_ENCOUNTERED;
-      merry_SEND_REQUEST(core->req);
-
-      return;
-    }
-    base->REGISTER_FILE[SP] += 8;
+  if (base->SP >= (_RBC_STACK_LEN_ / 8 - RBC_REG_COUNT)) {
+    *kcore = mtrue;
+    MFATAL("RBC", "Stack Overflow. Terminating...", NULL);
+    return;
+  }
+  for (msize_t i = 0; i < RBC_REG_COUNT; i++) {
+    base->stack[base->SP] = base->REGISTER_FILE[i];
+    base->SP++;
   }
 }
 
 rbc_ihdlrX(popa) {
-  if (base->REGISTER_FILE[SP] < (REG_COUNT_GPC_64 * 8)) {
-    merry_assign_state(core->base->state, _MERRY_INTERNAL_SYSTEM_ERROR_,
-                       _MERRY_STACK_UNDERFLOW_);
+  if (base->SP < RBC_REG_COUNT) {
+    *kcore = mtrue;
+    MFATAL("RBC", "Stack Underflow. Terminating...", NULL);
+    return;
   }
-  for (msize_t i = REG_COUNT_GPC_64 - 1; i >= 0; i++) {
-    if (merry_RAM_read_qword(core->stack, base->REGISTER_FILE[SP],
-                             &base->REGISTER_FILE[i], ) !=
-        RBC_MEM_OPER_SUCCESS) {
-      merry_assign_state(core->base->state, _MERRY_INTERNAL_SYSTEM_ERROR_,
-                         _MERRY_STACK_OVERFLOW_);
-      merry_provide_context(core->base->state, _MERRY_CORE_EXECUTING_);
-      core->req->type = PROBLEM_ENCOUNTERED;
-      merry_SEND_REQUEST(core->req);
-
-      return;
-    }
-    base->REGISTER_FILE[SP] -= 8;
+  for (msize_t i = RBC_R15; i >= 0; i--) {
+    base->SP--;
+    base->REGISTER_FILE[i] = base->stack[base->SP];
   }
 }
 
 rbc_ihdlrX(push_memb) {
-  MerryHostMemLayout imm;
-  if (rbc_memory_read_byte(base->iram, instruction & 0xFFFFFFFFFFFF,
-                           &imm.bytes.b7) != RBC_MEM_OPER_SUCCESS) {
-
+  if (base->SP >= (_RBC_STACK_LEN_ / 8)) {
+    *kcore = mtrue;
+    MFATAL("RBC", "Stack Overflow. Terminating...", NULL);
+    return;
+  }
+  mbyte_t imm;
+  if (rbc_memory_read_byte(base->dram, instruction & 0xFFFFFFFFFFFF, &imm) !=
+      RBC_MEM_OPER_SUCCESS) {
     *kcore = mtrue;
     MFATAL("RBC",
            "MEM READ Failed at ADDR=%zu likely because the access was invalid",
-           addr);
-    return;
-    return;
-  }
-  if (merry_RAM_write_byte(core->stack, base->REGISTER_FILE[SP],
-                           imm.bytes.b7, ) != RBC_MEM_OPER_SUCCESS) {
-    merry_assign_state(core->base->state, _MERRY_INTERNAL_SYSTEM_ERROR_,
-                       _MERRY_STACK_OVERFLOW_);
-    merry_provide_context(core->base->state, _MERRY_CORE_EXECUTING_);
-    core->req->type = PROBLEM_ENCOUNTERED;
-    merry_SEND_REQUEST(core->req);
-
+           instruction & 0xFFFFFFFFFFFF);
     return;
   }
-  base->REGISTER_FILE[SP] += 1;
+  base->stack[base->SP] = imm;
+  base->SP++;
 }
 
 rbc_ihdlrX(push_memw) {
-  MerryHostMemLayout imm;
-  if (rbc_memory_read_word(base->iram, instruction & 0xFFFFFFFFFFFF,
-                           &imm.half_half_words.w3) != RBC_MEM_OPER_SUCCESS) {
-
+  if (base->SP >= (_RBC_STACK_LEN_ / 8)) {
+    *kcore = mtrue;
+    MFATAL("RBC", "Stack Overflow. Terminating...", NULL);
+    return;
+  }
+  mword_t imm;
+  if (rbc_memory_read_word(base->dram, instruction & 0xFFFFFFFFFFFF, &imm) !=
+      RBC_MEM_OPER_SUCCESS) {
     *kcore = mtrue;
     MFATAL("RBC",
            "MEM READ Failed at ADDR=%zu likely because the access was invalid",
-           addr);
-    return;
-    return;
-  }
-  if (merry_RAM_write_word(core->stack, base->REGISTER_FILE[SP],
-                           imm.half_half_words.w3, ) != RBC_MEM_OPER_SUCCESS) {
-    merry_assign_state(core->base->state, _MERRY_INTERNAL_SYSTEM_ERROR_,
-                       _MERRY_STACK_OVERFLOW_);
-    merry_provide_context(core->base->state, _MERRY_CORE_EXECUTING_);
-    core->req->type = PROBLEM_ENCOUNTERED;
-    merry_SEND_REQUEST(core->req);
-
+           instruction & 0xFFFFFFFFFFFF);
     return;
   }
-  base->REGISTER_FILE[SP] += 2;
+  base->stack[base->SP] = imm;
+  base->SP++;
 }
 
 rbc_ihdlrX(push_memd) {
-  MerryHostMemLayout imm;
-  if (rbc_memory_read_dword(base->iram, instruction & 0xFFFFFFFFFFFF,
-                            &imm.half_words.w1) != RBC_MEM_OPER_SUCCESS) {
-
+  if (base->SP >= (_RBC_STACK_LEN_ / 8)) {
+    *kcore = mtrue;
+    MFATAL("RBC", "Stack Overflow. Terminating...", NULL);
+    return;
+  }
+  mdword_t imm;
+  if (rbc_memory_read_dword(base->dram, instruction & 0xFFFFFFFFFFFF, &imm) !=
+      RBC_MEM_OPER_SUCCESS) {
     *kcore = mtrue;
     MFATAL("RBC",
            "MEM READ Failed at ADDR=%zu likely because the access was invalid",
-           addr);
-    return;
-    return;
-  }
-  if (merry_RAM_write_dword(core->stack, base->REGISTER_FILE[SP],
-                            imm.half_words.w1, ) != RBC_MEM_OPER_SUCCESS) {
-    merry_assign_state(core->base->state, _MERRY_INTERNAL_SYSTEM_ERROR_,
-                       _MERRY_STACK_OVERFLOW_);
-    merry_provide_context(core->base->state, _MERRY_CORE_EXECUTING_);
-    core->req->type = PROBLEM_ENCOUNTERED;
-    merry_SEND_REQUEST(core->req);
-
+           instruction & 0xFFFFFFFFFFFF);
     return;
   }
-  base->REGISTER_FILE[SP] += 4;
+  base->stack[base->SP] = imm;
+  base->SP++;
 }
 
 rbc_ihdlrX(push_memq) {
-  MerryHostMemLayout imm;
-  if (rbc_memory_read_qword(base->iram, instruction & 0xFFFFFFFFFFFF,
-                            &imm.whole_word) != RBC_MEM_OPER_SUCCESS) {
-
+  if (base->SP >= (_RBC_STACK_LEN_ / 8)) {
+    *kcore = mtrue;
+    MFATAL("RBC", "Stack Overflow. Terminating...", NULL);
+    return;
+  }
+  mqword_t imm;
+  if (rbc_memory_read_qword(base->dram, instruction & 0xFFFFFFFFFFFF, &imm) !=
+      RBC_MEM_OPER_SUCCESS) {
     *kcore = mtrue;
     MFATAL("RBC",
            "MEM READ Failed at ADDR=%zu likely because the access was invalid",
-           addr);
-    return;
-    return;
-  }
-  if (merry_RAM_write_qword(core->stack, base->REGISTER_FILE[SP],
-                            imm.whole_word, ) != RBC_MEM_OPER_SUCCESS) {
-    merry_assign_state(core->base->state, _MERRY_INTERNAL_SYSTEM_ERROR_,
-                       _MERRY_STACK_OVERFLOW_);
-    merry_provide_context(core->base->state, _MERRY_CORE_EXECUTING_);
-    core->req->type = PROBLEM_ENCOUNTERED;
-    merry_SEND_REQUEST(core->req);
-
+           instruction & 0xFFFFFFFFFFFF);
     return;
   }
-  base->REGISTER_FILE[SP] += 8;
+  base->stack[base->SP] = imm;
+  base->SP++;
 }
 
 rbc_ihdlrX(pop_memb) {
-  if (base->REGISTER_FILE[SP] == 0) {
-    merry_assign_state(core->base->state, _MERRY_INTERNAL_SYSTEM_ERROR_,
-                       _MERRY_STACK_UNDERFLOW_);
-  }
-  mbyte_t tmp;
-  if (merry_RAM_read_byte(core->stack, base->REGISTER_FILE[SP], &tmp, ) ==
-      RET_FAILURE) {
-    // This will not fail at all
-    // i.e this section should never be executed
-
+  if (base->SP == 0) {
+    *kcore = mtrue;
+    MFATAL("RBC", "Stack Underflow. Terminating...", NULL);
     return;
   }
-  if (merry_core_mem_access_WRITE_DATA_byte(, base->iram,
-                                            instruction & 0xFFFFFFFFFFFF,
-                                            tmp) != RBC_MEM_OPER_SUCCESS) {
-
+  base->SP--;
+  mbyte_t imm = base->stack[base->SP] & 0xFF;
+  if (rbc_memory_write_byte(base->dram, instruction & 0xFFFFFFFFFFFF, imm) !=
+      RBC_MEM_OPER_SUCCESS) {
     *kcore = mtrue;
     MFATAL("RBC",
            "MEM WRITE Failed at ADDR=%zu likely because the access was invalid",
-           addr);
-    return;
+           instruction & 0xFFFFFFFFFFFF);
     return;
   }
-  base->REGISTER_FILE[SP] -= 1;
 }
 
 rbc_ihdlrX(pop_memw) {
-  if (base->REGISTER_FILE[SP] == 0) {
-    merry_assign_state(core->base->state, _MERRY_INTERNAL_SYSTEM_ERROR_,
-                       _MERRY_STACK_UNDERFLOW_);
-  }
-  mword_t tmp;
-  if (merry_RAM_read_word(core->stack, base->REGISTER_FILE[SP], &tmp, ) ==
-      RET_FAILURE) {
-    // This will not fail at all
-    // i.e this section should never be executed
-
+  if (base->SP == 0) {
+    *kcore = mtrue;
+    MFATAL("RBC", "Stack Underflow. Terminating...", NULL);
     return;
   }
-  if (merry_core_mem_access_WRITE_DATA_word(, base->iram,
-                                            instruction & 0xFFFFFFFFFFFF,
-                                            tmp) != RBC_MEM_OPER_SUCCESS) {
-
+  base->SP--;
+  mword_t imm = base->stack[base->SP] & 0xFFFF;
+  if (rbc_memory_write_word(base->dram, instruction & 0xFFFFFFFFFFFF, imm) !=
+      RBC_MEM_OPER_SUCCESS) {
     *kcore = mtrue;
     MFATAL("RBC",
            "MEM WRITE Failed at ADDR=%zu likely because the access was invalid",
-           addr);
+           instruction & 0xFFFFFFFFFFFF);
     return;
   }
-  base->REGISTER_FILE[SP] -= 2;
 }
 
 rbc_ihdlrX(pop_memd) {
-  if (base->REGISTER_FILE[SP] == 0) {
-    merry_assign_state(core->base->state, _MERRY_INTERNAL_SYSTEM_ERROR_,
-                       _MERRY_STACK_UNDERFLOW_);
-  }
-  mdword_t tmp;
-  if (merry_RAM_read_dword(core->stack, base->REGISTER_FILE[SP], &tmp, ) ==
-      RET_FAILURE) {
-    // This will not fail at all
-    // i.e this section should never be executed
-
+  if (base->SP == 0) {
+    *kcore = mtrue;
+    MFATAL("RBC", "Stack Underflow. Terminating...", NULL);
     return;
   }
-  if (merry_core_mem_access_WRITE_DATA_dword(, base->iram,
-                                             instruction & 0xFFFFFFFFFFFF,
-                                             tmp) != RBC_MEM_OPER_SUCCESS) {
-
+  base->SP--;
+  mdword_t imm = base->stack[base->SP] & 0xFFFFFFFF;
+  if (rbc_memory_write_dword(base->dram, instruction & 0xFFFFFFFFFFFF, imm) !=
+      RBC_MEM_OPER_SUCCESS) {
     *kcore = mtrue;
     MFATAL("RBC",
            "MEM WRITE Failed at ADDR=%zu likely because the access was invalid",
-           addr);
+           instruction & 0xFFFFFFFFFFFF);
     return;
   }
-  base->REGISTER_FILE[SP] -= 4;
 }
 
 rbc_ihdlrX(pop_memq) {
-  if (base->REGISTER_FILE[SP] == 0) {
-    merry_assign_state(core->base->state, _MERRY_INTERNAL_SYSTEM_ERROR_,
-                       _MERRY_STACK_UNDERFLOW_);
-  }
-  mqword_t tmp;
-  if (merry_RAM_read_qword(core->stack, base->REGISTER_FILE[SP], &tmp, ) ==
-      RET_FAILURE) {
-    // This will not fail at all
-    // i.e this section should never be executed
-
+  if (base->SP == 0) {
+    *kcore = mtrue;
+    MFATAL("RBC", "Stack Underflow. Terminating...", NULL);
     return;
   }
-  if (merry_core_mem_access_WRITE_DATA_qword(, base->iram,
-                                             instruction & 0xFFFFFFFFFFFF,
-                                             tmp) != RBC_MEM_OPER_SUCCESS) {
-
+  base->SP--;
+  mqword_t imm = base->stack[base->SP];
+  if (rbc_memory_write_qword(base->dram, instruction & 0xFFFFFFFFFFFF, imm) !=
+      RBC_MEM_OPER_SUCCESS) {
     *kcore = mtrue;
     MFATAL("RBC",
            "MEM WRITE Failed at ADDR=%zu likely because the access was invalid",
-           addr);
+           instruction & 0xFFFFFFFFFFFF);
     return;
   }
-  base->REGISTER_FILE[SP] -= 8;
-}
-
-rbc_ihdlrX(loadsb) {
-  register mqword_t off = instruction.half_half_words.w1;
-  sign_extend16(off);
-  mbyte_t tmp;
-  if (merry_RAM_read_byte(core->stack, base->REGISTER_FILE[BP] + off, &tmp, ) ==
-      RET_FAILURE) {
-    merry_assign_state(core->base->state, _MERRY_PROGRAM_ERROR_,
-                       _INVALID_STACK_ACCESS_);
-    merry_provide_context(core->base->state, _MERRY_CORE_EXECUTING_);
-    core->req->type = PROBLEM_ENCOUNTERED;
-    merry_SEND_REQUEST(core->req);
-
-    return;
-  }
-  base->REGISTER_FILE[instruction & RBC_R15] = tmp;
-}
-
-rbc_ihdlrX(loadsw) {
-  register mqword_t off = instruction.half_half_words.w1;
-  sign_extend16(off);
-  mword_t tmp;
-  if (merry_RAM_read_word(core->stack, base->REGISTER_FILE[BP] + off, &tmp, ) ==
-      RET_FAILURE) {
-    merry_assign_state(core->base->state, _MERRY_PROGRAM_ERROR_,
-                       _INVALID_STACK_ACCESS_);
-    merry_provide_context(core->base->state, _MERRY_CORE_EXECUTING_);
-    core->req->type = PROBLEM_ENCOUNTERED;
-    merry_SEND_REQUEST(core->req);
-
-    return;
-  }
-  base->REGISTER_FILE[instruction & RBC_R15] = tmp;
-}
-
-rbc_ihdlrX(loadsd) {
-  register mqword_t off = instruction.half_half_words.w1;
-  sign_extend16(off);
-  mdword_t tmp;
-  if (merry_RAM_read_dword(core->stack, base->REGISTER_FILE[BP] + off,
-                           &tmp, ) != RBC_MEM_OPER_SUCCESS) {
-    merry_assign_state(core->base->state, _MERRY_PROGRAM_ERROR_,
-                       _INVALID_STACK_ACCESS_);
-    merry_provide_context(core->base->state, _MERRY_CORE_EXECUTING_);
-    core->req->type = PROBLEM_ENCOUNTERED;
-    merry_SEND_REQUEST(core->req);
-
-    return;
-  }
-  base->REGISTER_FILE[instruction & RBC_R15] = tmp;
 }
 
 rbc_ihdlrX(loadsq) {
-  register mqword_t off = instruction.half_half_words.w1;
-  sign_extend16(off);
-  mqword_t tmp;
-  if (merry_RAM_read_qword(core->stack, base->REGISTER_FILE[BP] + off,
-                           &tmp, ) != RBC_MEM_OPER_SUCCESS) {
-    merry_assign_state(core->base->state, _MERRY_PROGRAM_ERROR_,
-                       _INVALID_STACK_ACCESS_);
-    merry_provide_context(core->base->state, _MERRY_CORE_EXECUTING_);
-    core->req->type = PROBLEM_ENCOUNTERED;
-    merry_SEND_REQUEST(core->req);
-
+  register mqword_t off = instruction & 0xFFFFFFFF;
+  sign_extend32(off);
+  register mqword_t res = base->BP + off;
+  if (res >= base->SP) {
+    *kcore = mtrue;
+    MFATAL("RBC", "Invalid STACK Access: PC=%zu", base->PC);
     return;
   }
-  base->REGISTER_FILE[instruction & RBC_R15] = tmp;
-}
-
-rbc_ihdlrX(storesb) {
-  register mqword_t off = instruction.half_half_words.w1;
-  sign_extend16(off);
-  if (merry_RAM_write_byte(core->stack, base->REGISTER_FILE[BP] + off,
-                           base->REGISTER_FILE[instruction & RBC_R15] &
-                               0xFF, ) != RBC_MEM_OPER_SUCCESS) {
-    merry_assign_state(core->base->state, _MERRY_PROGRAM_ERROR_,
-                       _INVALID_STACK_ACCESS_);
-    merry_provide_context(core->base->state, _MERRY_CORE_EXECUTING_);
-    core->req->type = PROBLEM_ENCOUNTERED;
-    merry_SEND_REQUEST(core->req);
-
-    return;
-  }
-}
-
-rbc_ihdlrX(storesw) {
-  register mqword_t off = instruction.half_half_words.w1;
-  sign_extend16(off);
-  if (merry_RAM_write_word(core->stack, base->REGISTER_FILE[BP] + off,
-                           base->REGISTER_FILE[instruction & RBC_R15] &
-                               0xFFFF, ) != RBC_MEM_OPER_SUCCESS) {
-    merry_assign_state(core->base->state, _MERRY_PROGRAM_ERROR_,
-                       _INVALID_STACK_ACCESS_);
-    merry_provide_context(core->base->state, _MERRY_CORE_EXECUTING_);
-    core->req->type = PROBLEM_ENCOUNTERED;
-    merry_SEND_REQUEST(core->req);
-
-    return;
-  }
-}
-
-rbc_ihdlrX(storesd) {
-  register mqword_t off = instruction.half_half_words.w1;
-  sign_extend16(off);
-  if (merry_RAM_write_dword(core->stack, base->REGISTER_FILE[BP] + off,
-                            base->REGISTER_FILE[instruction & RBC_R15] &
-                                0xFFFFFFFF, ) != RBC_MEM_OPER_SUCCESS) {
-    merry_assign_state(core->base->state, _MERRY_PROGRAM_ERROR_,
-                       _INVALID_STACK_ACCESS_);
-    merry_provide_context(core->base->state, _MERRY_CORE_EXECUTING_);
-    core->req->type = PROBLEM_ENCOUNTERED;
-    merry_SEND_REQUEST(core->req);
-
-    return;
-  }
+  base->REGISTER_FILE[(instruction >> 32) & RBC_R15] = base->stack[res];
 }
 
 rbc_ihdlrX(storesq) {
-  register mqword_t off = instruction.half_half_words.w1;
-  sign_extend16(off);
-  if (merry_RAM_write_qword(core->stack, base->REGISTER_FILE[BP] + off,
-                            base->REGISTER_FILE[instruction & RBC_R15], ) ==
-      RET_FAILURE) {
-    merry_assign_state(core->base->state, _MERRY_PROGRAM_ERROR_,
-                       _INVALID_STACK_ACCESS_);
-    merry_provide_context(core->base->state, _MERRY_CORE_EXECUTING_);
-    core->req->type = PROBLEM_ENCOUNTERED;
-    merry_SEND_REQUEST(core->req);
-
+  register mqword_t off = instruction & 0xFFFFFFFF;
+  sign_extend32(off);
+  register mqword_t res = base->BP + off;
+  if (res >= base->SP) {
+    *kcore = mtrue;
+    MFATAL("RBC", "Invalid STACK Access: PC=%zu", base->PC);
     return;
   }
+  base->stack[res] = base->REGISTER_FILE[(instruction >> 32) & RBC_R15];
 }
 
 rbc_ihdlrX(and_imm) {
@@ -1606,7 +1312,10 @@ rbc_ihdlrX(and_imm) {
   base->PC += 8;
   if (rbc_memory_read_qword(base->iram, base->PC, &imm) !=
       RBC_MEM_OPER_SUCCESS) {
-
+    *kcore = mtrue;
+    MFATAL("RBC",
+           "MEM READ Failed at PC=%zu likely because the access was invalid",
+           base->PC);
     return;
   }
   base->REGISTER_FILE[instruction & RBC_R15] &= imm;
@@ -1617,7 +1326,10 @@ rbc_ihdlrX(or_imm) {
   base->PC += 8;
   if (rbc_memory_read_qword(base->iram, base->PC, &imm) !=
       RBC_MEM_OPER_SUCCESS) {
-
+    *kcore = mtrue;
+    MFATAL("RBC",
+           "MEM READ Failed at PC=%zu likely because the access was invalid",
+           base->PC);
     return;
   }
   base->REGISTER_FILE[instruction & RBC_R15] |= imm;
@@ -1628,7 +1340,10 @@ rbc_ihdlrX(xor_imm) {
   base->PC += 8;
   if (rbc_memory_read_qword(base->iram, base->PC, &imm) !=
       RBC_MEM_OPER_SUCCESS) {
-
+    *kcore = mtrue;
+    MFATAL("RBC",
+           "MEM READ Failed at PC=%zu likely because the access was invalid",
+           base->PC);
     return;
   }
   base->REGISTER_FILE[instruction & RBC_R15] ^= imm;
@@ -1639,508 +1354,642 @@ rbc_ihdlrX(cmp_imm) {
   base->PC += 8;
   if (rbc_memory_read_qword(base->iram, base->PC, &imm) !=
       RBC_MEM_OPER_SUCCESS) {
-
+    *kcore = mtrue;
+    MFATAL("RBC",
+           "MEM READ Failed at PC=%zu likely because the access was invalid",
+           base->PC);
     return;
   }
-  merry_compare_two_values(imm, base->REGISTER_FILE[instruction & RBC_R15],
-                           &core->fregr);
+  merry_compare_two_values(imm, base->REGISTER_FILE[instruction & RBC_R15]);
+  base->flags.regr = merry_obtain_flags_regr();
 }
 
 rbc_ihdlrX(cmp_imm_memb) {
-  MerryHostMemLayout imm;
-  if (rbc_memory_read_byte(base->iram, instruction & 0xFFFFFFFFFFFF,
-                           &imm.bytes.b7) != RBC_MEM_OPER_SUCCESS) {
-
+  mbyte_t imm;
+  if (rbc_memory_read_byte(base->dram, instruction & 0xFFFFFFFFFFFF, &imm) !=
+      RBC_MEM_OPER_SUCCESS) {
     *kcore = mtrue;
     MFATAL("RBC",
-           "MEM WRITE Failed at ADDR=%zu likely because the access was invalid",
-           addr);
+           "MEM READ Failed at ADDR=%zu likely because the access was invalid",
+           instruction & 0xFFFFFFFFFFFF);
     return;
   }
-  merry_compare_two_values(
-      imm.whole_word, base->REGISTER_FILE[instruction & RBC_R15], &core->fregr);
+  merry_compare_two_values(imm,
+                           base->REGISTER_FILE[(instruction >> 48) & RBC_R15]);
+  base->flags.regr = merry_obtain_flags_regr();
 }
 
 rbc_ihdlrX(cmp_imm_memw) {
-  MerryHostMemLayout imm;
-  if (rbc_memory_read_word(base->iram, instruction & 0xFFFFFFFFFFFF,
-                           &imm.half_half_words.w3) != RBC_MEM_OPER_SUCCESS) {
-
+  mword_t imm;
+  if (rbc_memory_read_word(base->dram, instruction & 0xFFFFFFFFFFFF, &imm) !=
+      RBC_MEM_OPER_SUCCESS) {
     *kcore = mtrue;
     MFATAL("RBC",
-           "MEM WRITE Failed at ADDR=%zu likely because the access was invalid",
-           addr);
+           "MEM READ Failed at ADDR=%zu likely because the access was invalid",
+           instruction & 0xFFFFFFFFFFFF);
     return;
   }
-  merry_compare_two_values(
-      imm.whole_word, base->REGISTER_FILE[instruction & RBC_R15], &core->fregr);
+  merry_compare_two_values(imm,
+                           base->REGISTER_FILE[(instruction >> 48) & RBC_R15]);
+  base->flags.regr = merry_obtain_flags_regr();
 }
 
 rbc_ihdlrX(cmp_imm_memd) {
-  MerryHostMemLayout imm;
-  if (rbc_memory_read_dword(base->iram, instruction & 0xFFFFFFFFFFFF,
-                            &imm.half_words.w1) != RBC_MEM_OPER_SUCCESS) {
-
+  mdword_t imm;
+  if (rbc_memory_read_dword(base->dram, instruction & 0xFFFFFFFFFFFF, &imm) !=
+      RBC_MEM_OPER_SUCCESS) {
     *kcore = mtrue;
     MFATAL("RBC",
-           "MEM WRITE Failed at ADDR=%zu likely because the access was invalid",
-           addr);
+           "MEM READ Failed at ADDR=%zu likely because the access was invalid",
+           instruction & 0xFFFFFFFFFFFF);
     return;
   }
-  merry_compare_two_values(
-      imm.whole_word, base->REGISTER_FILE[instruction & RBC_R15], &core->fregr);
+  merry_compare_two_values(imm,
+                           base->REGISTER_FILE[(instruction >> 48) & RBC_R15]);
+  base->flags.regr = merry_obtain_flags_regr();
 }
 
 rbc_ihdlrX(cmp_imm_memq) {
-  MerryHostMemLayout imm;
-  if (rbc_memory_read_qword(base->iram, instruction & 0xFFFFFFFFFFFF,
-                            &imm.whole_word) != RBC_MEM_OPER_SUCCESS) {
-
+  mqword_t imm;
+  if (rbc_memory_read_qword(base->dram, instruction & 0xFFFFFFFFFFFF, &imm) !=
+      RBC_MEM_OPER_SUCCESS) {
     *kcore = mtrue;
     MFATAL("RBC",
-           "MEM WRITE Failed at ADDR=%zu likely because the access was invalid",
-           addr);
+           "MEM READ Failed at ADDR=%zu likely because the access was invalid",
+           instruction & 0xFFFFFFFFFFFF);
     return;
   }
-  merry_compare_two_values(
-      imm.whole_word, base->REGISTER_FILE[instruction & RBC_R15], &core->fregr);
+  merry_compare_two_values(imm,
+                           base->REGISTER_FILE[(instruction >> 48) & RBC_R15]);
+  base->flags.regr = merry_obtain_flags_regr();
 }
 
 rbc_ihdlrX(sin) {
-  register mqword_t len = base->REGISTER_FILE[R0];
+  register mqword_t len = base->REGISTER_FILE[RBC_R0];
   register mqword_t addr = instruction & 0xFFFFFFFFFFFF;
+  if (!len)
+    return;
   mbptr_t temp = (mbptr_t)malloc(len);
   if (temp == NULL) {
-    merry_assign_state(core->base->state, _MERRY_INTERNAL_SYSTEM_ERROR_,
-                       _MERRY_MEM_ALLOCATION_FAILURE_);
-    merry_provide_context(core->base->state, _MERRY_CORE_EXECUTING_);
-    core->req->type = PROBLEM_ENCOUNTERED;
-    merry_SEND_REQUEST(core->req);
-
+    *kcore = mtrue;
+    MFATAL("RBC", "System Failure: MEM ALLOCATION FAILED- PC=%zu", base->PC);
     return;
   }
   for (msize_t i = 0; i < len; i++) {
     temp[i] = getchar();
   }
-  if (merry_core_base_mem_access_bulk_write(base->iram, addr, temp, len) ==
-      RET_FAILURE)
-
-    free(temp);
+  if (rbc_memory_write_bulk(base->dram, addr, len, temp) !=
+      RBC_MEM_OPER_SUCCESS) {
+    *kcore = mtrue;
+    MFATAL("RBC",
+           "MEM WRITE Failed(Blk[len=%zu, from=%zu]) likely because of invalid "
+           "access: PC=%zu",
+           len, addr, base->PC);
+  }
+  free(temp);
 }
 
 rbc_ihdlrX(sout) {
-  register mqword_t len = base->REGISTER_FILE[R0];
+  register mqword_t len = base->REGISTER_FILE[RBC_R0];
   register mqword_t addr = instruction & 0xFFFFFFFFFFFF;
-  mbptr_t temp;
-  if (merry_core_base_mem_access_bulk_read(base->iram, addr, &temp, len) ==
-      RET_FAILURE) {
-
-  } else {
-    printf("%s", temp);
-    free(temp);
+  if (!len)
+    return;
+  mbptr_t temp = (mbptr_t)malloc(len);
+  if (temp == NULL) {
+    *kcore = mtrue;
+    MFATAL("RBC", "System Failure: MEM ALLOCATION FAILED- PC=%zu", base->PC);
+    return;
   }
+  if (rbc_memory_read_bulk(base->dram, addr, len, temp) !=
+      RBC_MEM_OPER_SUCCESS) {
+    *kcore = mtrue;
+    MFATAL("RBC",
+           "MEM READ Failed(Blk[len=%zu, from=%zu]) likely because of invalid "
+           "access: PC=%zu",
+           len, addr, base->PC);
+    free(temp);
+    return;
+  }
+  printf("%s", temp);
+  free(temp);
 }
 
 rbc_ihdlrX(loadb) {
-  register mbyte_t op1 = instruction & RBC_R15;
+  register mbyte_t op1 = (instruction >> 48) & RBC_R15;
   mbyte_t imm;
-  if (rbc_memory_read_byte(base->iram, instruction & 0xFFFFFFFFFFFF, &imm) ==
-      RET_FAILURE) {
-
+  if (rbc_memory_read_byte(base->dram, instruction & 0xFFFFFFFFFFFF, &imm) !=
+      RBC_MEM_OPER_SUCCESS) {
+    *kcore = mtrue;
+    MFATAL("RBC",
+           "MEM READ Failed likely because of invalid "
+           "access: ADDR=%zu, PC=%zu",
+           instruction & 0xFFFFFFFFFFFF, base->PC);
     return;
   }
   base->REGISTER_FILE[op1] = imm;
 }
 
 rbc_ihdlrX(storeb) {
-  register mbyte_t op1 = instruction & RBC_R15;
-  if (merry_core_mem_access_WRITE_DATA_byte(
-          , base->iram, instruction & 0xFFFFFFFFFFFF,
-          base->REGISTER_FILE[op1] & 0xFF) != RBC_MEM_OPER_SUCCESS) {
-
+  register mbyte_t op1 = (instruction >> 48) & RBC_R15;
+  if (rbc_memory_write_byte(base->dram, instruction & 0xFFFFFFFFFFFF,
+                            base->REGISTER_FILE[op1] & 0xFF) !=
+      RBC_MEM_OPER_SUCCESS) {
+    *kcore = mtrue;
+    MFATAL("RBC",
+           "MEM WRITE Failed likely because of invalid "
+           "access: ADDR=%zu PC=%zu",
+           instruction & 0xFFFFFFFFFFFF, base->PC);
     return;
   }
 }
 
 rbc_ihdlrX(loadw) {
-  register mbyte_t op1 = instruction & RBC_R15;
+  register mbyte_t op1 = (instruction >> 48) & RBC_R15;
   mword_t imm;
-  if (rbc_memory_read_word(base->iram, instruction & 0xFFFFFFFFFFFF, &imm) ==
-      RET_FAILURE) {
-
+  if (rbc_memory_read_word(base->dram, instruction & 0xFFFFFFFFFFFF, &imm) !=
+      RBC_MEM_OPER_SUCCESS) {
+    *kcore = mtrue;
+    MFATAL("RBC",
+           "MEM READ Failed likely because of invalid "
+           "access: ADDR=%zu PC=%zu",
+           instruction & 0xFFFFFFFFFFFF, base->PC);
     return;
   }
   base->REGISTER_FILE[op1] = imm;
 }
 
 rbc_ihdlrX(storew) {
-  register mbyte_t op1 = instruction & RBC_R15;
-  if (merry_core_mem_access_WRITE_DATA_word(
-          , base->iram, instruction & 0xFFFFFFFFFFFF,
-          base->REGISTER_FILE[op1] & 0xFFFF) != RBC_MEM_OPER_SUCCESS) {
-
+  register mbyte_t op1 = (instruction >> 48) & RBC_R15;
+  if (rbc_memory_write_word(base->dram, instruction & 0xFFFFFFFFFFFF,
+                            base->REGISTER_FILE[op1] & 0xFFFF) !=
+      RBC_MEM_OPER_SUCCESS) {
+    *kcore = mtrue;
+    MFATAL("RBC",
+           "MEM WRITE Failed likely because of invalid "
+           "access: ADDR=%zu PC=%zu",
+           instruction & 0xFFFFFFFFFFFF, base->PC);
     return;
   }
 }
 
 rbc_ihdlrX(loadd) {
-  register mbyte_t op1 = instruction & RBC_R15;
+  register mbyte_t op1 = (instruction >> 48) & RBC_R15;
   mdword_t imm;
-  if (rbc_memory_read_dword(base->iram, instruction & 0xFFFFFFFFFFFF, &imm) ==
-      RET_FAILURE) {
-
+  if (rbc_memory_read_dword(base->dram, instruction & 0xFFFFFFFFFFFF, &imm) !=
+      RBC_MEM_OPER_SUCCESS) {
+    *kcore = mtrue;
+    MFATAL("RBC",
+           "MEM READ Failed likely because of invalid "
+           "access: ADDR=%zu PC=%zu",
+           instruction & 0xFFFFFFFFFFFF, base->PC);
     return;
   }
   base->REGISTER_FILE[op1] = imm;
 }
 
 rbc_ihdlrX(stored) {
-  register mbyte_t op1 = instruction & RBC_R15;
-  if (merry_core_mem_access_WRITE_DATA_dword(
-          , base->iram, instruction & 0xFFFFFFFFFFFF,
-          base->REGISTER_FILE[op1] & 0xFFFFFFFF) != RBC_MEM_OPER_SUCCESS) {
-
+  register mbyte_t op1 = (instruction >> 48) & RBC_R15;
+  if (rbc_memory_write_dword(base->dram, instruction & 0xFFFFFFFFFFFF,
+                             base->REGISTER_FILE[op1] & 0xFFFFFFFF) !=
+      RBC_MEM_OPER_SUCCESS) {
+    *kcore = mtrue;
+    MFATAL("RBC",
+           "MEM WRITE Failed likely because of invalid "
+           "access: ADDR=%zu PC=%zu",
+           instruction & 0xFFFFFFFFFFFF, base->PC);
     return;
   }
 }
 
 rbc_ihdlrX(loadq) {
-  register mbyte_t op1 = instruction & RBC_R15;
+  register mbyte_t op1 = (instruction >> 48) & RBC_R15;
   mqword_t imm;
-  if (rbc_memory_read_qword(base->iram, instruction & 0xFFFFFFFFFFFF, &imm) ==
-      RET_FAILURE) {
-
+  if (rbc_memory_read_qword(base->dram, instruction & 0xFFFFFFFFFFFF, &imm) !=
+      RBC_MEM_OPER_SUCCESS) {
+    *kcore = mtrue;
+    MFATAL("RBC",
+           "MEM READ Failed likely because of invalid "
+           "access: ADDR=%zu PC=%zu",
+           instruction & 0xFFFFFFFFFFFF, base->PC);
     return;
   }
   base->REGISTER_FILE[op1] = imm;
 }
 
 rbc_ihdlrX(storeq) {
-  register mbyte_t op1 = instruction & RBC_R15;
-  if (merry_core_mem_access_WRITE_DATA_qword(
-          , base->iram, instruction & 0xFFFFFFFFFFFF,
-          base->REGISTER_FILE[op1]) != RBC_MEM_OPER_SUCCESS) {
-
+  register mbyte_t op1 = (instruction >> 48) & RBC_R15;
+  if (rbc_memory_write_qword(base->dram, instruction & 0xFFFFFFFFFFFF,
+                             base->REGISTER_FILE[op1]) !=
+      RBC_MEM_OPER_SUCCESS) {
+    *kcore = mtrue;
+    MFATAL("RBC",
+           "MEM WRITE Failed likely because of invalid "
+           "access: ADDR=%zu PC=%zu",
+           instruction & 0xFFFFFFFFFFFF, base->PC);
     return;
   }
 }
 
 rbc_ihdlrX(loadb_reg) {
-  register mbyte_t op1 = instruction & RBC_R15;
+  register mbyte_t op1 = (instruction >> 4) & RBC_R15;
   register mbyte_t op2 = instruction & RBC_R15;
   mbyte_t imm;
-  if (rbc_memory_read_byte(base->iram, base->REGISTER_FILE[op2], &imm) ==
-      RET_FAILURE) {
-
+  if (rbc_memory_read_byte(base->dram, base->REGISTER_FILE[op2], &imm) !=
+      RBC_MEM_OPER_SUCCESS) {
+    *kcore = mtrue;
+    MFATAL("RBC",
+           "MEM READ Failed likely because of invalid "
+           "access: ADDR=%zu PC=%zu",
+           instruction & 0xFFFFFFFFFFFF, base->PC);
     return;
   }
   base->REGISTER_FILE[op1] = imm;
 }
 
 rbc_ihdlrX(storeb_reg) {
-  register mbyte_t op1 = instruction & RBC_R15;
+  register mbyte_t op1 = (instruction >> 4) & RBC_R15;
   register mbyte_t op2 = instruction & RBC_R15;
-  if (merry_core_mem_access_WRITE_DATA_byte(
-          , base->iram, base->REGISTER_FILE[op2],
-          base->REGISTER_FILE[op1] & 0xFF) != RBC_MEM_OPER_SUCCESS) {
-
+  if (rbc_memory_write_byte(base->dram, base->REGISTER_FILE[op2],
+                            base->REGISTER_FILE[op1] & 0xFF) !=
+      RBC_MEM_OPER_SUCCESS) {
+    *kcore = mtrue;
+    MFATAL("RBC",
+           "MEM WRITE Failed likely because of invalid "
+           "access: ADDR=%zu PC=%zu",
+           instruction & 0xFFFFFFFFFFFF, base->PC);
     return;
   }
 }
 
 rbc_ihdlrX(loadw_reg) {
-  register mbyte_t op1 = instruction & RBC_R15;
+  register mbyte_t op1 = (instruction >> 4) & RBC_R15;
   register mbyte_t op2 = instruction & RBC_R15;
   mword_t imm;
-  if (rbc_memory_read_word(base->iram, base->REGISTER_FILE[op2], &imm) ==
-      RET_FAILURE) {
-
+  if (rbc_memory_read_word(base->dram, base->REGISTER_FILE[op2], &imm) !=
+      RBC_MEM_OPER_SUCCESS) {
+    *kcore = mtrue;
+    MFATAL("RBC",
+           "MEM READ Failed likely because of invalid "
+           "access: ADDR=%zu PC=%zu",
+           instruction & 0xFFFFFFFFFFFF, base->PC);
     return;
   }
   base->REGISTER_FILE[op1] = imm;
 }
 
 rbc_ihdlrX(storew_reg) {
-  register mbyte_t op1 = instruction & RBC_R15;
+  register mbyte_t op1 = (instruction >> 4) & RBC_R15;
   register mbyte_t op2 = instruction & RBC_R15;
-  if (merry_core_mem_access_WRITE_DATA_word(
-          , base->iram, base->REGISTER_FILE[op2],
-          base->REGISTER_FILE[op1] & 0xFFFF) != RBC_MEM_OPER_SUCCESS) {
-
+  if (rbc_memory_write_word(base->dram, base->REGISTER_FILE[op2],
+                            base->REGISTER_FILE[op1] & 0xFFFF) !=
+      RBC_MEM_OPER_SUCCESS) {
+    *kcore = mtrue;
+    MFATAL("RBC",
+           "MEM WRITE Failed likely because of invalid "
+           "access: ADDR=%zu PC=%zu",
+           instruction & 0xFFFFFFFFFFFF, base->PC);
     return;
   }
 }
 
 rbc_ihdlrX(loadd_reg) {
-  register mbyte_t op1 = instruction & RBC_R15;
+  register mbyte_t op1 = (instruction >> 4) & RBC_R15;
   register mbyte_t op2 = instruction & RBC_R15;
   mdword_t imm;
-  if (rbc_memory_read_dword(base->iram, base->REGISTER_FILE[op2], &imm) ==
-      RET_FAILURE) {
-
+  if (rbc_memory_read_dword(base->dram, base->REGISTER_FILE[op2], &imm) !=
+      RBC_MEM_OPER_SUCCESS) {
+    *kcore = mtrue;
+    MFATAL("RBC",
+           "MEM READ Failed likely because of invalid "
+           "access: ADDR=%zu PC=%zu",
+           instruction & 0xFFFFFFFFFFFF, base->PC);
     return;
   }
   base->REGISTER_FILE[op1] = imm;
 }
 
 rbc_ihdlrX(stored_reg) {
-  register mbyte_t op1 = instruction & RBC_R15;
+  register mbyte_t op1 = (instruction >> 4) & RBC_R15;
   register mbyte_t op2 = instruction & RBC_R15;
-  if (merry_core_mem_access_WRITE_DATA_dword(
-          , base->iram, base->REGISTER_FILE[op2],
-          base->REGISTER_FILE[op1] & 0xFFFFFFFF) != RBC_MEM_OPER_SUCCESS) {
-
+  if (rbc_memory_write_dword(base->dram, base->REGISTER_FILE[op2],
+                             base->REGISTER_FILE[op1] & 0xFFFFFF) !=
+      RBC_MEM_OPER_SUCCESS) {
+    *kcore = mtrue;
+    MFATAL("RBC",
+           "MEM WRITE Failed likely because of invalid "
+           "access: ADDR=%zu PC=%zu",
+           instruction & 0xFFFFFFFFFFFF, base->PC);
     return;
   }
 }
 
 rbc_ihdlrX(loadq_reg) {
-  register mbyte_t op1 = instruction & RBC_R15;
+  register mbyte_t op1 = (instruction >> 4) & RBC_R15;
   register mbyte_t op2 = instruction & RBC_R15;
-  if (rbc_memory_read_qword(base->iram, base->REGISTER_FILE[op2],
-                            &base->REGISTER_FILE[op1]) !=
+  mqword_t imm;
+  if (rbc_memory_read_qword(base->dram, base->REGISTER_FILE[op2], &imm) !=
       RBC_MEM_OPER_SUCCESS) {
-
+    *kcore = mtrue;
+    MFATAL("RBC",
+           "MEM READ Failed likely because of invalid "
+           "access: ADDR=%zu PC=%zu",
+           instruction & 0xFFFFFFFFFFFF, base->PC);
     return;
   }
+  base->REGISTER_FILE[op1] = imm;
 }
 
 rbc_ihdlrX(storeq_reg) {
-  register mbyte_t op1 = instruction & RBC_R15;
+  register mbyte_t op1 = (instruction >> 4) & RBC_R15;
   register mbyte_t op2 = instruction & RBC_R15;
-  if (merry_core_mem_access_WRITE_DATA_qword(
-          , base->iram, base->REGISTER_FILE[op2], base->REGISTER_FILE[op1]) ==
-      RET_FAILURE) {
-
+  if (rbc_memory_write_qword(base->dram, base->REGISTER_FILE[op2],
+                             base->REGISTER_FILE[op1]) !=
+      RBC_MEM_OPER_SUCCESS) {
+    *kcore = mtrue;
+    MFATAL("RBC",
+           "MEM WRITE Failed likely because of invalid "
+           "access: ADDR=%zu PC=%zu",
+           instruction & 0xFFFFFFFFFFFF, base->PC);
     return;
   }
 }
-
 rbc_ihdlrX(atm_loadb) {
-  register mbyte_t op1 = instruction & RBC_R15;
+  register mbyte_t op1 = (instruction >> 48) & RBC_R15;
   mbyte_t imm;
-  if (rbc_memory_read_byte_atm(base->iram, instruction & 0xFFFFFFFFFFFF,
+  if (rbc_memory_read_byte_atm(base->dram, instruction & 0xFFFFFFFFFFFF,
                                &imm) != RBC_MEM_OPER_SUCCESS) {
-
-    return;
-  }
-  base->REGISTER_FILE[op1] = imm;
-}
-
-rbc_ihdlrX(atm_loadw) {
-  register mbyte_t op1 = instruction & RBC_R15;
-  mword_t imm;
-  if (rbc_memory_read_word_atm(base->iram, instruction & 0xFFFFFFFFFFFF,
-                               &imm) != RBC_MEM_OPER_SUCCESS) {
-
-    return;
-  }
-  base->REGISTER_FILE[op1] = imm;
-}
-
-rbc_ihdlrX(atm_loadd) {
-  register mbyte_t op1 = instruction & RBC_R15;
-  mdword_t imm;
-  if (rbc_memory_read_dword_atm(base->iram, instruction & 0xFFFFFFFFFFFF,
-                                &imm) != RBC_MEM_OPER_SUCCESS) {
-
-    return;
-  }
-  base->REGISTER_FILE[op1] = imm;
-}
-
-rbc_ihdlrX(atm_loadq) {
-  register mbyte_t op1 = instruction & RBC_R15;
-  mqword_t imm;
-  if (rbc_memory_read_qword_atm(base->iram, instruction & 0xFFFFFFFFFFFF,
-                                &imm) != RBC_MEM_OPER_SUCCESS) {
-
+    *kcore = mtrue;
+    MFATAL("RBC",
+           "MEM READ Failed likely because of invalid "
+           "access: ADDR=%zu, PC=%zu",
+           instruction & 0xFFFFFFFFFFFF, base->PC);
     return;
   }
   base->REGISTER_FILE[op1] = imm;
 }
 
 rbc_ihdlrX(atm_storeb) {
-  register mbyte_t op1 = instruction & RBC_R15;
-  if (merry_core_mem_access_WRITE_DATA_byte_atm(
-          , base->iram, instruction & 0xFFFFFFFFFFFF,
-          base->REGISTER_FILE[op1]) != RBC_MEM_OPER_SUCCESS) {
-
+  register mbyte_t op1 = (instruction >> 48) & RBC_R15;
+  if (rbc_memory_write_byte_atm(base->dram, instruction & 0xFFFFFFFFFFFF,
+                                base->REGISTER_FILE[op1] & 0xFF) !=
+      RBC_MEM_OPER_SUCCESS) {
+    *kcore = mtrue;
+    MFATAL("RBC",
+           "MEM WRITE Failed likely because of invalid "
+           "access: ADDR=%zu PC=%zu",
+           instruction & 0xFFFFFFFFFFFF, base->PC);
     return;
   }
+}
+
+rbc_ihdlrX(atm_loadw) {
+  register mbyte_t op1 = (instruction >> 48) & RBC_R15;
+  mword_t imm;
+  if (rbc_memory_read_word_atm(base->dram, instruction & 0xFFFFFFFFFFFF,
+                               &imm) != RBC_MEM_OPER_SUCCESS) {
+    *kcore = mtrue;
+    MFATAL("RBC",
+           "MEM READ Failed likely because of invalid "
+           "access: ADDR=%zu PC=%zu",
+           instruction & 0xFFFFFFFFFFFF, base->PC);
+    return;
+  }
+  base->REGISTER_FILE[op1] = imm;
 }
 
 rbc_ihdlrX(atm_storew) {
-  register mbyte_t op1 = instruction & RBC_R15;
-  if (merry_core_mem_access_WRITE_DATA_word_atm(
-          , base->iram, instruction & 0xFFFFFFFFFFFF,
-          base->REGISTER_FILE[op1]) != RBC_MEM_OPER_SUCCESS) {
-
+  register mbyte_t op1 = (instruction >> 48) & RBC_R15;
+  if (rbc_memory_write_word_atm(base->dram, instruction & 0xFFFFFFFFFFFF,
+                                base->REGISTER_FILE[op1] & 0xFFFF) !=
+      RBC_MEM_OPER_SUCCESS) {
+    *kcore = mtrue;
+    MFATAL("RBC",
+           "MEM WRITE Failed likely because of invalid "
+           "access: ADDR=%zu PC=%zu",
+           instruction & 0xFFFFFFFFFFFF, base->PC);
     return;
   }
+}
+
+rbc_ihdlrX(atm_loadd) {
+  register mbyte_t op1 = (instruction >> 48) & RBC_R15;
+  mdword_t imm;
+  if (rbc_memory_read_dword_atm(base->dram, instruction & 0xFFFFFFFFFFFF,
+                                &imm) != RBC_MEM_OPER_SUCCESS) {
+    *kcore = mtrue;
+    MFATAL("RBC",
+           "MEM READ Failed likely because of invalid "
+           "access: ADDR=%zu PC=%zu",
+           instruction & 0xFFFFFFFFFFFF, base->PC);
+    return;
+  }
+  base->REGISTER_FILE[op1] = imm;
 }
 
 rbc_ihdlrX(atm_stored) {
-  register mbyte_t op1 = instruction & RBC_R15;
-  if (merry_core_mem_access_WRITE_DATA_dword_atm(
-          , base->iram, instruction & 0xFFFFFFFFFFFF,
-          base->REGISTER_FILE[op1]) != RBC_MEM_OPER_SUCCESS) {
-
+  register mbyte_t op1 = (instruction >> 48) & RBC_R15;
+  if (rbc_memory_write_dword_atm(base->dram, instruction & 0xFFFFFFFFFFFF,
+                                 base->REGISTER_FILE[op1] & 0xFFFFFFFF) !=
+      RBC_MEM_OPER_SUCCESS) {
+    *kcore = mtrue;
+    MFATAL("RBC",
+           "MEM WRITE Failed likely because of invalid "
+           "access: ADDR=%zu PC=%zu",
+           instruction & 0xFFFFFFFFFFFF, base->PC);
     return;
   }
 }
 
-rbc_ihdlrX(atm_storeq) {
-  register mbyte_t op1 = instruction & RBC_R15;
-  if (merry_core_mem_access_WRITE_DATA_qword_atm(
-          , base->iram, instruction & 0xFFFFFFFFFFFF,
-          base->REGISTER_FILE[op1]) != RBC_MEM_OPER_SUCCESS) {
+rbc_ihdlrX(atm_loadq) {
+  register mbyte_t op1 = (instruction >> 48) & RBC_R15;
+  mqword_t imm;
+  if (rbc_memory_read_qword_atm(base->dram, instruction & 0xFFFFFFFFFFFF,
+                                &imm) != RBC_MEM_OPER_SUCCESS) {
+    *kcore = mtrue;
+    MFATAL("RBC",
+           "MEM READ Failed likely because of invalid "
+           "access: ADDR=%zu PC=%zu",
+           instruction & 0xFFFFFFFFFFFF, base->PC);
+    return;
+  }
+  base->REGISTER_FILE[op1] = imm;
+}
 
+rbc_ihdlrX(atm_storeq) {
+  register mbyte_t op1 = (instruction >> 48) & RBC_R15;
+  if (rbc_memory_write_qword_atm(base->dram, instruction & 0xFFFFFFFFFFFF,
+                                 base->REGISTER_FILE[op1]) !=
+      RBC_MEM_OPER_SUCCESS) {
+    *kcore = mtrue;
+    MFATAL("RBC",
+           "MEM WRITE Failed likely because of invalid "
+           "access: ADDR=%zu PC=%zu",
+           instruction & 0xFFFFFFFFFFFF, base->PC);
     return;
   }
 }
 
 rbc_ihdlrX(atm_loadb_reg) {
-  register mbyte_t op1 = instruction & RBC_R15;
+  register mbyte_t op1 = (instruction >> 4) & RBC_R15;
   register mbyte_t op2 = instruction & RBC_R15;
   mbyte_t imm;
-  if (rbc_memory_read_byte_atm(base->iram, base->REGISTER_FILE[op2], &imm) ==
-      RET_FAILURE) {
-
-    return;
-  }
-  base->REGISTER_FILE[op1] = imm;
-}
-
-rbc_ihdlrX(atm_loadw_reg) {
-  register mbyte_t op1 = instruction & RBC_R15;
-  register mbyte_t op2 = instruction & RBC_R15;
-  mword_t imm;
-  if (rbc_memory_read_word_atm(base->iram, base->REGISTER_FILE[op2], &imm) ==
-      RET_FAILURE) {
-
-    return;
-  }
-  base->REGISTER_FILE[op1] = imm;
-}
-
-rbc_ihdlrX(atm_loadd_reg) {
-  register mbyte_t op1 = instruction & RBC_R15;
-  register mbyte_t op2 = instruction & RBC_R15;
-  mdword_t imm;
-  if (rbc_memory_read_dword_atm(base->iram, base->REGISTER_FILE[op2], &imm) ==
-      RET_FAILURE) {
-
-    return;
-  }
-  base->REGISTER_FILE[op1] = imm;
-}
-
-rbc_ihdlrX(atm_loadq_reg) {
-  register mbyte_t op1 = instruction & RBC_R15;
-  register mbyte_t op2 = instruction & RBC_R15;
-  if (rbc_memory_read_qword_atm(base->iram, base->REGISTER_FILE[op2],
-                                &base->REGISTER_FILE[op1]) !=
+  if (rbc_memory_read_byte_atm(base->dram, base->REGISTER_FILE[op2], &imm) !=
       RBC_MEM_OPER_SUCCESS) {
-
+    *kcore = mtrue;
+    MFATAL("RBC",
+           "MEM READ Failed likely because of invalid "
+           "access: ADDR=%zu PC=%zu",
+           instruction & 0xFFFFFFFFFFFF, base->PC);
     return;
   }
+  base->REGISTER_FILE[op1] = imm;
 }
 
 rbc_ihdlrX(atm_storeb_reg) {
-  register mbyte_t op1 = instruction & RBC_R15;
+  register mbyte_t op1 = (instruction >> 4) & RBC_R15;
   register mbyte_t op2 = instruction & RBC_R15;
-  if (merry_core_mem_access_WRITE_DATA_byte_atm(
-          , base->iram, base->REGISTER_FILE[op1],
-          base->REGISTER_FILE[op2] & 0xFF) != RBC_MEM_OPER_SUCCESS) {
-
+  if (rbc_memory_write_byte_atm(base->dram, base->REGISTER_FILE[op2],
+                                base->REGISTER_FILE[op1] & 0xFF) !=
+      RBC_MEM_OPER_SUCCESS) {
+    *kcore = mtrue;
+    MFATAL("RBC",
+           "MEM WRITE Failed likely because of invalid "
+           "access: ADDR=%zu PC=%zu",
+           instruction & 0xFFFFFFFFFFFF, base->PC);
     return;
   }
+}
+
+rbc_ihdlrX(atm_loadw_reg) {
+  register mbyte_t op1 = (instruction >> 4) & RBC_R15;
+  register mbyte_t op2 = instruction & RBC_R15;
+  mword_t imm;
+  if (rbc_memory_read_word_atm(base->dram, base->REGISTER_FILE[op2], &imm) !=
+      RBC_MEM_OPER_SUCCESS) {
+    *kcore = mtrue;
+    MFATAL("RBC",
+           "MEM READ Failed likely because of invalid "
+           "access: ADDR=%zu PC=%zu",
+           instruction & 0xFFFFFFFFFFFF, base->PC);
+    return;
+  }
+  base->REGISTER_FILE[op1] = imm;
 }
 
 rbc_ihdlrX(atm_storew_reg) {
-  register mbyte_t op1 = instruction & RBC_R15;
+  register mbyte_t op1 = (instruction >> 4) & RBC_R15;
   register mbyte_t op2 = instruction & RBC_R15;
-  if (merry_core_mem_access_WRITE_DATA_word_atm(
-          , base->iram, base->REGISTER_FILE[op1],
-          base->REGISTER_FILE[op2] & 0xFFFF) != RBC_MEM_OPER_SUCCESS) {
-
+  if (rbc_memory_write_word_atm(base->dram, base->REGISTER_FILE[op2],
+                                base->REGISTER_FILE[op1] & 0xFFFF) !=
+      RBC_MEM_OPER_SUCCESS) {
+    *kcore = mtrue;
+    MFATAL("RBC",
+           "MEM WRITE Failed likely because of invalid "
+           "access: ADDR=%zu PC=%zu",
+           instruction & 0xFFFFFFFFFFFF, base->PC);
     return;
   }
+}
+
+rbc_ihdlrX(atm_loadd_reg) {
+  register mbyte_t op1 = (instruction >> 4) & RBC_R15;
+  register mbyte_t op2 = instruction & RBC_R15;
+  mdword_t imm;
+  if (rbc_memory_read_dword_atm(base->dram, base->REGISTER_FILE[op2], &imm) !=
+      RBC_MEM_OPER_SUCCESS) {
+    *kcore = mtrue;
+    MFATAL("RBC",
+           "MEM READ Failed likely because of invalid "
+           "access: ADDR=%zu PC=%zu",
+           instruction & 0xFFFFFFFFFFFF, base->PC);
+    return;
+  }
+  base->REGISTER_FILE[op1] = imm;
 }
 
 rbc_ihdlrX(atm_stored_reg) {
-  register mbyte_t op1 = instruction & RBC_R15;
+  register mbyte_t op1 = (instruction >> 4) & RBC_R15;
   register mbyte_t op2 = instruction & RBC_R15;
-  if (merry_core_mem_access_WRITE_DATA_dword_atm(
-          , base->iram, base->REGISTER_FILE[op1],
-          base->REGISTER_FILE[op2] & 0xFFFFFFFF) != RBC_MEM_OPER_SUCCESS) {
-
+  if (rbc_memory_write_dword_atm(base->dram, base->REGISTER_FILE[op2],
+                                 base->REGISTER_FILE[op1] & 0xFFFFFF) !=
+      RBC_MEM_OPER_SUCCESS) {
+    *kcore = mtrue;
+    MFATAL("RBC",
+           "MEM WRITE Failed likely because of invalid "
+           "access: ADDR=%zu PC=%zu",
+           instruction & 0xFFFFFFFFFFFF, base->PC);
     return;
   }
 }
 
-rbc_ihdlrX(atm_storeq_reg) {
-  register mbyte_t op1 = instruction & RBC_R15;
+rbc_ihdlrX(atm_loadq_reg) {
+  register mbyte_t op1 = (instruction >> 4) & RBC_R15;
   register mbyte_t op2 = instruction & RBC_R15;
-  if (merry_core_mem_access_WRITE_DATA_qword_atm(
-          , base->iram, base->REGISTER_FILE[op1], base->REGISTER_FILE[op2]) ==
-      RET_FAILURE) {
+  mqword_t imm;
+  if (rbc_memory_read_qword_atm(base->dram, base->REGISTER_FILE[op2], &imm) !=
+      RBC_MEM_OPER_SUCCESS) {
+    *kcore = mtrue;
+    MFATAL("RBC",
+           "MEM READ Failed likely because of invalid "
+           "access: ADDR=%zu PC=%zu",
+           instruction & 0xFFFFFFFFFFFF, base->PC);
+    return;
+  }
+  base->REGISTER_FILE[op1] = imm;
+}
 
+rbc_ihdlrX(atm_storeq_reg) {
+  register mbyte_t op1 = (instruction >> 4) & RBC_R15;
+  register mbyte_t op2 = instruction & RBC_R15;
+  if (rbc_memory_write_qword_atm(base->dram, base->REGISTER_FILE[op2],
+                                 base->REGISTER_FILE[op1]) !=
+      RBC_MEM_OPER_SUCCESS) {
+    *kcore = mtrue;
+    MFATAL("RBC",
+           "MEM WRITE Failed likely because of invalid "
+           "access: ADDR=%zu PC=%zu",
+           instruction & 0xFFFFFFFFFFFF, base->PC);
     return;
   }
 }
 
 rbc_ihdlrX(cmpxchg) {
-  register mbyte_t desired = instruction;
-  register mbyte_t expected = instruction;
+  register mbyte_t desired = (instruction >> 8) & 0xFF;
+  register mbyte_t expected = instruction & 0xFF;
   mqword_t address;
   base->PC += 8;
-  if (rbc_memory_read_qword(core->base->iram, base->PC, &address) ==
-      RET_FAILURE) {
-
+  if (rbc_memory_read_qword(base->iram, base->PC, &address) == RET_FAILURE) {
+    *kcore = mtrue;
+    MFATAL("RBC",
+           "MEM READ Failed likely because of invalid "
+           "access: PC=%zu",
+           base->PC);
     return;
   }
-  MerryFlagsRegr reg = core->fregr;
-  mret_t ret = merry_RAM_cmpxchg(base->iram, address, desired, expected, );
+  mret_t ret = rbc_memory_cmpxchg(base->dram, address, desired, expected);
   base->flags.regr = merry_obtain_flags_regr();
   if (ret != RBC_MEM_OPER_SUCCESS) {
-    core->req->type = TRY_LOADING_NEW_PAGE_DATA;
-    core->req->args[0] = address / _MERRY_PAGE_LEN_;
-    if (merry_SEND_REQUEST(core->req) != RBC_MEM_OPER_SUCCESS ||
-        core->req->args[0] == 1) {
-
-      core->fregr = reg;
-      return;
-    }
-    ret = merry_RAM_cmpxchg(base->iram, address, desired, expected,
-                            ); // this shouldn't fail now
-    base->flags.regr = merry_obtain_flags_regr();
+    *kcore = mtrue;
+    MFATAL("RBC",
+           "MEM READ Failed likely because of invalid "
+           "access: PC=%zu",
+           base->PC);
+    return;
   }
 }
 
 rbc_ihdlrX(cmpxchg_reg) {
-  register mbyte_t desired = instruction & RBC_R15;
-  register mbyte_t expected = instruction & RBC_R15;
-  register mqword_t address =
-      base->REGISTER_FILE[instruction.bytes.b5 & RBC_R15];
-  MerryFlagsRegr reg = core->fregr;
-  mret_t ret = merry_RAM_cmpxchg(base->iram, address, desired, expected, );
+  register mbyte_t desired = (instruction >> 8) & 0xFF;
+  register mbyte_t expected = instruction & 0xFF;
+  mqword_t address = base->REGISTER_FILE[(instruction >> 16) & RBC_R15];
+  mret_t ret = rbc_memory_cmpxchg(base->dram, address, desired, expected);
   base->flags.regr = merry_obtain_flags_regr();
   if (ret != RBC_MEM_OPER_SUCCESS) {
-    core->req->type = TRY_LOADING_NEW_PAGE_DATA;
-    core->req->args[0] = address / _MERRY_PAGE_LEN_;
-    if (merry_SEND_REQUEST(core->req) != RBC_MEM_OPER_SUCCESS ||
-        core->req->args[0] == 1) {
-
-      core->fregr = reg;
-      return;
-    }
-    ret = merry_RAM_cmpxchg(base->iram, address, desired, expected,
-                            ); // this shouldn't fail now
-    base->flags.regr = merry_obtain_flags_regr();
+    *kcore = mtrue;
+    MFATAL("RBC",
+           "MEM READ Failed likely because of invalid "
+           "access: PC=%zu",
+           base->PC);
+    return;
   }
-}
-rbc_ihdlrX(add) {
-  // Break down the instructionrucion
 }

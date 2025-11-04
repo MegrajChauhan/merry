@@ -1,6 +1,8 @@
 #ifndef _RBC_INSTRUCTION_HANDLER_
 #define _RBC_INSTRUCTION_HANDLER_
 
+#include <float.h>
+#include <math.h>
 #include <merry_flags_regr.h>
 #include <merry_graves_request_queue.h>
 #include <regr_core/internal/rbc.h>
@@ -10,6 +12,8 @@
 #define rbc_ihdlrX(name)                                                       \
   void rbc_i##name(RBCCoreBase *base, _Atomic mbool_t *kcore,                  \
                    mqword_t instruction)
+void rbc_compare_f32(float a, float b, RBCFFlagsRegr *regr);
+void rbc_compare_f64(double a, double b, RBCFFlagsRegr *regr);
 
 rbc_ihdlr(sysint);
 rbc_ihdlr(mint);
@@ -98,14 +102,8 @@ rbc_ihdlrX(call);
 rbc_ihdlrX(ret);
 rbc_ihdlrX(call_reg);
 
-rbc_ihdlrX(push_immb);
-rbc_ihdlrX(push_immw);
-rbc_ihdlrX(push_immd);
 rbc_ihdlrX(push_immq);
 rbc_ihdlrX(push_reg);
-rbc_ihdlrX(popb);
-rbc_ihdlrX(popw);
-rbc_ihdlrX(popd);
 rbc_ihdlrX(popq);
 rbc_ihdlrX(pusha);
 rbc_ihdlrX(popa);
@@ -119,14 +117,8 @@ rbc_ihdlrX(pop_memw);
 rbc_ihdlrX(pop_memd);
 rbc_ihdlrX(pop_memq);
 
-rbc_ihdlrX(loadsb);
-rbc_ihdlrX(loadsw);
-rbc_ihdlrX(loadsd);
 rbc_ihdlrX(loadsq);
 
-rbc_ihdlrX(storesb);
-rbc_ihdlrX(storesw);
-rbc_ihdlrX(storesd);
 rbc_ihdlrX(storesq);
 
 rbc_ihdlrX(and_imm);
