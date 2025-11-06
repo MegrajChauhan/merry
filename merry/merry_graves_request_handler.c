@@ -1,19 +1,5 @@
 #include <merry_graves.h>
 
-REQ(kill_self) {
-  /*
-   * This process involves:
-   * - Commanding the destruction of its core
-   * - Declare dead
-   * - Destroy the base
-   * - Register the death
-   * */
-  repr->base->interrupt = mtrue;
-  repr->core = NULL; // Declare dead
-  merry_graves_group_register_dead_core(grp);
-  GRAVES.active_core_count--;
-}
-
 REQ(create_core) {
   /*
    * Creating a new core:

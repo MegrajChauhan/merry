@@ -18,7 +18,7 @@ union MerryRequestArgs;
 _MERRY_DEFINE_FUNC_PTR_(mptr_t, mcorecreate_t, struct MerryCoreBase *,
                         maddress_t);
 _MERRY_DEFINE_FUNC_PTR_(void, mcoredeletecore_t, mptr_t);
-_MERRY_DEFINE_FUNC_PTR_(_THRET_T_, mcoreexec_t, mptr_t);
+_MERRY_DEFINE_FUNC_PTR_(mret_t, mcoreexec_t, mptr_t);
 _MERRY_DEFINE_FUNC_PTR_(struct MerryCoreBase *, mcorecreatebase_t);
 _MERRY_DEFINE_FUNC_PTR_(void, mcoredeletebase_t, struct MerryCoreBase *);
 _MERRY_DEFINE_FUNC_PTR_(void, mcorepredel_t, mptr_t);

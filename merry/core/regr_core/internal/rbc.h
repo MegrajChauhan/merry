@@ -91,7 +91,7 @@ mptr_t rbc_master_core_create(MerryCoreBase *base, maddress_t st_addr);
 
 void rbc_master_core_destroy(mptr_t c);
 
-_THRET_T_ rbc_master_core_run(mptr_t c);
+mret_t rbc_master_core_run(mptr_t c);
 
 MerryCoreBase *rbc_master_core_create_base();
 

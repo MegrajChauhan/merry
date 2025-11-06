@@ -31,7 +31,6 @@ typedef struct MerryGraves MerryGraves;
 struct MerryGraves {
   MerryGroupList *GRPS; // all of the groups
   msize_t overall_core_count;
-  msize_t overall_active_core_count;
   msize_t grp_count;
   MerryEntryList *C_ENTRIES;
   mbool_t DIE;
@@ -91,7 +90,6 @@ void merry_graves_give_IDs_to_cores(MerryGravesCoreRepr *repr,
 void merry_graves_failed_core_booting();
 
 /* Request Handlers */
-REQ(kill_self);
 REQ(create_core);
 REQ(create_group);
 REQ(get_group_details);

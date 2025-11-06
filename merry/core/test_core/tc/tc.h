@@ -24,7 +24,7 @@ mptr_t tc_create_core(MerryCoreBase *base, maddress_t st);
 
 void tc_delete_core(mptr_t c);
 
-_THRET_T_ tc_run(mptr_t c);
+mret_t tc_run(mptr_t c);
 
 MerryCoreBase *tc_create_base();
 

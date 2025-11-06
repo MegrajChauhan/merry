@@ -71,32 +71,32 @@ void rbc_master_core_destroy(mptr_t c) {
   merry_check_ptr(c);
   RBCMasterCore *core = (RBCMasterCore *)c;
 
-  if (!core->rbc_cbase.child_threads)
+  if (core->rbc_cbase.child_threads)
     merry_RBCThread_list_destroy(core->rbc_cbase.child_threads);
 
-  if (!core->rbc_cbase.interfaces)
+  if (core->rbc_cbase.interfaces)
     merry_Interface_list_destroy(core->rbc_cbase.interfaces);
 
-  if (!core->rbc_cbase.stack_frames)
+  if (core->rbc_cbase.stack_frames)
     merry_RBCProcFrame_stack_destroy(core->rbc_cbase.stack_frames);
 
-  if (!core->rbc_cbase.iram)
+  if (core->rbc_cbase.iram)
     rbc_memory_destroy(core->rbc_cbase.iram);
 
-  if (!core->rbc_cbase.dram)
+  if (core->rbc_cbase.dram)
     rbc_memory_destroy(core->rbc_cbase.dram);
 
-  if (!core->inp)
+  if (core->inp)
     rbc_input_destroy(core->inp);
 
-  if (!core->rbc_cbase.stack)
+  if (core->rbc_cbase.stack)
     merry_return_memory(core->rbc_cbase.stack, _RBC_STACK_LEN_);
 
   merry_cond_destroy(&core->local_shared_cond);
   free(core);
 }
 
-_THRET_T_ rbc_master_core_run(mptr_t c) {
+mret_t rbc_master_core_run(mptr_t c) {
   merry_check_ptr(c);
 
   RBCMasterCore *core = (RBCMasterCore *)c;
@@ -111,7 +111,7 @@ _THRET_T_ rbc_master_core_run(mptr_t c) {
       if (core->kill_core)
         break;
       if (surelyF(atomic_load_explicit((_Atomic mbool_t *)&core->interrupt,
-                                       memory_order_relaxed))) {
+                                       memory_order_relaxed) == mtrue)) {
         if (cbase.terminate)
           break; // break
         // interrupts....(coming soon...)
@@ -158,7 +158,7 @@ _THRET_T_ rbc_master_core_run(mptr_t c) {
       case RBC_OP_RES23:
         break;
       case RBC_OP_HALT:
-        core->terminate = mtrue;
+        cbase.terminate = mtrue;
         core->interrupt = mtrue;
         cbase.check_after = 0;
         break;
@@ -552,8 +552,10 @@ _THRET_T_ rbc_master_core_run(mptr_t c) {
           rbc_iret(&cbase, &core->kill_core, layout.whole_word);
         break;
       case RBC_OP_LOOP:
-        if (cbase.REGISTER_FILE[RBC_R2] != 0)
+        if (cbase.REGISTER_FILE[RBC_R2] != 0) {
           cbase.PC = layout.whole_word & 0xFFFFFFFFFFFF;
+          continue;
+        }
         break;
       case RBC_OP_CALL_REG:
         rbc_icall_reg(&cbase, &core->kill_core, layout.whole_word);
@@ -1050,18 +1052,18 @@ _THRET_T_ rbc_master_core_run(mptr_t c) {
         default:
           break;
         }
-        cbase.PC += 8;
       }
       }
-      core->terminate = mtrue;
-      core->interrupt = mtrue;
-      for (msize_t i = 0;
-           i < merry_RBCThread_list_size(core->rbc_cbase.child_threads); i++) {
-        merry_thread_join(core->rbc_cbase.child_threads->buf[i], NULL);
-      }
-      return (_THRET_T_)0;
+      cbase.PC += 8;
     }
   }
+  core->terminate = mtrue;
+  core->interrupt = mtrue;
+  for (msize_t i = 0;
+       i < merry_RBCThread_list_size(core->rbc_cbase.child_threads); i++) {
+    merry_thread_join(core->rbc_cbase.child_threads->buf[i], NULL);
+  }
+  return RET_SUCCESS;
 }
 
 MerryCoreBase *rbc_master_core_create_base() {

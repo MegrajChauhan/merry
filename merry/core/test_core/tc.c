@@ -19,7 +19,7 @@ void tc_delete_core(mptr_t c) {
   free(tc);
 }
 
-_THRET_T_ tc_run(mptr_t c) {
+mret_t tc_run(mptr_t c) {
   TC *tc = (TC *)c;
   MerryCoreBase *base = tc->base;
   base->running = mtrue;
@@ -29,8 +29,6 @@ _THRET_T_ tc_run(mptr_t c) {
                              memory_order_relaxed)) {
       if (tc->terminate) {
         base->running = mfalse;
-        tc_destroy_base(tc->base);
-        tc_delete_core(c);
         break;
       }
       base->interrupt = mfalse;
@@ -40,8 +38,6 @@ _THRET_T_ tc_run(mptr_t c) {
       // Done
       MLOG("TC", "End of accessible memory reached", NULL);
       base->running = mfalse;
-      tc_make_request(tc, KILL_SELF);
-      tc_destroy_base(tc->base);
       break;
     }
     switch (curr) {
@@ -78,7 +74,7 @@ _THRET_T_ tc_run(mptr_t c) {
     }
     tc->PC++;
   }
-  return (_THRET_T_)0;
+  return RET_SUCCESS;
 }
 
 MerryCoreBase *tc_create_base() {

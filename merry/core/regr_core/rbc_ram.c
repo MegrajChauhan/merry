@@ -153,18 +153,24 @@ rbcmemOperRes_t rbc_memory_read_bulk(RBCMemory *mem, maddress_t addr,
   register msize_t off = addr % _RBC_PAGE_LEN_IN_BYTES_;
   register msize_t diff = _RBC_PAGE_LEN_IN_BYTES_ - off;
   mbptr_t iter = store_in;
-  memcpy(store_in, mem->pg_list->buf[pg].repr.bytes + off, diff);
-  iter += diff;
-  len -= diff;
-  pg++;
-  off = 0;
 
-  while (len > 0) {
-    diff = (len < _RBC_PAGE_LEN_IN_BYTES_) ? len : _RBC_PAGE_LEN_IN_BYTES_;
-    memcpy(iter, mem->pg_list->buf[pg].repr.bytes, diff);
+  //////  FIX THIS SHIT
+  if (diff > len) {
+    memcpy(store_in, mem->pg_list->buf[pg].repr.bytes + off, len);
+  } else {
+    memcpy(store_in, mem->pg_list->buf[pg].repr.bytes + off, diff);
     iter += diff;
     len -= diff;
     pg++;
+    off = 0;
+
+    while (len > 0) {
+      diff = (len < _RBC_PAGE_LEN_IN_BYTES_) ? len : _RBC_PAGE_LEN_IN_BYTES_;
+      memcpy(iter, mem->pg_list->buf[pg].repr.bytes, diff);
+      iter += diff;
+      len -= diff;
+      pg++;
+    }
   }
 
   return RBC_MEM_OPER_SUCCESS;
@@ -273,18 +279,22 @@ rbcmemOperRes_t rbc_memory_write_bulk(RBCMemory *mem, maddress_t addr,
   register msize_t off = addr % _RBC_PAGE_LEN_IN_BYTES_;
   register msize_t diff = _RBC_PAGE_LEN_IN_BYTES_ - off;
   mbptr_t iter = store;
-  memcpy(mem->pg_list->buf[pg].repr.bytes + off, store, diff);
-  iter += diff;
-  len -= diff;
-  pg++;
-  off = 0;
-
-  while (len > 0) {
-    diff = (len < _RBC_PAGE_LEN_IN_BYTES_) ? len : _RBC_PAGE_LEN_IN_BYTES_;
-    memcpy(mem->pg_list->buf[pg].repr.bytes, iter, diff);
+  if (diff > len) {
+    memcpy(mem->pg_list->buf[pg].repr.bytes + off, store, len);
+  } else {
+    memcpy(mem->pg_list->buf[pg].repr.bytes + off, store, diff);
     iter += diff;
     len -= diff;
     pg++;
+    off = 0;
+
+    while (len > 0) {
+      diff = (len < _RBC_PAGE_LEN_IN_BYTES_) ? len : _RBC_PAGE_LEN_IN_BYTES_;
+      memcpy(mem->pg_list->buf[pg].repr.bytes, iter, diff);
+      iter += diff;
+      len -= diff;
+      pg++;
+    }
   }
 
   return RBC_MEM_OPER_SUCCESS;

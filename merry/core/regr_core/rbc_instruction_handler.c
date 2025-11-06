@@ -50,8 +50,6 @@ rbc_ihdlr(mint) {
   merry_check_ptr(base);
   MerryRequestArgs *args = &base->args;
   switch (base->REGISTER_FILE[RBC_R15]) {
-  case KILL_SELF:
-    break;
   case CREATE_CORE: {
     /*
      * R10 = new core type
@@ -1454,7 +1452,7 @@ rbc_ihdlrX(sout) {
   register mqword_t addr = instruction & 0xFFFFFFFFFFFF;
   if (!len)
     return;
-  mbptr_t temp = (mbptr_t)malloc(len);
+  mbptr_t temp = (mbptr_t)calloc(len + 1, 1);
   if (temp == NULL) {
     *kcore = mtrue;
     MFATAL("RBC", "System Failure: MEM ALLOCATION FAILED- PC=%zu", base->PC);

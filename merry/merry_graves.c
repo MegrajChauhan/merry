@@ -1,4 +1,5 @@
 #include <merry_graves.h>
+#include <merry_graves_launcher.h>
 
 MerryGraves GRAVES;
 
@@ -84,7 +85,6 @@ mret_t merry_graves_init() {
   }
 
   GRAVES.overall_core_count = 0;
-  GRAVES.overall_active_core_count = 0;
   GRAVES.return_value = 0;
   GRAVES.core_count = 0;
   GRAVES.grp_count = 0;
@@ -259,24 +259,22 @@ mret_t merry_graves_boot_a_core(MerryGravesCoreRepr *repr) {
   merry_check_ptr(repr->core);
 
   if (repr->base->prepcore(repr->core) == RET_FAILURE) {
-    MERROR("Graves", "A core failed to BOOT", NULL);
+    MERROR("Graves", "A core failed to BOOT[ID=%zu, UID=%zu, GUID=%zu]",
+           repr->base->id, repr->base->uid, repr->base->guid);
     repr->base->deletec(repr->core);
     GRAVES.HOW_TO_DESTROY_BASE[repr->base->type](repr->base);
     return RET_FAILURE;
   }
 
   mthread_t th;
-  if (merry_create_detached_thread(&th, repr->base->execc, repr->core) ==
-      RET_FAILURE) {
-    MERROR("Graves", "A core failed to BOOT", NULL);
+  if (merry_create_detached_thread(&th, merry_graves_launcher,
+                                   (mptr_t)repr->base) == RET_FAILURE) {
+    MERROR("Graves", "A core failed to BOOT[ID=%zu, UID=%zu, GUID=%zu]",
+           repr->base->id, repr->base->uid, repr->base->guid);
     repr->base->deletec(repr->core);
     GRAVES.HOW_TO_DESTROY_BASE[repr->base->type](repr->base);
     return RET_FAILURE;
   }
-
-  MerryGravesGroup **grp = merry_Group_list_at(GRAVES.GRPS, repr->base->guid);
-  merry_graves_group_register_new_core(*grp);
-  GRAVES.active_core_count++;
 
   return RET_SUCCESS;
 }
@@ -312,6 +310,7 @@ void merry_graves_START(mptr_t __) {
   }
   MerryGravesRequest *req;
   mbool_t is_dead_tmp;
+  while (GRAVES.active_core_count == 0){}
   while (1) {
     merry_mutex_lock(&GRAVES.graves_lock);
     if (merry_graves_wants_work(&req) == RET_FAILURE) {
@@ -336,9 +335,6 @@ void merry_graves_START(mptr_t __) {
            req->base->uid, req->base->guid);
       switch (req->type) {
         // .. Requests
-      case KILL_SELF:
-        req_kill_self(repr, *grp, req);
-        break;
       case CREATE_CORE:
         req_create_core(repr, *grp, req);
         break;

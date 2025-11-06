@@ -47,9 +47,6 @@ enum mgreqfailure_t {
 };
 
 enum mgreq_t {
-  KILL_SELF,          // A core killing itself
-                      // DESC: If a core has done what it can and wants to
-                      //       terminate itself gracefully
   CREATE_CORE,        // Creating a new core
                       // DESC: Create a new core to execute some more code
                       //       in parallel

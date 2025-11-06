@@ -13,7 +13,6 @@ void tc_TEST_2(TC *tc) {
   tc->terminate = mtrue;
   MLOG("TC[TEST_2]", "[ID=%zu, UID=%zu, GUID=%zu]TC TERMINATING....",
        tc->base->id, tc->base->uid, tc->base->guid);
-  tc_make_request(tc, KILL_SELF);
 }
 
 void tc_TEST_3(TC *tc) {
