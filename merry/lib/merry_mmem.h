@@ -5,6 +5,7 @@
 
 #include <merry_interface.h>
 #include <merry_memory.h>
+#include <merry_operations.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -16,10 +17,10 @@ typedef MerryInterface MerryMMem;
  * but maybe we will care about the maps too
  * */
 
-MerryMMem *merry_map_memory(mptr_t map, msize_t len);
+mresult_t merry_map_memory(MerryMMem **mem, mptr_t map, msize_t len);
 
-minterfaceRet_t merry_sub_map_memory(MerryMMem *map, MerryMMem **res,
-                                     mptr_t sub_map, msize_t len);
+/*minterfaceRet_t merry_sub_map_memory(MerryMMem *map, MerryMMem **res,
+                                     mptr_t sub_map, msize_t len);*/
 
 minterfaceRet_t merry_unmap_memory(MerryMMem *map);
 

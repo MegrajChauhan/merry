@@ -19,13 +19,13 @@ ASM_DIR = merry/interface/hard/
 INC_DIRS = ${addprefix -I, ${DIRS}}
 FLAGS += ${flags}
 
-ifeq (${OS}, Windows_NT)
+#ifeq (${OS}, Windows_NT)
 	# most likey windows
-else
+#else
 	# Something that is not Windows
 	# For our makeshift makefile right now, this mess is good enough so the next most likely option is Linux
-	FLAGS += -luring
-endif
+#	FLAGS += -luring
+#endif
 
 OUTPUT_DIR = build/
 OUTPUT_DEPS= build/

@@ -4,6 +4,7 @@
 #include <merry_file_definitions.h>
 #include <merry_file_defs.h>
 #include <merry_interface.h>
+#include <merry_operations.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -17,8 +18,8 @@
 
 typedef MerryInterface MerryFile;
 
-MerryFile *merry_open_file(mstr_t file_path, mstr_t modes, int flags,
-                           mbool_t *failed);
+mresult_t merry_open_file(MerryFile **file, mstr_t file_path, mstr_t modes,
+                          int flags);
 
 mret_t merry_figure_out_file_modes(mstr_t modex, int flags, int *res_mode,
                                    int *res_flag);

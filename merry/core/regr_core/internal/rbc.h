@@ -20,6 +20,7 @@
 #include <merry_utils.h>
 #include <regr_core/comp/inp/rbc_inp_reader.h>
 #include <regr_core/comp/mem/rbc_ram.h>
+#include <regr_core/def/consts/rbc_consts.h>
 #include <regr_core/def/consts/rbc_opcodes.h>
 #include <regr_core/def/consts/rbc_registers.h>
 #include <regr_core/def/consts/rbc_sysint.h>
@@ -87,21 +88,22 @@ struct RBCCore {
 // and then other functions that do the exact same thing but for the
 // child cores
 
-mptr_t rbc_master_core_create(MerryCoreBase *base, maddress_t st_addr);
+mptr_t rbc_master_core_create(MerryCoreBase *base, maddress_t st_addr,
+                              msize_t *CODE);
 
 void rbc_master_core_destroy(mptr_t c);
 
-mret_t rbc_master_core_run(mptr_t c);
+msize_t rbc_master_core_run(mptr_t c);
 
-MerryCoreBase *rbc_master_core_create_base();
+MerryCoreBase *rbc_master_core_create_base(msize_t *CODE);
 
 void rbc_master_core_destroy_base(MerryCoreBase *base);
 
 void rbc_master_core_prep_for_deletion(mptr_t c);
 
-mret_t rbc_master_core_set_input(mptr_t c, mstr_t path);
+mret_t rbc_master_core_set_input(mptr_t c, mstr_t path, msize_t *CODE);
 
-mret_t rbc_master_core_prepare_core(mptr_t c);
+mret_t rbc_master_core_prepare_core(mptr_t c, msize_t *CODE);
 
 // For the child cores
 

@@ -1,0 +1,4 @@
+#ifndef _MERRY_GRAVES_INTERNAL_
+#define _MERRY_GRAVES_INTERNAL_
+
+#endif

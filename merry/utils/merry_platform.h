@@ -2,6 +2,7 @@
 #define _MERRY_PLATFORM_
 
 #include <merry_config.h>
+#include <merry_operations.h>
 #include <merry_types.h>
 #include <merry_utils.h>
 
@@ -39,7 +40,7 @@ typedef mptr_t mdlentry_t; // same for windows and linux
 
 _MERRY_DEFINE_FUNC_PTR_(_THRET_T_, mthexec_t, mptr_t);
 
-mret_t merry_open_pipe(mdataline_t *rline, mdataline_t *wline);
+mresult_t merry_open_pipe(mdataline_t *rline, mdataline_t *wline);
 
 mbool_t merry_is_path_a_directory(mstr_t path);
 

@@ -36,11 +36,10 @@ void tc_TEST_4(TC *tc) {
   args->create_core.same_group = mtrue;
   args->create_core.st_addr = tc->PC + 1;
   tc_make_request(tc, CREATE_CORE);
-  if (tc->_greq.res != GREQUEST_SUCCESS) {
+  if (tc->_greq.result.result != MRES_SUCCESS) {
     MLOG("TC[TEST_4]",
          "[ID=%zu, UID=%zu, GUID=%zu] FAILED TO CREATE CORE: ERR=%d",
-         tc->base->id, tc->base->uid, tc->base->guid,
-         tc->_greq.failed.mfailure);
+         tc->base->id, tc->base->uid, tc->base->guid, tc->_greq.result.result);
     return;
   }
   MLOG(
@@ -61,11 +60,10 @@ void tc_TEST_5(TC *tc) {
   args->create_core.same_group = mfalse;
   args->create_core.st_addr = tc->PC + 1;
   tc_make_request(tc, CREATE_CORE);
-  if (tc->_greq.res != GREQUEST_SUCCESS) {
+  if (tc->_greq.result.result != MRES_SUCCESS) {
     MLOG("TC[TEST_5]",
          "[ID=%zu, UID=%zu, GUID=%zu] FAILED TO CREATE CORE: ERR=%d",
-         tc->base->id, tc->base->uid, tc->base->guid,
-         tc->_greq.failed.mfailure);
+         tc->base->id, tc->base->uid, tc->base->guid, tc->_greq.result.result);
     return;
   }
   MLOG(
@@ -87,11 +85,10 @@ void tc_TEST_7(TC *tc) {
        tc->base->id, tc->base->uid, tc->base->guid);
   MerryRequestArgs *args = &tc->args;
   tc_make_request(tc, CREATE_GROUP);
-  if (tc->_greq.res != GREQUEST_SUCCESS) {
+  if (tc->_greq.result.result != MRES_SUCCESS) {
     MLOG("TC[TEST_7]",
          "[ID=%zu, UID=%zu, GUID=%zu] FAILED TO CREATE GROUP: ERR=%d",
-         tc->base->id, tc->base->uid, tc->base->guid,
-         tc->_greq.failed.mfailure);
+         tc->base->id, tc->base->uid, tc->base->guid, tc->_greq.result.result);
     return;
   }
   MLOG("TC[TEST_7]", "[ID=%zu, UID=%zu, GUID=%zu] CREATED NEW GROUP: GUID=%zu",
@@ -105,11 +102,10 @@ void tc_TEST_8(TC *tc) {
   MerryRequestArgs *args = &tc->args;
   args->get_group_details.guid = tc->base->guid;
   tc_make_request(tc, GET_GROUP_DETAILS);
-  if (tc->_greq.res != GREQUEST_SUCCESS) {
+  if (tc->_greq.result.result != MRES_SUCCESS) {
     MLOG("TC[TEST_8]",
          "[ID=%zu, UID=%zu, GUID=%zu] FAILED TO OBTAIN GROUP DETAILS: ERR=%d",
-         tc->base->id, tc->base->uid, tc->base->guid,
-         tc->_greq.failed.mfailure);
+         tc->base->id, tc->base->uid, tc->base->guid, tc->_greq.result.result);
     return;
   }
   MLOG("TC[TEST_8]",
@@ -125,11 +121,10 @@ void tc_TEST_9(TC *tc) {
        tc->base->id, tc->base->uid, tc->base->guid);
   MerryRequestArgs *args = &tc->args;
   tc_make_request(tc, GET_SYSTEM_DETAILS);
-  if (tc->_greq.res != GREQUEST_SUCCESS) {
+  if (tc->_greq.result.result != MRES_SUCCESS) {
     MLOG("TC[TEST_9]",
          "[ID=%zu, UID=%zu, GUID=%zu] FAILED TO OBTAIN SYSTEM DETAILS: ERR=%d",
-         tc->base->id, tc->base->uid, tc->base->guid,
-         tc->_greq.failed.mfailure);
+         tc->base->id, tc->base->uid, tc->base->guid, tc->_greq.result.result);
     return;
   }
   MLOG("TC[TEST_9]",

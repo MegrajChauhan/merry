@@ -1,13 +1,13 @@
 #include <merry_platform.h>
 
-mret_t merry_open_pipe(mdataline_t *rline, mdataline_t *wline) {
+mresult_t merry_open_pipe(mdataline_t *rline, mdataline_t *wline) {
   merry_check_ptr(rline);
   merry_check_ptr(wline);
 
   mdataline_t lines[2];
 #ifdef _USE_LINUX_
   if (pipe(lines) == -1) {
-    return RET_FAILURE;
+    return MRES_SYS_FAILURE;
   }
 #elif defined(_USE_WIN_)
   SECURITY_ATTRIBUTES saAttr;
@@ -16,12 +16,12 @@ mret_t merry_open_pipe(mdataline_t *rline, mdataline_t *wline) {
   saAttr.lpSecurityDescriptor = NULL;
 
   if (!CreatePipe(&lines[0], &lines[1], &saAttr, 0)) { // Default size
-    return RET_FAILURE;
+    return MRES_SYS_FAILURE;
   }
 #endif
   *rline = lines[0];
   *wline = lines[1];
-  return RET_SUCCESS;
+  return MRES_SUCCESS;
 }
 
 mbool_t merry_is_path_a_directory(mstr_t path) {

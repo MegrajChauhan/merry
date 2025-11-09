@@ -31,22 +31,9 @@
 #include <merry_types.h>
 
 typedef enum mgreq_t mgreq_t;
-typedef enum mgreqres_t mgreqres_t;
-typedef enum mgreqfailure_t mgreqfailure_t;
-
-enum mgreqres_t {
-  GREQUEST_SUCCESS,
-  GREQUEST_FAILURE,
-  GREQUEST_MERRY_FAILURE,
-};
-
-enum mgreqfailure_t {
-  GREQUEST_INVALID_ARGS,
-  GREQUEST_REQ_QUEUE_DISABLED,
-  GREQUEST_REQ_QUEUE_FAILED,
-};
 
 enum mgreq_t {
+  NOP,                // do nothing(needed)
   CREATE_CORE,        // Creating a new core
                       // DESC: Create a new core to execute some more code
                       //       in parallel
@@ -58,19 +45,24 @@ enum mgreq_t {
 
 typedef struct MerryGravesRequest MerryGravesRequest;
 typedef union MerryRequestArgs MerryRequestArgs;
+typedef struct MerryGravesRequestOperationResult
+    MerryGravesRequestOperationResult;
 
 struct MerryCoreBase;
 
+struct MerryGravesRequestOperationResult {
+  mresult_t result;
+  msize_t CODE;
+  msize_t ERRNO;
+};
+
 struct MerryGravesRequest {
   mgreq_t type;
+  _Atomic mbool_t fufilled;
   struct MerryCoreBase *base;
   mcond_t *used_cond;
   MerryRequestArgs *args;
-  mgreqres_t res;
-  union {
-    mgreqfailure_t mfailure;
-    int errno_if_err;
-  } failed;
+  MerryGravesRequestOperationResult result;
 };
 
 /*

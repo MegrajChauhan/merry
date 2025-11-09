@@ -121,16 +121,12 @@ mret_t rbc_input_read(RBCInput *inp, mstr_t path) {
   merry_check_ptr(inp);
   merry_check_ptr(path);
 
-  mbool_t res = mfalse;
-  inp->input_file = merry_open_file(path, _MERRY_FOPEN_READ_WRITE_, 0, &res);
-  if (!inp->input_file) {
-    if (!res) {
-      MFATAL("RBC", "Failed to read input file: FILE=%s because %s", path,
-             strerror(errno));
-      return RET_FAILURE;
-    } else {
-      merry_unreachable();
-    }
+  mresult_t res =
+      merry_open_file(&inp->input_file, path, _MERRY_FOPEN_READ_WRITE_, 0);
+  if (res != MRES_SUCCESS) {
+    MFATAL("RBC", "Failed to read input file: FILE=%s because %s", path,
+           strerror(errno));
+    return RET_FAILURE;
   }
   msize_t fsize = 0;
   if (merry_file_size(inp->input_file, &fsize) != INTERFACE_SUCCESS)
@@ -151,14 +147,15 @@ mret_t rbc_input_read(RBCInput *inp, mstr_t path) {
 
   // Now finally allocate the memory
   msize_t total_len = inp->data_len + inp->instruction_len + 32;
-  mptr_t mem = merry_get_anonymous_memory(total_len);
-  if (!mem) {
+  mptr_t mem;
+  res = merry_get_anonymous_memory(&mem, total_len);
+  if (res != MRES_SUCCESS) {
     MFATAL("RBC", "Failed to obtain memory for program: PATH=%s", path);
     merry_destroy_file(inp->input_file);
     return RET_FAILURE;
   }
 
-  if (!(inp->mapped = merry_map_memory(mem, total_len))) {
+  if ((res = merry_map_memory(&inp->mapped, mem, total_len)) != MRES_SUCCESS) {
     MFATAL("RBC", "Failed to obtain memory for program: PATH=%s", path);
     merry_destroy_file(inp->input_file);
     merry_return_memory(mem, total_len);
@@ -166,8 +163,8 @@ mret_t rbc_input_read(RBCInput *inp, mstr_t path) {
   }
 
   // We need a much better way of doing this
-  if (merry_map_file(inp->mapped->memory_map.map, inp->input_file) ==
-      RET_FAILURE) {
+  if (merry_map_file(inp->mapped->memory_map.map, inp->input_file) !=
+      MRES_SUCCESS) {
     MFATAL("RBC", "Failed to populate memory for execution: PATH=%s", path);
     merry_destroy_file(inp->input_file);
     merry_return_memory(inp->instructions, inp->instruction_len);

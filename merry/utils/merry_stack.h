@@ -1,6 +1,7 @@
 #ifndef _MERRY_STACK_
 #define _MERRY_STACK_
 
+#include <merry_operations.h>
 #include <merry_types.h>
 #include <merry_utils.h>
 #include <stdlib.h>
@@ -16,11 +17,12 @@
     msize_t sp_max;                                                            \
     mbool_t external_buffer;                                                   \
   };                                                                           \
-  Merry##name##Stack *merry_##name##_stack_init(msize_t cap);                  \
-  Merry##name##Stack *merry_##name##_stack_init_ext_buf(type *buf,             \
-                                                        msize_t len);          \
-  mret_t merry_##name##_stack_push(Merry##name##Stack *stack, type *value);    \
-  type *merry_##name##_stack_pop(Merry##name##Stack *stack);                   \
+  mresult_t merry_##name##_stack_init(Merry##name##Stack **stack,              \
+                                      msize_t cap);                            \
+  mresult_t merry_##name##_stack_init_ext_buf(Merry##name##Stack **stack,      \
+                                              type *buf, msize_t len);         \
+  mresult_t merry_##name##_stack_push(Merry##name##Stack *stack, type *value); \
+  mresult_t merry_##name##_stack_pop(Merry##name##Stack *stack, type *elem);   \
   void merry_##name##_stack_clear(Merry##name##Stack *stack);                  \
   void merry_##name##_stack_destroy(Merry##name##Stack *stack);
 
@@ -31,61 +33,58 @@
   (((stack)->sp - (stack)->sp_max) >= (n))
 
 #define _MERRY_DEFINE_STACK_(name, type)                                       \
-  Merry##name##Stack *merry_##name##_stack_init(msize_t cap) {                 \
-    Merry##name##Stack *stk =                                                  \
-        (Merry##name##Stack *)malloc(sizeof(Merry##name##Stack));              \
-    if (!stk) {                                                                \
-      MFATAL(NULL, "Failed to allocate memory for stack", NULL);               \
-      return RET_NULL;                                                         \
+  mresult_t merry_##name##_stack_init(Merry##name##Stack **stack,              \
+                                      msize_t cap) {                           \
+    *stack = (Merry##name##Stack *)malloc(sizeof(Merry##name##Stack));         \
+    if (!(*stack)) {                                                           \
+      return MRES_SYS_FAILURE;                                                 \
     }                                                                          \
-    stk->buf = (type *)malloc(sizeof(type) * cap);                             \
-    if (!stk->buf) {                                                           \
-      MFATAL(NULL, "Failed to allocate memory for stack buffer", NULL);        \
-      free(stk);                                                               \
-      return RET_NULL;                                                         \
+    (*stack)->buf = (type *)malloc(sizeof(type) * cap);                        \
+    if (!(*stack)->buf) {                                                      \
+      free(*stack);                                                            \
+      return MRES_SYS_FAILURE;                                                 \
     }                                                                          \
-    stk->sp = (msize_t)(-1);                                                   \
-    stk->cap = cap;                                                            \
-    stk->sp_max = cap - 1;                                                     \
-    stk->external_buffer = mfalse;                                             \
-    return stk;                                                                \
+    (*stack)->sp = (msize_t)(-1);                                              \
+    (*stack)->cap = cap;                                                       \
+    (*stack)->sp_max = cap - 1;                                                \
+    (*stack)->external_buffer = mfalse;                                        \
+    return MRES_SUCCESS;                                                       \
   }                                                                            \
-  Merry##name##Stack *merry_##name##_stack_init_ext_buf(type *buf,             \
-                                                        msize_t len) {         \
+  mresult_t merry_##name##_stack_init_ext_buf(Merry##name##Stack **stack,      \
+                                              type *buf, msize_t len) {        \
     merry_check_ptr(buf);                                                      \
     if (len == 0)                                                              \
       merry_unreachable();                                                     \
-    Merry##name##Stack *stk =                                                  \
-        (Merry##name##Stack *)malloc(sizeof(Merry##name##Stack));              \
-    if (!stk) {                                                                \
-      MFATAL(NULL, "Failed to allocate memory for stack", NULL);               \
-      return RET_NULL;                                                         \
+    *stack = (Merry##name##Stack *)malloc(sizeof(Merry##name##Stack));         \
+    if (!(*stack)) {                                                           \
+      return MRES_SYS_FAILURE;                                                 \
     }                                                                          \
-    stk->buf = buf;                                                            \
-    stk->sp = (msize_t)(-1);                                                   \
-    stk->cap = len;                                                            \
-    stk->sp_max = len - 1;                                                     \
-    stk->external_buffer = mtrue;                                              \
-    return stk;                                                                \
+    (*stack)->buf = buf;                                                       \
+    (*stack)->sp = (msize_t)(-1);                                              \
+    (*stack)->cap = len;                                                       \
+    (*stack)->sp_max = len - 1;                                                \
+    (*stack)->external_buffer = mtrue;                                         \
+    return MRES_SUCCESS;                                                       \
   }                                                                            \
-  mret_t merry_##name##_stack_push(Merry##name##Stack *stack, type *value) {   \
+  mresult_t merry_##name##_stack_push(Merry##name##Stack *stack,               \
+                                      type *value) {                           \
     merry_check_ptr(stack);                                                    \
     merry_check_ptr(stack->buf);                                               \
     merry_check_ptr(value);                                                    \
     if (merry_is_stack_full(stack))                                            \
-      return RET_FAILURE;                                                      \
+      return MRES_CONT_FULL;                                                   \
     stack->sp++;                                                               \
     stack->buf[stack->sp] = *value;                                            \
-    return RET_SUCCESS;                                                        \
+    return MRES_SUCCESS;                                                       \
   }                                                                            \
-  type *merry_##name##_stack_pop(Merry##name##Stack *stack) {                  \
+  mresult_t merry_##name##_stack_pop(Merry##name##Stack *stack, type *elem) {  \
     merry_check_ptr(stack);                                                    \
     merry_check_ptr(stack->buf);                                               \
     if (merry_is_stack_empty(stack))                                           \
-      return RET_NULL;                                                         \
-    register type *v = &stack->buf[stack->sp];                                 \
+      return MRES_CONT_EMPTY;                                                  \
+    *elem = stack->buf[stack->sp];                                             \
     stack->sp--;                                                               \
-    return v;                                                                  \
+    return MRES_SUCCESS;                                                       \
   }                                                                            \
   void merry_##name##_stack_clear(Merry##name##Stack *stack) {                 \
     merry_check_ptr(stack);                                                    \

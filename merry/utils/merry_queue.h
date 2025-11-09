@@ -2,6 +2,7 @@
 #define _MERRY_QUEUE_
 
 #include <merry_logger.h>
+#include <merry_operations.h>
 #include <merry_types.h>
 #include <merry_utils.h>
 #include <stdatomic.h>
@@ -28,32 +29,31 @@
   struct MerryLL##name##Queue {                                                \
     MerryLL##name##QueueNode *head, *tail;                                     \
   };                                                                           \
-  MerryLL##name##Queue *merry_##name##_llqueue_init();                         \
-  mret_t merry_##name##_llqueue_push(MerryLL##name##Queue *queue, type *data); \
-  mret_t merry_##name##_llqueue_pop(MerryLL##name##Queue *queue,               \
-                                    type *_store_in);                          \
+  mresult_t merry_##name##_llqueue_init(MerryLL##name##Queue **queue);         \
+  mresult_t merry_##name##_llqueue_push(MerryLL##name##Queue *queue,           \
+                                        type *data);                           \
+  mresult_t merry_##name##_llqueue_pop(MerryLL##name##Queue *queue,            \
+                                       type *_store_in);                       \
   void merry_##name##_llqueue_clear(MerryLL##name##Queue *queue);              \
   void merry_##name##_llqueue_destroy(MerryLL##name##Queue *queue);
 
 #define _MERRY_DEFINE_QUEUE_(name, type)                                       \
-  MerryLL##name##Queue *merry_##name##_llqueue_init() {                        \
-    MerryLL##name##Queue *queue =                                              \
-        (MerryLL##name##Queue *)malloc(sizeof(MerryLL##name##Queue));          \
-    if (!queue) {                                                              \
-      MFATAL(NULL, "Failed to allocate memory for LL QUEUE", NULL);            \
-      return RET_NULL;                                                         \
+  mresult_t merry_##name##_llqueue_init(MerryLL##name##Queue **queue) {        \
+    *queue = (MerryLL##name##Queue *)malloc(sizeof(MerryLL##name##Queue));     \
+    if (!(*queue)) {                                                           \
+      return MRES_SYS_FAILURE;                                                 \
     }                                                                          \
-    queue->head = queue->tail = NULL;                                          \
-    return queue;                                                              \
+    (*queue)->head = (*queue)->tail = NULL;                                    \
+    return MRES_SUCCESS;                                                       \
   }                                                                            \
-  mret_t merry_##name##_llqueue_push(MerryLL##name##Queue *queue,              \
-                                     type *data) {                             \
+  mresult_t merry_##name##_llqueue_push(MerryLL##name##Queue *queue,           \
+                                        type *data) {                          \
     merry_check_ptr(queue);                                                    \
     merry_check_ptr(data);                                                     \
     MerryLL##name##QueueNode *node =                                           \
         (MerryLL##name##QueueNode *)malloc(sizeof(MerryLL##name##QueueNode));  \
     if (!node) {                                                               \
-      return RET_FAILURE;                                                      \
+      return MRES_SYS_FAILURE;                                                 \
     }                                                                          \
     node->data = *data;                                                        \
     if (queue->head == NULL && queue->tail == NULL) {                          \
@@ -66,14 +66,14 @@
       queue->tail->next_node = node;                                           \
       queue->tail = node;                                                      \
     }                                                                          \
-    return RET_SUCCESS;                                                        \
+    return MRES_SUCCESS;                                                       \
   }                                                                            \
-  mret_t merry_##name##_llqueue_pop(MerryLL##name##Queue *queue,               \
-                                    type *_store_in) {                         \
+  mresult_t merry_##name##_llqueue_pop(MerryLL##name##Queue *queue,            \
+                                       type *_store_in) {                      \
     merry_check_ptr(queue);                                                    \
     merry_check_ptr(_store_in);                                                \
     if (queue->head == NULL && queue->tail == NULL) {                          \
-      return RET_FAILURE;                                                      \
+      return MRES_CONT_EMPTY;                                                  \
     }                                                                          \
     MerryLL##name##QueueNode *head = queue->head;                              \
     *_store_in = head->data;                                                   \
@@ -123,13 +123,13 @@ struct MerrySQueue {
 #define merry_squeue_clear(queue)                                              \
   ((queue)->head = (queue)->rear = (mqword_t)(-1))
 
-MerrySQueue *merry_create_squeue(msize_t cap, msize_t elen);
+mresult_t merry_create_squeue(MerrySQueue **queue, msize_t cap, msize_t elen);
 
 mptr_t merry_squeue_top(MerrySQueue *queue);
 
-mret_t merry_squeue_enqueue(MerrySQueue *queue, mptr_t elem);
+mresult_t merry_squeue_enqueue(MerrySQueue *queue, mptr_t elem);
 
-mret_t merry_squeue_dequeue(MerrySQueue *queue, mptr_t elem);
+mresult_t merry_squeue_dequeue(MerrySQueue *queue, mptr_t elem);
 
 void merry_destroy_squeue(MerrySQueue *queue);
 
@@ -152,13 +152,14 @@ struct MerrySQueueAtm {
 #define merry_squeue_atm_clear(queue)                                          \
   ((queue)->head = (queue)->rear = (mqword_t)(-1))
 
-MerrySQueueAtm *merry_create_squeue_atm(msize_t cap, msize_t elen);
+mresult_t merry_create_squeue_atm(MerrySQueueAtm **queue, msize_t cap,
+                                  msize_t elen);
 
 mptr_t merry_squeue_atm_top(MerrySQueueAtm *queue);
 
-mret_t merry_squeue_atm_enqueue(MerrySQueueAtm *queue, mptr_t elem);
+mresult_t merry_squeue_atm_enqueue(MerrySQueueAtm *queue, mptr_t elem);
 
-mret_t merry_squeue_atm_dequeue(MerrySQueueAtm *queue, mptr_t elem);
+mresult_t merry_squeue_atm_dequeue(MerrySQueueAtm *queue, mptr_t elem);
 
 void merry_destroy_squeue_atm(MerrySQueueAtm *queue);
 

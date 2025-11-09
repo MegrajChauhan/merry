@@ -12,65 +12,55 @@ REQ(create_core) {
   if (args->create_core.new_core_type >= __CORE_TYPE_COUNT) {
     // Locally fatal i.e fatal to the core who will dump its
     // error messages and then terminate
-    req->res = GREQUEST_FAILURE;
-    req->failed.mfailure = GREQUEST_INVALID_ARGS;
+    req->result.result = MRES_INVALID_ARGS;
     return;
   }
   MerryGravesCoreRepr *new_repr;
+  mresult_t res = MRES_SUCCESS;
   if (args->create_core.new_group == mtrue &&
       args->create_core.same_group == mfalse) {
     // A new group needed
-    MerryGravesGroup *ngrp = merry_graves_add_group();
-    if (!ngrp) {
-      req->res = GREQUEST_MERRY_FAILURE;
-      req->failed.errno_if_err = errno;
-      return;
-    }
+    MerryGravesGroup *ngrp;
+    res = merry_graves_add_group(GRAVES, &ngrp);
+    if (res != MRES_SUCCESS)
+      goto CC_FAILURE;
     grp = ngrp;
   } else if (args->create_core.new_group == mfalse &&
              args->create_core.same_group == mfalse) {
     // use an exisiting group
-    MerryGravesGroup **ogrp =
-        merry_Group_list_at(GRAVES.GRPS, args->create_core.gid);
-    if (!ogrp) {
-      req->res = GREQUEST_MERRY_FAILURE;
-      req->failed.errno_if_err = errno;
-      return;
-    }
-    grp = *ogrp;
+    MerryGravesGroup *ogrp;
+    res = merry_Group_list_at(GRAVES->GRPS, &ogrp, args->create_core.gid);
+    if (res != MRES_SUCCESS)
+      goto CC_FAILURE;
+    grp = ogrp;
   } else if (args->create_core.same_group == mtrue) {
   } else {
     // None of the possibilities matches hence an error
-    req->res = GREQUEST_FAILURE;
-    req->failed.mfailure = GREQUEST_INVALID_ARGS;
-    return;
+    res = MRES_INVALID_ARGS;
+    goto CC_FAILURE;
   }
-  new_repr = merry_graves_add_core(grp);
-  if (!new_repr) {
-    req->res = GREQUEST_MERRY_FAILURE;
-    req->failed.errno_if_err = errno;
-    return;
+  res = merry_graves_add_core(GRAVES, grp, &new_repr);
+  if (res != MRES_SUCCESS)
+    goto CC_FAILURE;
+  res = merry_graves_init_a_core(GRAVES, new_repr,
+                                 args->create_core.new_core_type,
+                                 args->create_core.st_addr);
+  if (res != MRES_SUCCESS)
+    goto CC_FAILURE;
+  merry_graves_give_IDs_to_cores(GRAVES, new_repr, grp);
+  if ((res = merry_graves_boot_a_core(GRAVES, new_repr)) != MRES_SUCCESS) {
+    merry_graves_failed_core_booting(GRAVES);
+    goto CC_FAILURE;
   }
-  mret_t _r = merry_graves_init_a_core(
-      new_repr, args->create_core.new_core_type, args->create_core.st_addr);
-  if (!_r) {
-    req->res = GREQUEST_MERRY_FAILURE;
-    req->failed.errno_if_err = errno;
-    return;
-  }
-  merry_graves_give_IDs_to_cores(new_repr, grp);
-  if (merry_graves_boot_a_core(new_repr) == RET_FAILURE) {
-    req->res = GREQUEST_MERRY_FAILURE;
-    req->failed.errno_if_err = errno;
-    new_repr->base->deletec(new_repr->core);
-    GRAVES.HOW_TO_DESTROY_BASE[args->create_core.new_core_type](new_repr->base);
-    merry_graves_failed_core_booting();
-    return;
-  }
-  req->res = GREQUEST_SUCCESS;
   args->create_core.gid = grp->group_id;
   args->create_core.new_id = new_repr->base->id;
   args->create_core.new_uid = new_repr->base->uid;
+  res = MRES_SUCCESS;
+CC_FAILURE:
+  req->result.result = res;
+  req->result.CODE = GRAVES->result.CODE;
+  req->result.ERRNO = (res == MRES_SYS_FAILURE) ? errno : 0;
+  return;
 }
 
 REQ(create_group) {
@@ -78,14 +68,15 @@ REQ(create_group) {
    * Just create a new group
    * */
   MerryRequestArgs *args = req->args;
-  MerryGravesGroup *ngrp = merry_graves_add_group();
+  MerryGravesGroup *ngrp;
+  mresult_t res = merry_graves_add_group(GRAVES, &ngrp);
   if (!ngrp) {
-    req->res = GREQUEST_MERRY_FAILURE;
-    req->failed.errno_if_err = errno;
+    req->result.result = res;
+    req->result.ERRNO = errno;
     return;
   }
   args->create_group.new_guid = ngrp->group_id;
-  req->res = GREQUEST_SUCCESS;
+  req->result.result = MRES_SUCCESS;
 }
 
 REQ(get_group_details) {
@@ -95,16 +86,17 @@ REQ(get_group_details) {
    * cores that are active in that group
    * */
   MerryRequestArgs *args = req->args;
-  MerryGravesGroup **ngrp =
-      merry_Group_list_at(GRAVES.GRPS, args->get_group_details.guid);
-  if (!ngrp) {
-    req->res = GREQUEST_MERRY_FAILURE;
-    req->failed.errno_if_err = errno;
+  MerryGravesGroup *ngrp;
+  mresult_t res =
+      merry_Group_list_at(GRAVES->GRPS, &ngrp, args->get_group_details.guid);
+  if (res != MRES_SUCCESS) {
+    req->result.result = res;
+    req->result.ERRNO = errno;
     return;
   }
-  args->get_group_details.core_count = (*ngrp)->core_count;
-  args->get_group_details.active_core_count = (*ngrp)->active_core_count;
-  req->res = GREQUEST_SUCCESS;
+  args->get_group_details.core_count = (ngrp)->core_count;
+  args->get_group_details.active_core_count = (ngrp)->active_core_count;
+  req->result.result = MRES_SUCCESS;
 }
 
 REQ(get_system_details) {
@@ -116,9 +108,9 @@ REQ(get_system_details) {
    * just one group.
    * */
   MerryRequestArgs *args = req->args;
-  args->get_system_details.grp_count = GRAVES.grp_count;
-  args->get_system_details.core_count = GRAVES.core_count;
-  args->get_system_details.active_core_count = GRAVES.active_core_count;
+  args->get_system_details.grp_count = GRAVES->grp_count;
+  args->get_system_details.core_count = GRAVES->core_count;
+  args->get_system_details.active_core_count = GRAVES->active_core_count;
   // will never fail so don't worry
-  req->res = GREQUEST_SUCCESS;
+  req->result.result = MRES_SUCCESS;
 }

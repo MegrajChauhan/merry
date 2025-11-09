@@ -6,6 +6,7 @@
 #include <merry_logger.h>
 #include <merry_memory.h>
 #include <merry_mmem.h>
+#include <merry_operations.h>
 #include <merry_types.h>
 #include <merry_utils.h>
 #include <regr_core/def/consts/rbc_mem_defs.h>

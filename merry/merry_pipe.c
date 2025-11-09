@@ -1,19 +1,20 @@
 #include <merry_pipe.h>
 
-MerryPipe *merry_open_merrypipe() {
-  MerryPipe *p = (MerryPipe *)merry_interface_init(INTERFACE_TYPE_PIPE);
-  if (p == NULL) {
-    return RET_NULL;
+mresult_t merry_open_merrypipe(MerryPipe **pipe) {
+  mresult_t res = merry_interface_init(pipe, INTERFACE_TYPE_PIPE);
+  if (res != MRES_SUCCESS) {
+    return res;
   }
+  MerryPipe *p = *pipe;
 
-  if (merry_open_pipe(&p->cpipe._read_fd, &p->cpipe._write_fd) == RET_FAILURE) {
-    return RET_NULL;
-  }
+  if ((res = merry_open_pipe(&p->cpipe._read_fd, &p->cpipe._write_fd)) !=
+      MRES_SUCCESS)
+    return res;
 
   p->cpipe._in_use = mtrue;
   p->cpipe._rclosed = mfalse;
   p->cpipe._wclosed = mfalse;
-  return p;
+  return MRES_SUCCESS;
 }
 
 minterfaceRet_t merry_pipe_close_read_end(MerryPipe *pipe) {

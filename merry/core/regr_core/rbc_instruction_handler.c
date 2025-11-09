@@ -100,14 +100,18 @@ rbc_ihdlr(mint) {
     return;
   }
   base->req.type = base->REGISTER_FILE[RBC_R15];
-  merry_SEND_REQUEST(&base->req);
+  if ((base->REGISTER_FILE[RBC_R15] = merry_SEND_REQUEST(&base->req)) !=
+      MRES_SUCCESS)
+    return;
 
   // results here
-  base->REGISTER_FILE[RBC_R15] = base->req.res;
-  if (base->req.res != GREQUEST_SUCCESS) {
-    base->REGISTER_FILE[RBC_R14] = base->req.failed.errno_if_err;
-    return;
+  base->REGISTER_FILE[RBC_R15] = base->req.result.result;
+  if (base->req.result.result == MRES_FAILURE ||
+      base->req.result.result == MRES_SYS_FAILURE) {
+    base->REGISTER_FILE[RBC_R14] = base->req.result.CODE;
   }
+  if (base->req.result.result != MRES_SUCCESS)
+    return;
   switch (base->REGISTER_FILE[RBC_R10]) {
   case CREATE_CORE: {
     base->REGISTER_FILE[RBC_R10] = args->create_core.new_id;
@@ -1027,7 +1031,6 @@ rbc_ihdlrX(call) {
 }
 
 rbc_ihdlrX(ret) {
-  RBCStackFrame *frame;
 
   if (merry_is_stack_empty(base->stack_frames)) {
     *kcore = mtrue;
@@ -1035,14 +1038,16 @@ rbc_ihdlrX(ret) {
     return;
   }
 
-  if ((frame = merry_RBCProcFrame_stack_pop(base->stack_frames)) == RET_NULL) {
+  RBCStackFrame frame;
+  if ((merry_RBCProcFrame_stack_pop(base->stack_frames, &frame)) !=
+      MRES_SUCCESS) {
     *kcore = mtrue;
     MFATAL("RBC", "Failed to restore stack frame: PC=%zu", base->PC);
     return;
   }
   base->SP = base->BP;
-  base->PC = frame->RET_ADDR;
-  base->BP = frame->FRAME_BP;
+  base->PC = frame.RET_ADDR;
+  base->BP = frame.FRAME_BP;
 }
 
 rbc_ihdlrX(call_reg) {

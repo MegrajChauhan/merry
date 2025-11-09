@@ -18,10 +18,10 @@ void tc_mem_destroy(TCMem *mem) {
   free(mem);
 }
 
-_MERRY_ALWAYS_INLINE_ mret_t tc_read(TCMem *mem, maddress_t addr,
-                                     mbptr_t store_in) {
+_MERRY_ALWAYS_INLINE_ tcret_t tc_read(TCMem *mem, maddress_t addr,
+                                      mbptr_t store_in) {
   if (addr >= mem->len)
-    return RET_FAILURE;
+    return TC_FAILURE;
   *store_in = mem->all_instructions[addr];
-  return RET_SUCCESS;
+  return TC_SUCCESS;
 }

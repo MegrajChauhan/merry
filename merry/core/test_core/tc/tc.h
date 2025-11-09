@@ -20,21 +20,21 @@ struct TC {
   mbool_t terminate;
 };
 
-mptr_t tc_create_core(MerryCoreBase *base, maddress_t st);
+mptr_t tc_create_core(MerryCoreBase *base, maddress_t st, msize_t *CODE);
 
 void tc_delete_core(mptr_t c);
 
-mret_t tc_run(mptr_t c);
+msize_t tc_run(mptr_t c);
 
-MerryCoreBase *tc_create_base();
+MerryCoreBase *tc_create_base(msize_t *CODE);
 
 void tc_destroy_base(MerryCoreBase *base);
 
 void tc_pre_delete_core(mptr_t c);
 
-mret_t tc_set_inp(mptr_t c, mstr_t fname);
+mret_t tc_set_inp(mptr_t c, mstr_t fname, msize_t *CODE);
 
-mret_t tc_prep_core(mptr_t c);
+mret_t tc_prep_core(mptr_t c, msize_t *CODE);
 
 void tc_make_request(TC *tc, mgreq_t req);
 

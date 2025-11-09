@@ -3,44 +3,65 @@
 _MERRY_DEFINE_QUEUE_(GravesRequest, MerryGravesRequest *);
 
 mret_t merry_graves_req_queue_init() {
-
-  if ((g_queue.req_queue = merry_GravesRequest_llqueue_init()) == RET_NULL) {
+  mresult_t res = merry_GravesRequest_llqueue_init(&g_queue.req_queue);
+  if (res != MRES_SUCCESS)
     return RET_FAILURE;
-  }
 
   g_queue.accept_requests = mtrue;
   return RET_SUCCESS;
 }
 
-void merry_SEND_REQUEST(MerryGravesRequest *creq) {
+mresult_t merry_SEND_REQUEST(MerryGravesRequest *creq) {
   merry_mutex_lock(g_queue.owner_lock);
   if (g_queue.accept_requests == mfalse) {
     merry_mutex_unlock(g_queue.owner_lock);
-    creq->res = GREQUEST_FAILURE;
-    creq->failed.mfailure = GREQUEST_REQ_QUEUE_DISABLED;
-    return;
+    return MRES_OPER_NOT_AVAI;
   }
 
-  /*
-   * We have decided to be strict
-   * */
-  if (merry_GravesRequest_llqueue_push(g_queue.req_queue, &creq) ==
-      RET_FAILURE) {
-    creq->res = GREQUEST_FAILURE;
-    creq->failed.mfailure = GREQUEST_REQ_QUEUE_FAILED;
+  if (merry_GravesRequest_llqueue_push(g_queue.req_queue, &creq) !=
+      MRES_SUCCESS) {
     merry_cond_signal(g_queue.owner_cond);
     merry_mutex_unlock(g_queue.owner_lock);
-    return;
+    return MRES_COMP_FAILURE;
   }
+  creq->fufilled = mfalse;
   merry_cond_signal(g_queue.owner_cond);
   merry_cond_wait(creq->used_cond, g_queue.owner_lock);
+  if (creq->fufilled == mfalse) {
+    // The request wasn't fulfilled and yet the core was awaken implying that
+    // something interferred which is not allowed and hence we will sleep until
+    // it is fulfilled
+    merry_mutex_unlock(g_queue.owner_lock);
+    while (creq->fufilled == mfalse) {
+      usleep(10); // not the best choice
+    }
+    return MRES_SUCCESS; // done
+  }
   merry_mutex_unlock(g_queue.owner_lock);
-  return;
+  return MRES_SUCCESS;
 }
 
-mret_t merry_graves_wants_work(MerryGravesRequest **req) {
-  mret_t res = merry_GravesRequest_llqueue_pop(g_queue.req_queue, req);
-  return res;
+mresult_t merry_SEND_REQUEST_async(MerryGravesRequest *creq) {
+  merry_mutex_lock(g_queue.owner_lock);
+  if (g_queue.accept_requests == mfalse) {
+    merry_mutex_unlock(g_queue.owner_lock);
+    return MRES_OPER_NOT_AVAI;
+  }
+  if (merry_GravesRequest_llqueue_push(g_queue.req_queue, &creq) !=
+      MRES_SUCCESS) {
+    merry_cond_signal(g_queue.owner_cond);
+    merry_mutex_unlock(g_queue.owner_lock);
+    return MRES_COMP_FAILURE;
+  }
+  creq->fufilled = mfalse;
+  merry_cond_signal(g_queue.owner_cond);
+  merry_mutex_unlock(g_queue.owner_lock);
+  return MRES_SUCCESS;
+}
+
+mresult_t merry_graves_wants_work(MerryGravesRequest **req) {
+  mresult_t res = merry_GravesRequest_llqueue_pop(g_queue.req_queue, req);
+  return (res == MRES_SUCCESS) ? MRES_SUCCESS : MRES_FAILURE;
 }
 
 void merry_graves_req_no_more_requests() {

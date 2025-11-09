@@ -5,8 +5,10 @@
 #include <merry_file.h>
 #include <merry_logger.h>
 #include <merry_memory.h>
+#include <merry_operations.h>
 #include <merry_types.h>
 #include <test_core/comps/test_core_memory.h>
+#include <test_core/defs/test_core_consts.h>
 
 /*
  * The format for test core is:
@@ -31,7 +33,7 @@ struct TCInp {
   MerryFile *file;
 };
 
-mret_t tc_read_input(mstr_t fname, TCInp *inp);
+tcret_t tc_read_input(mstr_t fname, TCInp *inp);
 
 void tc_destroy_input(TCInp *inp);
 

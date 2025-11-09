@@ -2,13 +2,14 @@
 #define _MERRY_PROTECTORS_
 
 #include <merry_config.h>
+#include <merry_operations.h>
 #include <merry_platform.h>
 #include <merry_types.h>
 #include <merry_utils.h>
 
-mret_t merry_mutex_init(mmutex_t *lock);
+mresult_t merry_mutex_init(mmutex_t *lock);
 
-mret_t merry_cond_init(mcond_t *cond);
+mresult_t merry_cond_init(mcond_t *cond);
 
 void merry_mutex_destroy(mmutex_t *mutex);
 

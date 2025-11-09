@@ -1,46 +1,42 @@
 #include <merry_file.h>
 
-MerryFile *merry_open_file(mstr_t file_path, mstr_t modes, int flags,
-                           mbool_t *failed) {
-  MerryFile *file = (MerryFile *)merry_interface_init(INTERFACE_TYPE_FILE);
-  if (!file) {
-    *failed = mfalse; // mtrue implies it is not a system error
-    return RET_NULL;
-  }
+mresult_t merry_open_file(MerryFile **file, mstr_t file_path, mstr_t modes,
+                          int flags) {
+  mresult_t res = merry_interface_init(file, INTERFACE_TYPE_FILE);
+  if (!(*file))
+    return res;
   // Figure out the opening mode
   int mode, flag;
   if (merry_figure_out_file_modes(modes, flags, &mode, &flag) == RET_FAILURE) {
-    merry_interface_destroy(file);
-    *failed = mtrue;
-    return RET_NULL;
+    merry_interface_destroy(*file);
+    return MRES_INVALID_ARGS;
   }
 
   // With modes and flags, we can continue
 
 #ifdef _USE_LINUX_
-  file->file.fd = open(file_path, mode, flag);
-  if (file->file.fd == -1) {
-    *failed = mfalse;
-    merry_interface_destroy(file);
-    return RET_NULL;
+  (*file)->file.fd = open(file_path, mode, flag);
+  if ((*file)->file.fd == -1) {
+    merry_interface_destroy(*file);
+    return MRES_SYS_FAILURE;
   }
 #else
 // not yet
 #endif
-  file->file.flags.file_opened = 1;
-  file->file.flags.append = 0;
-  file->file.flags.read = 0;
-  file->file.flags.write = 0;
+  (*file)->file.flags.file_opened = 1;
+  (*file)->file.flags.append = 0;
+  (*file)->file.flags.read = 0;
+  (*file)->file.flags.write = 0;
   if (modes[0] == _MERRY_FOPEN_APPEND_[0])
-    file->file.flags.append = 1;
+    (*file)->file.flags.append = 1;
   else if (modes[0] == _MERRY_FOPEN_WRITE_[0])
-    file->file.flags.write = 1;
+    (*file)->file.flags.write = 1;
   else if (strcmp(modes, _MERRY_FOPEN_READ_WRITE_) == 0) {
-    file->file.flags.read = 1;
-    file->file.flags.write = 1;
+    (*file)->file.flags.read = 1;
+    (*file)->file.flags.write = 1;
   } else if (modes[0] == _MERRY_FOPEN_READ_[0])
-    file->file.flags.read = 1;
-  return file;
+    (*file)->file.flags.read = 1;
+  return MRES_SUCCESS;
 }
 
 mret_t merry_figure_out_file_modes(mstr_t modex, int flags, int *res_mode,

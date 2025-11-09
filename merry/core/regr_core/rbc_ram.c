@@ -25,8 +25,8 @@ mret_t rbc_memory_populate(RBCMemory *mem, msize_t space_len,
   if (space_len && (space_len < _RBC_PAGE_LEN_IN_BYTES_))
     pg_count = 1;
 
-  mem->pg_list = merry_RBCMemPage_list_create(pg_count);
-  if (!mem->pg_list) {
+  mresult_t res = merry_RBCMemPage_list_create(pg_count, &mem->pg_list);
+  if (res != MRES_SUCCESS) {
     MFATAL("RBC", "Failed to allocate memory for RBC RAM PAGE BUFFER", NULL);
     return RET_FAILURE;
   }

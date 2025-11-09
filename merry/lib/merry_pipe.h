@@ -4,6 +4,7 @@
 #include <merry_config.h>
 #include <merry_interface.h>
 #include <merry_logger.h>
+#include <merry_operations.h>
 #include <merry_platform.h>
 #include <merry_types.h>
 #include <merry_utils.h>
@@ -11,7 +12,7 @@
 
 typedef struct MerryInterface MerryPipe;
 
-MerryPipe *merry_open_merrypipe();
+mresult_t merry_open_merrypipe(MerryPipe **pipe);
 
 minterfaceRet_t merry_pipe_close_read_end(MerryPipe *pipe);
 

@@ -23,6 +23,7 @@
 
 #include <merry_graves_core_repr.h>
 #include <merry_list.h>
+#include <merry_operations.h>
 #include <merry_types.h>
 #include <merry_utils.h>
 #include <stdatomic.h>
@@ -45,21 +46,23 @@ struct MerryGravesGroup {
   msize_t group_id;
 };
 
-MerryGravesGroup *merry_graves_group_create(msize_t gid);
+mresult_t merry_graves_group_create(MerryGravesGroup **grp, msize_t gid);
 
-MerryGravesCoreRepr *merry_graves_group_add_core(MerryGravesGroup *grp);
+mresult_t merry_graves_group_add_core(MerryGravesGroup *grp,
+                                      MerryGravesCoreRepr **res);
 
 void merry_graves_group_last_add_failed(MerryGravesGroup *grp);
 
-MerryGravesCoreRepr *merry_graves_group_find_core(MerryGravesGroup *grp,
-                                                  msize_t uid, msize_t id,
-                                                  mbool_t *is_dead);
+mresult_t merry_graves_group_find_core(MerryGravesGroup *grp,
+                                       MerryGravesCoreRepr **res, msize_t uid,
+                                       msize_t id);
 
 MerryGravesCoreRepr *merry_graves_group_find_dead_core(MerryGravesGroup *grp);
 
-MerryGravesCoreRepr *merry_graves_group_get_core(MerryGravesGroup *grp,
-                                                 msize_t id);
-
+mresult_t merry_graves_group_get_core(MerryGravesGroup *grp,
+                                      MerryGravesCoreRepr **res, msize_t id);
+MerryGravesCoreRepr *merry_graves_group_get_core_ref(MerryGravesGroup *grp,
+                                                     msize_t id);
 void merry_graves_group_destroy(MerryGravesGroup *grp);
 
 #endif

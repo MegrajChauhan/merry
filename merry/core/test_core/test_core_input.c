@@ -1,17 +1,12 @@
 #include <test_core/comps/test_core_input.h>
 
-mret_t tc_read_input(mstr_t fname, TCInp *inp) {
-  mbool_t res = mfalse;
-  inp->file = merry_open_file(fname, _MERRY_FOPEN_READ_, 0, &res);
-  if (!inp->file) {
-    if (!res) {
-      MFATAL("TC", "Failed to read input file: FILE=%s because %s", fname,
-             strerror(errno));
-      return RET_FAILURE;
-    } else {
-      // res shouldn't be mtrue since we pass valid flags
-      merry_unreachable();
-    }
+tcret_t tc_read_input(mstr_t fname, TCInp *inp) {
+  // mbool_t res = mfalse;
+  mresult_t res = merry_open_file(&inp->file, fname, _MERRY_FOPEN_READ_, 0);
+  if (res != MRES_SUCCESS) {
+    MFATAL("TC", "Failed to read input file: FILE=%s because %s", fname,
+           strerror(errno));
+    return TC_FAILURE;
   }
   // Now that we have the file
   // Read that file into memory
@@ -21,26 +16,26 @@ mret_t tc_read_input(mstr_t fname, TCInp *inp) {
   if (fsize == 0) {
     MFATAL("TC", "File is empty! Nothing to execute! FILE=%s", fname);
     merry_destroy_file(inp->file);
-    return RET_FAILURE;
+    return TC_FAILURE;
   }
-  inp->mem = (mbptr_t)merry_get_anonymous_memory(
-      fsize); // the OS should get us the appropriate
-              // memory chunk since we have no memory
-              // structure at all so we don't care
-  if (!inp->mem) {
+  res = merry_get_anonymous_memory(
+      (mptr_t)&inp->mem, fsize); // the OS should get us the appropriate
+                                 // memory chunk since we have no memory
+                                 // structure at all so we don't care
+  if (res != MRES_SUCCESS) {
     MFATAL("TC", "Failed to obtain memory for execution: FILE=%s", fname);
     merry_destroy_file(inp->file);
-    return RET_FAILURE;
+    return TC_FAILURE;
   }
 
   if (merry_map_file(inp->mem, inp->file) == RET_FAILURE) {
     MFATAL("TC", "Failed to map memory for execution: FILE=%s", fname);
     merry_destroy_file(inp->file);
     merry_return_memory(inp->mem, fsize);
-    return RET_FAILURE;
+    return TC_FAILURE;
   }
 
-  return RET_SUCCESS;
+  return TC_SUCCESS;
 }
 
 void tc_destroy_input(TCInp *inp) {

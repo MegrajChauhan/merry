@@ -1,27 +1,27 @@
 #include <merry_protectors.h>
 
-mret_t merry_mutex_init(mmutex_t *lock) {
+mresult_t merry_mutex_init(mmutex_t *lock) {
   merry_check_ptr(lock);
 #if defined(_USE_LINUX_)
   if (pthread_mutex_init(lock, NULL) != 0)
-    return RET_FAILURE;
+    return MRES_SYS_FAILURE;
 
 #elif defined(_USE_WIN_)
   // as mentioned in the documentation, this will always work with no errors
   InitializeCriticalSection(lock);
 #endif
-  return RET_SUCCESS; // return if success
+  return MRES_SUCCESS; // return if success
 }
 
-mret_t merry_cond_init(mcond_t *cond) {
+mresult_t merry_cond_init(mcond_t *cond) {
   merry_check_ptr(cond);
 #if defined(_USE_LINUX_)
   if (pthread_cond_init(cond, NULL) != 0)
-    return RET_FAILURE;
+    return MRES_SYS_FAILURE;
 #elif defined(_USE_WIN_)
   InitializeConditionVariable(cond);
 #endif
-  return RET_SUCCESS; // return if success
+  return MRES_SUCCESS; // return if success
 }
 
 void merry_mutex_destroy(mmutex_t *mutex) {
@@ -71,7 +71,6 @@ void merry_cond_signal(mcond_t *cond) {
 }
 
 void merry_cond_broadcast(mcond_t *cond) {
-
 #if defined(_USE_LINUX_)
   pthread_cond_broadcast(cond);
 #elif defined(_USE_WIN_)

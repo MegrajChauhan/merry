@@ -4,7 +4,9 @@ _MERRY_DEFINE_STATIC_LIST_(Entry, mstr_t);
 
 MerryEntryList *merry_graves_parse_metadata_file(mstr_t mfile) {
   merry_check_ptr(mfile);
-  MerryEntryList *fnames = merry_Entry_list_create(__CORE_TYPE_COUNT);
+  mresult_t res;
+  MerryEntryList *fnames;
+  res = merry_Entry_list_create(__CORE_TYPE_COUNT, &fnames);
   if (!fnames) {
     MFATAL("Graves Reader", "Failed to parse metadata file[%s]", mfile);
     return RET_NULL;
@@ -143,7 +145,7 @@ MerryEntryList *merry_graves_parse_metadata_file(mstr_t mfile) {
       return RET_NULL;
     }
     fread(fname, 1, diff + 1, file); // will not fail
-    *(merry_Entry_list_at(fnames, to_type.whole_word)) = fname;
+    fnames->buf[to_type.whole_word] = fname;
     status_per_core_type[to_type.whole_word] = mtrue;
   }
   MLOG("Graves Reader", "Finished parsing metadata file %s", mfile);

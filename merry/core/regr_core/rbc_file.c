@@ -20,15 +20,10 @@ RBCFile *rbc_file_open(mstr_t fpath, mstr_t mode, int flags) {
     free(file);
     return RET_NULL;
   }
-  mbool_t failed = mfalse;
-  if ((file->file = merry_open_file(fpath, mode, flags, &failed)) == RET_NULL) {
-    if (failed) {
-      MFATAL("RBC<LIB:fs>",
-             "Invalid flags and mode provided for opening file: PATH=%s",
-             fpath);
-    } else {
-      MFATAL("RBC<LIB:fs>", "Failed to open file: PATH=%s", fpath);
-    }
+  mresult_t res;
+  if ((res = merry_open_file(&file->file, fpath, mode, flags)) !=
+      MRES_SUCCESS) {
+    MFATAL("RBC<LIB:fs>", "Failed to open file: PATH=%s", fpath);
     free(file->buf);
     free(file);
     return RET_NULL;
@@ -49,15 +44,12 @@ RBCFile *rbc_file_reopen(RBCFile *file, mstr_t fpath, mstr_t mode, int flags) {
            fpath);
     return RET_NULL;
   }
-  mbool_t failed = mfalse;
-  if ((file->file = merry_open_file(fpath, mode, flags, &failed)) == RET_NULL) {
-    if (failed) {
-      MFATAL("RBC<LIB:fs>",
-             "Invalid flags and mode provided for opening file: PATH=%s",
-             fpath);
-    } else {
-      MFATAL("RBC<LIB:fs>", "Failed to open file: PATH=%s", fpath);
-    }
+  mresult_t res;
+  if ((res = merry_open_file(&file->file, fpath, mode, flags)) !=
+      MRES_SUCCESS) {
+    MFATAL("RBC<LIB:fs>", "Failed to open file: PATH=%s", fpath);
+    free(file->buf);
+    free(file);
     return RET_NULL;
   }
   file->BP = 0;

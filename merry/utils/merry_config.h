@@ -58,5 +58,6 @@
 #endif
 
 // #define _MERRY_RELEASE_
+// #define _MERRY_OPTIMIZE_
 
 #endif

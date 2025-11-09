@@ -15,6 +15,7 @@
 #include <merry_list.h>
 #include <merry_logger.h>
 #include <merry_memory.h>
+#include <merry_operations.h>
 #include <merry_protectors.h>
 #include <merry_requests.h>
 #include <merry_threads.h>
@@ -46,48 +47,51 @@ struct MerryGraves {
   mcoredeletebase_t HOW_TO_DESTROY_BASE[__CORE_TYPE_COUNT];
 
   MerryConsts *_config;
+  MerryGravesRequest *current_req;
+  MerryGravesRequestOperationResult result;
 };
-
-// GRAVES has the full authority to terminate the VM
-extern MerryGraves GRAVES;
 
 // Entry to Graves(doesn't return)
 void Merry_Graves_Run(int argc, char **argv);
 
 // Pre-initialization before initializing Graves
-mret_t merry_graves_pre_init();
+mresult_t merry_graves_pre_init(MerryGraves *GRAVES);
 
 // Read the input file
-mret_t merry_graves_parse_input();
+mresult_t merry_graves_parse_input(MerryGraves *GRAVES);
 
 // Initialize Graves
-mret_t merry_graves_init();
+mresult_t merry_graves_init(MerryGraves *GRAVES);
 
 // Prepare everything now right before running
-mret_t merry_graves_ready_everything();
+mresult_t merry_graves_ready_everything(MerryGraves *GRAVES);
 // Registers all of the Base creation and destruction functions
-void merry_graves_acquaint_with_cores();
+void merry_graves_acquaint_with_cores(MerryGraves *GRAVES);
 
 // This is the OVERSEER
 void merry_graves_START(mptr_t __);
 
 // Destroy Graves
-void merry_graves_destroy();
+void merry_graves_destroy(MerryGraves *GRAVES);
 
 // Step by step clearing of the Graves before basic cleanup
-void merry_graves_cleanup_groups();
+void merry_graves_cleanup_groups(MerryGraves *GRAVES);
 // void merry_graves_pre_destruction();
 
 // Utilities
-mcore_t merry_graves_obtain_first_valid_c_entry();
-MerryGravesGroup *merry_graves_add_group();
-MerryGravesCoreRepr *merry_graves_add_core(MerryGravesGroup *grp);
-mret_t merry_graves_init_a_core(MerryGravesCoreRepr *repr, mcore_t type,
-                                maddress_t addr);
-mret_t merry_graves_boot_a_core(MerryGravesCoreRepr *repr);
-void merry_graves_give_IDs_to_cores(MerryGravesCoreRepr *repr,
+mcore_t merry_graves_obtain_first_valid_c_entry(MerryGraves *GRAVES);
+mresult_t merry_graves_add_group(MerryGraves *GRAVES, MerryGravesGroup **grp);
+mresult_t merry_graves_add_core(MerryGraves *GRAVES, MerryGravesGroup *grp,
+                                MerryGravesCoreRepr **repr);
+mresult_t merry_graves_init_a_core(MerryGraves *GRAVES,
+                                   MerryGravesCoreRepr *repr, mcore_t type,
+                                   maddress_t addr);
+mresult_t merry_graves_boot_a_core(MerryGraves *GRAVES,
+                                   MerryGravesCoreRepr *repr);
+void merry_graves_give_IDs_to_cores(MerryGraves *GRAVES,
+                                    MerryGravesCoreRepr *repr,
                                     MerryGravesGroup *grp);
-void merry_graves_failed_core_booting();
+void merry_graves_failed_core_booting(MerryGraves *GRAVES);
 
 /* Request Handlers */
 REQ(create_core);

@@ -21,6 +21,8 @@
       val |= 0xFFFFFFFFFF000000;                                               \
   } while (0)
 
+#define bit_group(name, len) unsigned name : len
+
 typedef union MerryPtrToQword MerryPtrToQword;
 typedef union MerryHostMemLayout MerryHostMemLayout;
 typedef union MerryFloatToDword MerryFloatToDword;
@@ -93,6 +95,6 @@ union MerryDoubleToQword {
   mqword_t q_val;
 };
 
-void merry_LITTLE_ENDIAN_to_BIG_ENDIAN(MerryHostMemLayout *le);
+// void merry_LITTLE_ENDIAN_to_BIG_ENDIAN(MerryHostMemLayout *le);
 
 #endif

@@ -5,25 +5,29 @@ _MERRY_DEFINE_STATIC_LIST_(RBCThread, mthread_t);
 _MERRY_DEFINE_STATIC_LIST_(Interface, MerryInterface *);
 _MERRY_DEFINE_STACK_(RBCProcFrame, RBCStackFrame);
 
-mptr_t rbc_master_core_create(MerryCoreBase *base, maddress_t st_addr) {
+mptr_t rbc_master_core_create(MerryCoreBase *base, maddress_t st_addr,
+                              msize_t *CODE) {
   merry_check_ptr(base);
   RBCMasterCore *core = (RBCMasterCore *)malloc(sizeof(RBCMasterCore));
   if (!core) {
     MFATAL("RBC", "Failed to allocate memory for the master core", NULL);
+    *CODE = RBC_SYS_FAILURE;
     return RET_NULL;
   }
 
   core->base = base;
 
-  if ((core->rbc_cbase.child_threads = merry_RBCThread_list_create(10)) ==
-      RET_NULL) {
+  mresult_t res;
+
+  if ((res = merry_RBCThread_list_create(10, &core->rbc_cbase.child_threads)) !=
+      MRES_SUCCESS) {
     MFATAL("RBC", "Failed to allocate memory for a component", NULL);
     free(core);
     return RET_NULL;
   }
 
-  if ((core->rbc_cbase.interfaces = merry_Interface_list_create(10)) ==
-      RET_NULL) {
+  if ((res = merry_Interface_list_create(10, &core->rbc_cbase.interfaces)) !=
+      MRES_SUCCESS) {
     MFATAL("RBC", "Failed to allocate memory for a component", NULL);
     merry_RBCThread_list_destroy(core->rbc_cbase.child_threads);
     free(core);
@@ -32,8 +36,8 @@ mptr_t rbc_master_core_create(MerryCoreBase *base, maddress_t st_addr) {
 
   core->rbc_cbase.PC = st_addr;
 
-  if ((core->rbc_cbase.stack = merry_get_anonymous_memory(_RBC_STACK_LEN_)) ==
-      RET_NULL) {
+  if ((res = merry_get_anonymous_memory((mptr_t)&core->rbc_cbase.stack,
+                                        _RBC_STACK_LEN_)) != MRES_SUCCESS) {
     MFATAL("RBC", "Failed to initialize the stack", NULL);
     merry_RBCThread_list_destroy(core->rbc_cbase.child_threads);
     merry_Interface_list_destroy(core->rbc_cbase.interfaces);
@@ -44,8 +48,8 @@ mptr_t rbc_master_core_create(MerryCoreBase *base, maddress_t st_addr) {
   core->rbc_cbase.SP = 0;
   core->rbc_cbase.BP = 0;
 
-  if ((core->rbc_cbase.stack_frames =
-           merry_RBCProcFrame_stack_init(_RBC_CALL_DEPTH_)) == RET_NULL) {
+  if ((res = merry_RBCProcFrame_stack_init(&core->rbc_cbase.stack_frames,
+                                           _RBC_CALL_DEPTH_)) != MRES_SUCCESS) {
     MFATAL("RBC", "Failed to initialize the stack", NULL);
     merry_RBCThread_list_destroy(core->rbc_cbase.child_threads);
     merry_Interface_list_destroy(core->rbc_cbase.interfaces);
@@ -54,7 +58,7 @@ mptr_t rbc_master_core_create(MerryCoreBase *base, maddress_t st_addr) {
     return RET_NULL;
   }
 
-  if (merry_cond_init(&core->local_shared_cond) == RET_FAILURE) {
+  if (merry_cond_init(&core->local_shared_cond) != MRES_SUCCESS) {
     MFATAL("RBC", "Failed to initialize component", NULL);
     merry_RBCThread_list_destroy(core->rbc_cbase.child_threads);
     merry_Interface_list_destroy(core->rbc_cbase.interfaces);
@@ -96,7 +100,7 @@ void rbc_master_core_destroy(mptr_t c) {
   free(core);
 }
 
-mret_t rbc_master_core_run(mptr_t c) {
+msize_t rbc_master_core_run(mptr_t c) {
   merry_check_ptr(c);
 
   RBCMasterCore *core = (RBCMasterCore *)c;
@@ -1066,13 +1070,14 @@ mret_t rbc_master_core_run(mptr_t c) {
   return RET_SUCCESS;
 }
 
-MerryCoreBase *rbc_master_core_create_base() {
+MerryCoreBase *rbc_master_core_create_base(msize_t *CODE) {
   MerryCoreBase *base = (MerryCoreBase *)malloc(sizeof(MerryCoreBase));
   if (!base) {
     MFATAL("RBC", "Failed to initialize core base", NULL);
+    *CODE = RBC_SYS_FAILURE;
     return RET_NULL;
   }
-  if (merry_cond_init(&base->cond) == RET_FAILURE) {
+  if (merry_cond_init(&base->cond) != MRES_SUCCESS) {
     MFATAL("RBC", "Failed to obtain condition variable", NULL);
     free(base);
     return RET_NULL;
@@ -1110,7 +1115,7 @@ void rbc_master_core_prep_for_deletion(mptr_t c) {
   core->interrupt = mtrue;
 }
 
-mret_t rbc_master_core_set_input(mptr_t c, mstr_t path) {
+mret_t rbc_master_core_set_input(mptr_t c, mstr_t path, msize_t *CODE) {
   merry_check_ptr(c);
   merry_check_ptr(path);
 
@@ -1125,7 +1130,7 @@ mret_t rbc_master_core_set_input(mptr_t c, mstr_t path) {
   return RET_SUCCESS;
 }
 
-mret_t rbc_master_core_prepare_core(mptr_t c) {
+mret_t rbc_master_core_prepare_core(mptr_t c, msize_t *CODE) {
   // The only job of this function is to prepare the master
   // core for execution
   merry_check_ptr(c);
@@ -1193,8 +1198,9 @@ RBCCore *rbc_core_create() {
     MFATAL("RBC:C", "Failed to allocate memory for a new core", NULL);
     return RET_NULL;
   }
-  if ((core->rbc_cbase.stack = merry_get_anonymous_memory(_RBC_STACK_LEN_)) ==
-      RET_NULL) {
+  mresult_t res;
+  if ((res = merry_get_anonymous_memory((mptr_t *)&core->rbc_cbase.stack,
+                                        _RBC_STACK_LEN_)) != MRES_SUCCESS) {
     MFATAL("RBC:C", "Failed to initialize the stack", NULL);
     merry_RBCThread_list_destroy(core->rbc_cbase.child_threads);
     merry_Interface_list_destroy(core->rbc_cbase.interfaces);
@@ -1205,8 +1211,8 @@ RBCCore *rbc_core_create() {
   core->rbc_cbase.SP = 0;
   core->rbc_cbase.BP = 0;
 
-  if ((core->rbc_cbase.stack_frames =
-           merry_RBCProcFrame_stack_init(_RBC_CALL_DEPTH_)) == RET_NULL) {
+  if ((res = merry_RBCProcFrame_stack_init(&core->rbc_cbase.stack_frames,
+                                           _RBC_CALL_DEPTH_)) != MRES_SUCCESS) {
     MFATAL("RBC:C", "Failed to initialize the stack", NULL);
     merry_RBCThread_list_destroy(core->rbc_cbase.child_threads);
     merry_Interface_list_destroy(core->rbc_cbase.interfaces);
@@ -1215,7 +1221,7 @@ RBCCore *rbc_core_create() {
     return RET_NULL;
   }
 
-  if (merry_cond_init(&core->cond) == RET_FAILURE) {
+  if (merry_cond_init(&core->cond) != MRES_SUCCESS) {
     MFATAL("RBC:C", "Failed to initialize component", NULL);
     merry_RBCThread_list_destroy(core->rbc_cbase.child_threads);
     merry_Interface_list_destroy(core->rbc_cbase.interfaces);

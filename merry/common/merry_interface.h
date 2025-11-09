@@ -2,6 +2,7 @@
 #define _MERRY_INTERFACE_
 
 #include <merry_interface_defs.h>
+#include <merry_operations.h>
 #include <merry_platform.h>
 #include <merry_types.h>
 #include <merry_utils.h>
@@ -47,7 +48,7 @@ struct MerryInterface {
   };
 };
 
-MerryInterface *merry_interface_init(minterface_t type);
+mresult_t merry_interface_init(MerryInterface **interface, minterface_t type);
 
 void merry_interface_destroy(MerryInterface *interface);
 
