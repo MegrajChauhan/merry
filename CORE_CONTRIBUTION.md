@@ -1,37 +1,91 @@
-# Core Contribution
+# Core Contribution Guide
 
-This document is for anyone who wishes to contribute their very own core to Merry. This is a very important contribution. Here, I will discuss the steps to contributing a core.
+This document is intended for anyone who wishes to contribute a **new core type** to the Merry project.  
+Such a contribution is both significant and deeply valued, as it directly expands Merry’s computational ecosystem.
+
+---
 
 ## Table of Contents
 
 - [Overview](#overview)
-- [What you do](#what-you-do)
+- [Your Role](#your-role)
 - [Responsibilities](#responsibilities)
-- [How](#how)
+- [Contribution Process](#contribution-process)
+- [Contact](#contact)
+
+---
 
 ## Overview
 
-Contributing a core refers to the submission of an entire core type meaning the contributor has decided to work on a new core type for Merry. A core contributor has accepted the task of creating a completely new core type to further improve Merry.
+Contributing a core means developing and submitting an entirely new **core type**—a self-contained architecture that can run within Merry’s ecosystem.  
+A core contributor undertakes the design, implementation, and maintenance of this core, helping Merry evolve into a more versatile and robust platform.
 
-## What you do
+Each core adds unique functionality and computational behavior to Merry, enabling programs to solve problems in novel ways.
 
-As a core contributor, solo or as a team, you work on a new architecture that the programs ran by Merry may use to solve problems- the entire responsibility of maintaining which falls upon the contributor.
+---
+
+## Your Role
+
+As a core contributor (whether solo or part of a team), you will design a new architecture that programs running within Merry can use to process data or perform computations.
+
+You are responsible for your core’s full lifecycle—from planning and design to release and long-term maintenance.
+
+---
 
 ## Responsibilities
 
-As a core contributor, your responsibilities are:
-- adhere to the rules and conventions of Merry
-- perform the internal planning and execution of your core
-- maintain the core once it has been released for public use
-- define and enforce rules for your core's community
-- roll out updates, new features and bug fixes every now and then
-- ensure the rules and conventions of Merry are followed by everyone on the team
-- document the core as best as it can be done
+As a core contributor, you are expected to:
 
-You may think of a core as an entirely new repository of its own with its own admin, contribution guidelines,
-rules and regulations. The only thing that Merry cares about is that the core follows its conventions and the contributor is free to do whatever else they want.
+- ✅ Adhere to **Merry’s global conventions and rules**.  
+- 🧠 Design, plan, and implement your core’s internal architecture.  
+- 🛠️ Maintain the core after public release.  
+- 📜 Define and manage contribution guidelines specific to your core.  
+- 🔄 Release updates, new features, and bug fixes periodically.  
+- 🧩 Ensure your development team follows Merry’s conventions.  
+- 📘 Provide **clear documentation** describing your core’s design, usage, and API.
 
-## How
+You can think of a core as an **independent project** with its own repository-style structure—its own administrator, guidelines, and rules.  
+The only strict requirement is that your core **complies with Merry’s system conventions**.  
+Beyond that, you have complete creative freedom over its design, function, and development style.
 
-The interested contributor should contact me via my **b09671522@gmail.com**. The interested contributor is expected to provide a document explaining the architecture of their design as they see fit\- abstractly or deeply but it is a must to provide a design overview. Once the idea has been reviewed, the interested contributor will be assigned a core type ID which they may use to identify themselves within the project or the virtual machine. For eg: **TEST CORE** has been assigned the ID of 0 whereas the **REGR CORE** has been assigned an ID of 1. Similarly, the provided core will be assigned an ID and the contributor may begin working on the core. Once it has completed its testing and is ready to be released, the contributor may contact me again. Upon reviewing the tests, the core will be flagged as ready and released. 
-There will be a series of documents that will be released in **docs/** to describe the process of contributing a new core.
+---
+
+## Contribution Process
+
+To contribute a new core:
+
+1. **Contact the Maintainer**  
+   Reach out via email at **b09671522@gmail.com** expressing your intent to contribute.
+
+2. **Submit a Design Overview**  
+   Provide a document describing your proposed core’s **architecture**.  
+   - It can be abstract or detailed, but must clearly outline the design concept and purpose.  
+   - This document helps ensure your idea aligns with Merry’s overall structure.
+
+3. **Core Type ID Assignment**  
+   Once reviewed, your core will be assigned a unique **Core Type ID** used to identify it within the project.  
+   For example:
+   - `TEST CORE` → ID: `0`  
+   - `REGR CORE` → ID: `1`  
+   - Your core → Assigned ID: *next available number*
+
+4. **Development Phase**  
+   After receiving your ID, you may begin developing and testing your core.  
+   It’s recommended to maintain a structured test suite to verify correctness and compatibility.
+
+5. **Submission & Review**  
+   Once your core has passed testing and is ready for public release, contact the maintainer again.  
+   Upon review and approval, your core will be **flagged as ready** and officially integrated into Merry.
+
+Additional documentation outlining the detailed submission workflow will be published in the **`docs/`** directory as the project evolves.
+
+---
+
+## Contact
+
+If you have questions, need guidance, or wish to discuss your design before formal submission, please reach out at:  
+📧 **b09671522@gmail.com**
+
+---
+
+> Contributing a new core isn’t just adding code—it’s expanding the very fabric of Merry’s computational universe.
