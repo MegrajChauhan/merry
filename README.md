@@ -8,6 +8,8 @@ An analogy would be a computer with two CPUs: one from AMD and another based on 
 
 You can think of Merry as a **runtime environment** that supports multiple **virtual machines**, each potentially unique. Alternatively, you can think of it as a **set of conventions** that these VMs follow to collaborate and solve problems. Each interpretation offers a valid perspective.
 
+---
+
 ## Purpose
 
 Merry is designed to be an **educational platform**—a place for those who appreciate abstraction but want to explore low-level concepts without breaking things. With a wide variety of vCPUs, users can experiment freely, combining different architectures and behaviors. Imagination is the only limit.
@@ -23,17 +25,29 @@ This flexibility supports both **beginners**, who can learn by experimentation, 
 
 Each vCPU has its own architecture, internal behavior, and memory structure, making a universal language that works across all vCPU types extraordinarily difficult—perhaps even impossible. Since a single Merry program may utilize multiple executing architectures at once, the challenge is significant. Overcoming it would make Merry even more valuable to the real world.
 
+---
+
 ## Project Structure
 
-You can find the entire source code in the **merry/** folder. The documentation for Merry can be found in the **docs/** folder whereas tests and the results can be found in **test/** and **test_results/** respectively.
+| Folder | Description |
+| ------- | ------------ |
+| `merry/` | Source code for all components |
+| `docs/` | Developer and system documentation |
+| `test/` | Unit and integration test sources |
+| `test_results/` | Output and results of test runs |
+
+---
 
 ## Requirements
 
-Merry requires:
-1. **GCC** compiler.
-2. **Make** build system
+To build and run Merry Nexus, you’ll need:
 
-_Note: Merry currently only works on Linux as it hasn't been tested for Windows and win support is limited._
+- **GCC** (GNU Compiler Collection)  
+- **Make** build system  
+
+> **Note:** Merry has only been tested on **Linux**. Windows support is experimental.
+
+---
 
 ## Trying Merry Out
 
@@ -58,6 +72,8 @@ make all flags=-O3 # You may add other flags as necessary(the build is done in d
 ./build/mvm --f test_results/{any of the .mdat file}
 ```
 
+---
+
 ## Goals
 
 - [] Sub-systems
@@ -65,7 +81,7 @@ make all flags=-O3 # You may add other flags as necessary(the build is done in d
 - [] Inter-core communication
 - [] More interfaces
 - [] More Graves Capabilities
-- [tick] Robust Error handling
+- [x] Robust Error handling
 - [] Windows support
 - [] Documentation
 - [] 5 core types
