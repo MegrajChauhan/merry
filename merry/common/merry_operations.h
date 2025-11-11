@@ -5,6 +5,7 @@ typedef enum mresult_t mresult_t;
 
 enum mresult_t {
   MRES_FAILURE,
+  MRES_NOT_MERRY_FAILURE,
   MRES_SUCCESS,
   MRES_SYS_FAILURE, // glibc or syscall failed
   MRES_NOT_EXISTS,  // if something is accessed but it doesn't exist

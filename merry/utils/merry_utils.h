@@ -34,6 +34,7 @@
 #define _MERRY_NO_THROW_ __attribute__((no_throw))
 #define _MERRY_NO_RETURN_ __attribute__((no_return))
 #define _MERRY_NO_NULL_ __attribute__((nonnull))
+#define _MERRY_ALIAS_(name) __attribute__((alias(#name)))
 #define _MERRY_INTERNAL_                                                       \
   static // for a variable or a function that is localized to a module only
 #define _MERRY_LOCAL_ static // any static variable inside a function

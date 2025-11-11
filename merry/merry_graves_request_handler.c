@@ -58,8 +58,9 @@ REQ(create_core) {
   res = MRES_SUCCESS;
 CC_FAILURE:
   req->result.result = res;
-  req->result.CODE = GRAVES->result.CODE;
   req->result.ERRNO = (res == MRES_SYS_FAILURE) ? errno : 0;
+  if (res == MRES_FAILURE)
+    req->result.ic_res = GRAVES->result.ic_res;
   return;
 }
 
@@ -72,7 +73,8 @@ REQ(create_group) {
   mresult_t res = merry_graves_add_group(GRAVES, &ngrp);
   if (!ngrp) {
     req->result.result = res;
-    req->result.ERRNO = errno;
+    if (res == MRES_SYS_FAILURE)
+      req->result.ERRNO = errno;
     return;
   }
   args->create_group.new_guid = ngrp->group_id;
@@ -91,7 +93,8 @@ REQ(get_group_details) {
       merry_Group_list_at(GRAVES->GRPS, &ngrp, args->get_group_details.guid);
   if (res != MRES_SUCCESS) {
     req->result.result = res;
-    req->result.ERRNO = errno;
+    if (res == MRES_SYS_FAILURE)
+      req->result.ERRNO = errno;
     return;
   }
   args->get_group_details.core_count = (ngrp)->core_count;

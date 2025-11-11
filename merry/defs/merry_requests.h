@@ -27,6 +27,7 @@
  * */
 
 #include <merry_core_types.h>
+#include <merry_interface_defs.h>
 #include <merry_protectors.h>
 #include <merry_types.h>
 
@@ -48,12 +49,33 @@ typedef union MerryRequestArgs MerryRequestArgs;
 typedef struct MerryGravesRequestOperationResult
     MerryGravesRequestOperationResult;
 
+// InterCore Result
+typedef struct MerryICRes MerryICRes;
+// The source of the IC result
+typedef enum mICResSource_t mICResSource_t;
+
+enum mICResSource_t {
+  IC_SOURCE_INTERFACE,
+  IC_SOURCE_MERRY,
+  IC_SOURCE_CORE,
+};
+
+struct MerryICRes {
+  mICResSource_t source;
+  msize_t ERRNO;
+  union {
+    minterfaceRet_t _interface_ret;
+    mresult_t _merry_ret;
+    msize_t _core_code; // convention-based
+  };
+};
+
 struct MerryCoreBase;
 
 struct MerryGravesRequestOperationResult {
   mresult_t result;
-  msize_t CODE;
   msize_t ERRNO;
+  MerryICRes ic_res;
 };
 
 struct MerryGravesRequest {

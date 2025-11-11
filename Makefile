@@ -13,6 +13,7 @@ DIRS = merry/common \
        merry/interface/soft \
        merry/lib/defs \
        merry/lib \
+       merry/use \
        merry/utils
 SRC_DIR = merry/ merry/core/test_core/ merry/core/regr_core/
 ASM_DIR = merry/interface/hard/

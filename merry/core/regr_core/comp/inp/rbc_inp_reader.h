@@ -7,8 +7,10 @@
 #include <merry_memory.h>
 #include <merry_mmem.h>
 #include <merry_operations.h>
+#include <merry_requests.h>
 #include <merry_types.h>
 #include <merry_utils.h>
+#include <regr_core/def/consts/rbc_consts.h>
 #include <regr_core/def/consts/rbc_mem_defs.h>
 #include <regr_core/internal/rbc_utils.h>
 #include <stdlib.h>
@@ -57,7 +59,7 @@ struct RBCInput {
 
 RBCInput *rbc_input_init();
 
-mret_t rbc_input_read(RBCInput *inp, mstr_t path);
+rbcret_t rbc_input_read(RBCInput *inp, mstr_t path, MerryICRes *res);
 
 void rbc_input_destroy(RBCInput *inp);
 

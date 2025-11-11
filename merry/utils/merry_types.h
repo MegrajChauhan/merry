@@ -47,8 +47,6 @@ typedef char *mstr_t;
 typedef const char *mcstr_t;
 typedef void *mptr_t;
 
-typedef msize_t merrot_t;
-
 #if defined(_USE_LINUX_)
 #define _THRET_T_ mptr_t
 #elif defined(_USE_WIN_)

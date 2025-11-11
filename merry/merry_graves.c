@@ -232,28 +232,28 @@ mresult_t merry_graves_init_a_core(MerryGraves *GRAVES,
     merry_unreachable(); // shouldn't reach here
   }
 
-  repr->base = GRAVES->HOW_TO_CREATE_BASE[type](&GRAVES->result.CODE);
+  repr->base = GRAVES->HOW_TO_CREATE_BASE[type](&GRAVES->result.ic_res);
 
   if (!repr->base) {
     MERROR("Graves", "Failed to obtain a CORE BASE for a new core: TYPE=%zu",
            (msize_t)type);
-    return MRES_FAILURE;
+    return MRES_NOT_MERRY_FAILURE;
   }
 
-  repr->core = repr->base->createc(repr->base, addr, &GRAVES->result.CODE);
+  repr->core = repr->base->createc(repr->base, addr, &GRAVES->result.ic_res);
 
   if (!repr->core) {
     MERROR("Graves", "A core failed to initialize", NULL);
     GRAVES->HOW_TO_DESTROY_BASE[type](repr->base);
-    return MRES_FAILURE;
+    return MRES_NOT_MERRY_FAILURE;
   }
 
   if (repr->base->setinp(repr->core, GRAVES->C_ENTRIES->buf[type],
-                         &GRAVES->result.CODE) == RET_FAILURE) {
+                         &GRAVES->result.ic_res) == RET_FAILURE) {
     MERROR("Graves", "A core failed to initialize", NULL);
     repr->base->deletec(repr->core);
     GRAVES->HOW_TO_DESTROY_BASE[type](repr->base);
-    return MRES_FAILURE;
+    return MRES_NOT_MERRY_FAILURE;
   }
 
   return MRES_SUCCESS;
@@ -265,25 +265,25 @@ mresult_t merry_graves_boot_a_core(MerryGraves *GRAVES,
   merry_check_ptr(repr->base);
   merry_check_ptr(repr->core);
 
-  if (repr->base->prepcore(repr->core, &GRAVES->result.CODE) == RET_FAILURE) {
+  if (repr->base->prepcore(repr->core, &GRAVES->result.ic_res) == RET_FAILURE) {
     MERROR("Graves", "A core failed to BOOT[ID=%zu, UID=%zu, GUID=%zu]",
            repr->base->id, repr->base->uid, repr->base->guid);
     repr->base->deletec(repr->core);
     GRAVES->HOW_TO_DESTROY_BASE[repr->base->type](repr->base);
-    return RET_FAILURE;
+    return MRES_NOT_MERRY_FAILURE;
   }
 
   mthread_t th;
   if (merry_create_detached_thread(&th, merry_graves_launcher,
-                                   (mptr_t)repr->base) == RET_FAILURE) {
+                                   (mptr_t)repr->base) != MRES_SUCCESS) {
     MERROR("Graves", "A core failed to BOOT[ID=%zu, UID=%zu, GUID=%zu]",
            repr->base->id, repr->base->uid, repr->base->guid);
     repr->base->deletec(repr->core);
     GRAVES->HOW_TO_DESTROY_BASE[repr->base->type](repr->base);
-    return RET_FAILURE;
+    return MRES_SYS_FAILURE;
   }
 
-  return RET_SUCCESS;
+  return MRES_SUCCESS;
 }
 
 void merry_graves_give_IDs_to_cores(MerryGraves *GRAVES,

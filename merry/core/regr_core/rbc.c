@@ -6,69 +6,95 @@ _MERRY_DEFINE_STATIC_LIST_(Interface, MerryInterface *);
 _MERRY_DEFINE_STACK_(RBCProcFrame, RBCStackFrame);
 
 mptr_t rbc_master_core_create(MerryCoreBase *base, maddress_t st_addr,
-                              msize_t *CODE) {
+                              MerryICRes *RES) {
   merry_check_ptr(base);
+  mICResSource_t source;
+  msize_t ret;
   RBCMasterCore *core = (RBCMasterCore *)malloc(sizeof(RBCMasterCore));
   if (!core) {
     MFATAL("RBC", "Failed to allocate memory for the master core", NULL);
-    *CODE = RBC_SYS_FAILURE;
-    return RET_NULL;
+    source = IC_SOURCE_CORE;
+    ret = RBC_SYS_FAILURE;
+    goto RBC_CC_FAILED;
   }
 
   core->base = base;
 
-  mresult_t res;
-
-  if ((res = merry_RBCThread_list_create(10, &core->rbc_cbase.child_threads)) !=
+  if ((ret = merry_RBCThread_list_create(10, &core->rbc_cbase.child_threads)) !=
       MRES_SUCCESS) {
     MFATAL("RBC", "Failed to allocate memory for a component", NULL);
     free(core);
-    return RET_NULL;
+    source = IC_SOURCE_CORE;
+    goto RBC_CC_FAILED;
   }
 
-  if ((res = merry_Interface_list_create(10, &core->rbc_cbase.interfaces)) !=
+  if ((ret = merry_Interface_list_create(10, &core->rbc_cbase.interfaces)) !=
       MRES_SUCCESS) {
     MFATAL("RBC", "Failed to allocate memory for a component", NULL);
     merry_RBCThread_list_destroy(core->rbc_cbase.child_threads);
     free(core);
-    return RET_NULL;
+    source = IC_SOURCE_CORE;
+    goto RBC_CC_FAILED;
   }
 
   core->rbc_cbase.PC = st_addr;
 
-  if ((res = merry_get_anonymous_memory((mptr_t)&core->rbc_cbase.stack,
+  if ((ret = merry_get_anonymous_memory((mptr_t)&core->rbc_cbase.stack,
                                         _RBC_STACK_LEN_)) != MRES_SUCCESS) {
     MFATAL("RBC", "Failed to initialize the stack", NULL);
     merry_RBCThread_list_destroy(core->rbc_cbase.child_threads);
     merry_Interface_list_destroy(core->rbc_cbase.interfaces);
     free(core);
-    return RET_NULL;
+    source = IC_SOURCE_CORE;
+    goto RBC_CC_FAILED;
   }
 
   core->rbc_cbase.SP = 0;
   core->rbc_cbase.BP = 0;
 
-  if ((res = merry_RBCProcFrame_stack_init(&core->rbc_cbase.stack_frames,
+  if ((ret = merry_RBCProcFrame_stack_init(&core->rbc_cbase.stack_frames,
                                            _RBC_CALL_DEPTH_)) != MRES_SUCCESS) {
     MFATAL("RBC", "Failed to initialize the stack", NULL);
     merry_RBCThread_list_destroy(core->rbc_cbase.child_threads);
     merry_Interface_list_destroy(core->rbc_cbase.interfaces);
     merry_return_memory(core->rbc_cbase.stack, _RBC_STACK_LEN_);
     free(core);
-    return RET_NULL;
+    source = IC_SOURCE_CORE;
+    goto RBC_CC_FAILED;
   }
 
-  if (merry_cond_init(&core->local_shared_cond) != MRES_SUCCESS) {
+  if ((ret = merry_cond_init(&core->local_shared_cond)) != MRES_SUCCESS) {
     MFATAL("RBC", "Failed to initialize component", NULL);
     merry_RBCThread_list_destroy(core->rbc_cbase.child_threads);
     merry_Interface_list_destroy(core->rbc_cbase.interfaces);
     merry_return_memory(core->rbc_cbase.stack, _RBC_STACK_LEN_);
     merry_RBCProcFrame_stack_destroy(core->rbc_cbase.stack_frames);
     free(core);
-    return RET_NULL;
+    source = IC_SOURCE_CORE;
+    goto RBC_CC_FAILED;
   }
 
   return (mptr_t)core;
+RBC_CC_FAILED:
+  RES->source = source;
+  RES->_core_code = ret;
+  switch (source) {
+  case IC_SOURCE_CORE:
+    if (ret == RBC_SYS_FAILURE)
+      RES->ERRNO = errno;
+    break;
+  case IC_SOURCE_MERRY:
+    if (ret == MRES_SYS_FAILURE)
+      RES->ERRNO = errno;
+    break;
+  case IC_SOURCE_INTERFACE:
+    if (ret == INTERFACE_HOST_FAILURE)
+      RES->ERRNO = errno;
+    break;
+  default:
+    merry_unreachable();
+  }
+  return RET_NULL;
 }
 
 void rbc_master_core_destroy(mptr_t c) {
@@ -1070,17 +1096,21 @@ msize_t rbc_master_core_run(mptr_t c) {
   return RET_SUCCESS;
 }
 
-MerryCoreBase *rbc_master_core_create_base(msize_t *CODE) {
+MerryCoreBase *rbc_master_core_create_base(MerryICRes *RES) {
   MerryCoreBase *base = (MerryCoreBase *)malloc(sizeof(MerryCoreBase));
+  mICResSource_t source;
+  msize_t ret;
   if (!base) {
     MFATAL("RBC", "Failed to initialize core base", NULL);
-    *CODE = RBC_SYS_FAILURE;
-    return RET_NULL;
+    ret = RBC_SYS_FAILURE;
+    source = IC_SOURCE_CORE;
+    goto RBC_BC_FAILED;
   }
-  if (merry_cond_init(&base->cond) != MRES_SUCCESS) {
+  if ((ret = merry_cond_init(&base->cond)) != MRES_SUCCESS) {
     MFATAL("RBC", "Failed to obtain condition variable", NULL);
     free(base);
-    return RET_NULL;
+    source = IC_SOURCE_CORE;
+    goto RBC_BC_FAILED;
   }
   base->type = __REGR_CORE;
   base->createc = rbc_master_core_create;
@@ -1091,6 +1121,26 @@ MerryCoreBase *rbc_master_core_create_base(msize_t *CODE) {
   base->prepcore = rbc_master_core_prepare_core;
 
   return base;
+RBC_BC_FAILED:
+  RES->source = source;
+  RES->_core_code = ret;
+  switch (source) {
+  case IC_SOURCE_CORE:
+    if (ret == RBC_SYS_FAILURE)
+      RES->ERRNO = errno;
+    break;
+  case IC_SOURCE_MERRY:
+    if (ret == MRES_SYS_FAILURE)
+      RES->ERRNO = errno;
+    break;
+  case IC_SOURCE_INTERFACE:
+    if (ret == INTERFACE_HOST_FAILURE)
+      RES->ERRNO = errno;
+    break;
+  default:
+    merry_unreachable();
+  }
+  return RET_NULL;
 }
 
 void rbc_master_core_destroy_base(MerryCoreBase *base) {
@@ -1115,7 +1165,7 @@ void rbc_master_core_prep_for_deletion(mptr_t c) {
   core->interrupt = mtrue;
 }
 
-mret_t rbc_master_core_set_input(mptr_t c, mstr_t path, msize_t *CODE) {
+mret_t rbc_master_core_set_input(mptr_t c, mstr_t path, MerryICRes *RES) {
   merry_check_ptr(c);
   merry_check_ptr(path);
 
@@ -1125,12 +1175,15 @@ mret_t rbc_master_core_set_input(mptr_t c, mstr_t path, msize_t *CODE) {
   core->rbc_cbase.inp_path = path;
   if ((core->inp = rbc_input_init()) == RET_NULL) {
     MLOG("RBC", "Failed to initialize the reader for input file %s", path);
+    RES->source = IC_SOURCE_CORE;
+    RES->ERRNO = errno;
+    RES->_core_code = RBC_SYS_FAILURE;
     return RET_FAILURE;
   }
   return RET_SUCCESS;
 }
 
-mret_t rbc_master_core_prepare_core(mptr_t c, msize_t *CODE) {
+mret_t rbc_master_core_prepare_core(mptr_t c, MerryICRes *RES) {
   // The only job of this function is to prepare the master
   // core for execution
   merry_check_ptr(c);
@@ -1139,6 +1192,8 @@ mret_t rbc_master_core_prepare_core(mptr_t c, msize_t *CODE) {
 
   if (!core->inp) {
     MFATAL("RBC", "Input not initialized before preparation", NULL);
+    RES->source = IC_SOURCE_CORE;
+    RES->_core_code = RBC_NOT_READY;
     return RET_FAILURE;
   }
 
@@ -1146,17 +1201,24 @@ mret_t rbc_master_core_prepare_core(mptr_t c, msize_t *CODE) {
   if ((core->rbc_cbase.iram = rbc_memory_init()) == RET_NULL) {
     MFATAL("RBC", "Failed to initialize instrucion memory: PATH=%s",
            core->rbc_cbase.inp_path);
+    RES->source = IC_SOURCE_CORE;
+    RES->_core_code = RBC_SYS_FAILURE;
+    RES->ERRNO = errno;
     return RET_FAILURE;
   }
 
   if ((core->rbc_cbase.dram = rbc_memory_init()) == RET_NULL) {
     MFATAL("RBC", "Failed to initialize data memory: PATH=%s",
            core->rbc_cbase.inp_path);
+    RES->source = IC_SOURCE_CORE;
+    RES->_core_code = RBC_SYS_FAILURE;
+    RES->ERRNO = errno;
     return RET_FAILURE;
   }
 
   // Read the input file
-  if (rbc_input_read(core->inp, core->rbc_cbase.inp_path) == RET_FAILURE) {
+  if ((rbc_input_read(core->inp, core->rbc_cbase.inp_path, RES)) !=
+      RBC_SUCCESS) {
     MFATAL("RBC", "Failed to read input file %s", core->rbc_cbase.inp_path);
     return RET_FAILURE;
   }
@@ -1166,6 +1228,9 @@ mret_t rbc_master_core_prepare_core(mptr_t c, msize_t *CODE) {
                           core->inp->instructions) == RET_FAILURE) {
     MFATAL("RBC", "Failed to populate the instrucion memory: PATH=%s",
            core->rbc_cbase.inp_path);
+    RES->source = IC_SOURCE_CORE;
+    RES->ERRNO = errno;
+    RES->_core_code = RBC_SYS_FAILURE;
     return RET_FAILURE;
   }
 
@@ -1173,6 +1238,9 @@ mret_t rbc_master_core_prepare_core(mptr_t c, msize_t *CODE) {
                           core->inp->data) == RET_FAILURE) {
     MFATAL("RBC", "Failed to populate the data memory: PATH=%s",
            core->rbc_cbase.inp_path);
+    RES->source = IC_SOURCE_CORE;
+    RES->ERRNO = errno;
+    RES->_core_code = RBC_SYS_FAILURE;
     return RET_FAILURE;
   }
 

@@ -29,11 +29,10 @@ _THRET_T_ merry_graves_launcher(mptr_t b) {
 
   merry_mutex_unlock(&GRAVES->graves_lock);
 
-  if (base->execc(core) == RET_FAILURE) {
-    MFATAL("GRAVES: Launcher",
-           "CORE[ID=%zu, UID=%zu, GUID=%zu] Terminated unsuccessfully",
-           base->id, base->uid, base->guid);
-  }
+  msize_t ret = base->execc(core);
+  MNOTE("GRAVES: Launcher",
+        "CORE[ID=%zu, UID=%zu, GUID=%zu] Terminated with return code %zu",
+        base->id, base->uid, base->guid, ret);
 
   // Obtain the latest details
   merry_mutex_lock(&GRAVES->graves_lock);

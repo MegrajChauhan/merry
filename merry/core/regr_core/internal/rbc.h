@@ -89,21 +89,21 @@ struct RBCCore {
 // child cores
 
 mptr_t rbc_master_core_create(MerryCoreBase *base, maddress_t st_addr,
-                              msize_t *CODE);
+                              MerryICRes *RES);
 
 void rbc_master_core_destroy(mptr_t c);
 
 msize_t rbc_master_core_run(mptr_t c);
 
-MerryCoreBase *rbc_master_core_create_base(msize_t *CODE);
+MerryCoreBase *rbc_master_core_create_base(MerryICRes *RES);
 
 void rbc_master_core_destroy_base(MerryCoreBase *base);
 
 void rbc_master_core_prep_for_deletion(mptr_t c);
 
-mret_t rbc_master_core_set_input(mptr_t c, mstr_t path, msize_t *CODE);
+mret_t rbc_master_core_set_input(mptr_t c, mstr_t path, MerryICRes *RES);
 
-mret_t rbc_master_core_prepare_core(mptr_t c, msize_t *CODE);
+mret_t rbc_master_core_prepare_core(mptr_t c, MerryICRes *RES);
 
 // For the child cores
 

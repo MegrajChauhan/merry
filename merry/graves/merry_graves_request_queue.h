@@ -19,7 +19,7 @@ struct MerryGravesRequestQueueHandler {
   mbool_t accept_requests;
 };
 
-_MERRY_LOCAL_ MerryGravesRequestQueueHandler g_queue;
+_MERRY_INTERNAL_ MerryGravesRequestQueueHandler g_queue;
 
 mret_t merry_graves_req_queue_init();
 

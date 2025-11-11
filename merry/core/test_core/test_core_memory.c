@@ -3,7 +3,6 @@
 TCMem *tc_mem_init(mbptr_t inst, msize_t len) {
   TCMem *mem = (TCMem *)malloc(sizeof(TCMem));
   if (!mem) {
-    MFATAL("TC", "Failed to allocate for memory", NULL);
     return RET_NULL;
   }
   mem->all_instructions = inst;

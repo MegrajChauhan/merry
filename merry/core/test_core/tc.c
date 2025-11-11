@@ -1,10 +1,11 @@
 #include <test_core/tc/tc.h>
 
-mptr_t tc_create_core(MerryCoreBase *base, maddress_t st, msize_t *CODE) {
+mptr_t tc_create_core(MerryCoreBase *base, maddress_t st, MerryICRes *RES) {
   TC *tc = (TC *)malloc(sizeof(TC));
   if (!tc) {
-    MFATAL("TC", "Failed to allocate TC core", NULL);
-    *CODE = TC_SYS_FAILURE;
+    RES->source = IC_SOURCE_CORE;
+    RES->ERRNO = errno;
+    RES->_core_code = TC_SYS_FAILURE;
     return RET_NULL;
   }
   tc->PC = st;
@@ -78,17 +79,21 @@ msize_t tc_run(mptr_t c) {
   return 0;
 }
 
-MerryCoreBase *tc_create_base(msize_t *CODE) {
+MerryCoreBase *tc_create_base(MerryICRes *RES) {
   MerryCoreBase *base = (MerryCoreBase *)malloc(sizeof(MerryCoreBase));
   if (!base) {
+    RES->source = IC_SOURCE_CORE;
+    RES->ERRNO = errno;
+    RES->_core_code = TC_SYS_FAILURE;
     MFATAL("TC", "Failed to initialize core base", NULL);
-    *CODE = TC_SYS_FAILURE;
     return RET_NULL;
   }
   if (merry_cond_init(&base->cond) == RET_FAILURE) {
     MFATAL("TC", "Failed to obtain condition variable", NULL);
     free(base);
-    *CODE = TC_SYS_FAILURE;
+    RES->source = IC_SOURCE_CORE;
+    RES->ERRNO = errno;
+    RES->_core_code = TC_SYS_FAILURE;
     return RET_NULL;
   }
   base->type = __TEST_CORE;
@@ -117,12 +122,17 @@ void tc_pre_delete_core(mptr_t c) {
   merry_cond_signal(&tc->base->cond); // if it is waiting
 }
 
-mret_t tc_set_inp(mptr_t c, mstr_t fname, msize_t *CODE) {
+mret_t tc_set_inp(mptr_t c, mstr_t fname, MerryICRes *RES) {
   TC *tc = (TC *)c;
-  return tc_read_input(fname, &tc->inp);
+  mret_t res = tc_read_input(fname, &tc->inp);
+  RES->source = IC_SOURCE_CORE;
+  RES->ERRNO = errno;
+  RES->_core_code =
+      TC_FAILURE; // this could be anything but who cares about this core
+  return res;
 }
 
-mret_t tc_prep_core(mptr_t c, msize_t *CODE) {
+mret_t tc_prep_core(mptr_t c, MerryICRes *RES) {
   TC *tc = (TC *)c;
   tc->base->running = mfalse;
   tc->base->interrupt = mfalse;
@@ -133,6 +143,9 @@ mret_t tc_prep_core(mptr_t c, msize_t *CODE) {
   msize_t fsize = 0;
   merry_file_size(tc->inp.file, &fsize);
   tc->mem = tc_mem_init(tc->inp.mem, fsize);
+  RES->source = IC_SOURCE_CORE;
+  RES->ERRNO = errno;
+  RES->_core_code = TC_FAILURE;
   return (tc->mem == RET_NULL) ? RET_FAILURE : RET_SUCCESS;
 }
 

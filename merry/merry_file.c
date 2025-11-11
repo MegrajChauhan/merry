@@ -1,15 +1,23 @@
 #include <merry_file.h>
 
-mresult_t merry_open_file(MerryFile **file, mstr_t file_path, mstr_t modes,
-                          int flags) {
+minterfaceRet_t merry_open_file(MerryFile **file, mstr_t file_path,
+                                mstr_t modes, int flags) {
   mresult_t res = merry_interface_init(file, INTERFACE_TYPE_FILE);
-  if (!(*file))
-    return res;
+  if (!(*file)) {
+    switch (res) {
+    case MRES_SYS_FAILURE:
+      return INTERFACE_HOST_FAILURE;
+    case MRES_FAILURE:
+      return INTERFACE_FAILURE;
+    default:
+      return INTERFACE_FAILURE;
+    }
+  }
   // Figure out the opening mode
   int mode, flag;
   if (merry_figure_out_file_modes(modes, flags, &mode, &flag) == RET_FAILURE) {
     merry_interface_destroy(*file);
-    return MRES_INVALID_ARGS;
+    return INTERFACE_INVALID_ARGS;
   }
 
   // With modes and flags, we can continue
@@ -18,7 +26,7 @@ mresult_t merry_open_file(MerryFile **file, mstr_t file_path, mstr_t modes,
   (*file)->file.fd = open(file_path, mode, flag);
   if ((*file)->file.fd == -1) {
     merry_interface_destroy(*file);
-    return MRES_SYS_FAILURE;
+    return INTERFACE_HOST_FAILURE;
   }
 #else
 // not yet
@@ -36,7 +44,7 @@ mresult_t merry_open_file(MerryFile **file, mstr_t file_path, mstr_t modes,
     (*file)->file.flags.write = 1;
   } else if (modes[0] == _MERRY_FOPEN_READ_[0])
     (*file)->file.flags.read = 1;
-  return MRES_SUCCESS;
+  return INTERFACE_SUCCESS;
 }
 
 mret_t merry_figure_out_file_modes(mstr_t modex, int flags, int *res_mode,

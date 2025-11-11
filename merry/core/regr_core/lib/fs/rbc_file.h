@@ -25,9 +25,11 @@ struct RBCFile {
   mqword_t actual_file_off;
 };
 
-RBCFile *rbc_file_open(mstr_t fpath, mstr_t mode, int flags);
+minterfaceRet_t rbc_file_open(RBCFile **file, mstr_t fpath, mstr_t mode,
+                              int flags);
 
-RBCFile *rbc_file_reopen(RBCFile *file, mstr_t fpath, mstr_t mode, int flags);
+minterfaceRet_t rbc_file_reopen(RBCFile *file, mstr_t fpath, mstr_t mode,
+                                int flags);
 
 minterfaceRet_t rbc_fseek(RBCFile *file, msqword_t off, msize_t whence);
 

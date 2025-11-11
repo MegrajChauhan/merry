@@ -7,6 +7,8 @@ enum rbcret_t {
   RBC_FAILURE,
   RBC_SUCCESS,
   RBC_SYS_FAILURE,
+  RBC_FINPUT_INVAL,
+  RBC_NOT_READY,
 };
 
 #endif

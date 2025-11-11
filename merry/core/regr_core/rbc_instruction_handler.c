@@ -105,10 +105,13 @@ rbc_ihdlr(mint) {
     return;
 
   // results here
-  base->REGISTER_FILE[RBC_R15] = base->req.result.result;
-  if (base->req.result.result == MRES_FAILURE ||
-      base->req.result.result == MRES_SYS_FAILURE) {
-    base->REGISTER_FILE[RBC_R14] = base->req.result.CODE;
+  base->REGISTER_FILE[RBC_R14] = base->req.result.result;
+  if (base->req.result.result == MRES_SYS_FAILURE) {
+    base->REGISTER_FILE[RBC_R13] = base->req.result.ERRNO;
+  } else if (base->req.result.result == MRES_NOT_MERRY_FAILURE) {
+    base->REGISTER_FILE[RBC_R13] = base->req.result.ic_res.source;
+    base->REGISTER_FILE[RBC_R12] = base->req.result.ic_res.ERRNO;
+    base->REGISTER_FILE[RBC_R11] = base->req.result.ic_res._core_code;
   }
   if (base->req.result.result != MRES_SUCCESS)
     return;

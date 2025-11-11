@@ -1,40 +1,42 @@
 #include <regr_core/lib/fs/rbc_file.h>
 
-RBCFile *rbc_file_open(mstr_t fpath, mstr_t mode, int flags) {
+minterfaceRet_t rbc_file_open(RBCFile **file, mstr_t fpath, mstr_t mode,
+                              int flags) {
   merry_check_ptr(fpath);
   if (merry_is_path_a_directory(fpath)) {
     MFATAL("RBC<LIB:fs>",
            "The given file path either doesn't exist or is most likely a "
            "directory: PATH=%s",
            fpath);
-    return RET_NULL;
+    return INTERFACE_INVALID_ARGS;
   }
-  RBCFile *file = (RBCFile *)malloc(sizeof(RBCFile));
+  *file = (RBCFile *)malloc(sizeof(RBCFile));
   if (!file) {
     MFATAL("RBC<LIB:fs>", "Failed to allocate memory for FILE: PATH=%s", fpath);
-    return RET_NULL;
+    return INTERFACE_HOST_FAILURE;
   }
-  if ((file->buf = malloc(_RBC_FILE_BUF_LEN_)) == NULL) {
+  if (((*file)->buf = malloc(_RBC_FILE_BUF_LEN_)) == NULL) {
     MFATAL("RBC<LIB:fs>", "Failed to allocate memory for FILE BUF: PATH=%s",
            fpath);
-    free(file);
-    return RET_NULL;
+    free(*file);
+    return INTERFACE_HOST_FAILURE;
   }
-  mresult_t res;
-  if ((res = merry_open_file(&file->file, fpath, mode, flags)) !=
-      MRES_SUCCESS) {
+  minterfaceRet_t res;
+  if ((res = merry_open_file(&(*file)->file, fpath, mode, flags)) !=
+      INTERFACE_SUCCESS) {
     MFATAL("RBC<LIB:fs>", "Failed to open file: PATH=%s", fpath);
-    free(file->buf);
-    free(file);
-    return RET_NULL;
+    free((*file)->buf);
+    free(*file);
+    return res;
   }
-  file->BP = 0;
-  file->usable_bytes_in_buffer = 0;
-  merry_file_tell(file->file, &file->actual_file_off);
-  return file;
+  (*file)->BP = 0;
+  (*file)->usable_bytes_in_buffer = 0;
+  merry_file_tell((*file)->file, &(*file)->actual_file_off);
+  return INTERFACE_SUCCESS;
 }
 
-RBCFile *rbc_file_reopen(RBCFile *file, mstr_t fpath, mstr_t mode, int flags) {
+minterfaceRet_t rbc_file_reopen(RBCFile *file, mstr_t fpath, mstr_t mode,
+                                int flags) {
   merry_check_ptr(file);
   merry_check_ptr(fpath);
   if (merry_is_path_a_directory(fpath)) {
@@ -42,20 +44,20 @@ RBCFile *rbc_file_reopen(RBCFile *file, mstr_t fpath, mstr_t mode, int flags) {
            "The given file path either doesn't exist or is most likely a "
            "directory: PATH=%s",
            fpath);
-    return RET_NULL;
+    return INTERFACE_INVALID_ARGS;
   }
-  mresult_t res;
+  minterfaceRet_t res;
   if ((res = merry_open_file(&file->file, fpath, mode, flags)) !=
-      MRES_SUCCESS) {
+      INTERFACE_SUCCESS) {
     MFATAL("RBC<LIB:fs>", "Failed to open file: PATH=%s", fpath);
     free(file->buf);
     free(file);
-    return RET_NULL;
+    return res;
   }
   file->BP = 0;
   file->usable_bytes_in_buffer = 0;
   merry_file_tell(file->file, &file->actual_file_off);
-  return file;
+  return INTERFACE_SUCCESS;
 }
 
 minterfaceRet_t rbc_fseek(RBCFile *file, msqword_t off, msize_t whence) {
