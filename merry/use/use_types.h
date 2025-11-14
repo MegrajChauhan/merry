@@ -12,10 +12,6 @@
 #define TRUE mtrue
 #define FALSE mfalse
 
-#define RET_NULL (void *)0
-#define RET_SUCCESS mtrue
-#define RET_FAILURE mfalse
-
 typedef mbool_t bool_t;
 
 typedef mbyte_t byte_t;
@@ -32,10 +28,6 @@ typedef msqword_t sqword_t;
 // msize_t will remain as is since size_t will conflict with glibc
 typedef maddress_t address_t;
 typedef msbyte_t ret_t;
-
-// define function pointers
-#define _MERRY_DEFINE_FUNC_PTR_(ret, func_name, ...)                           \
-  typedef ret (*func_name)(__VA_ARGS__);
 
 // pointers for memory types
 typedef mbptr_t bptr_t;

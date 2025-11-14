@@ -2,6 +2,7 @@
 #define _MERRY_GRAVES_DEFS_
 
 #include <merry_core_types.h>
+#include <merry_operations.h>
 #include <merry_types.h>
 
 #define REQ(name)                                                              \
@@ -27,5 +28,6 @@ _MERRY_DEFINE_FUNC_PTR_(void, mcorepredel_t, mptr_t);
 _MERRY_DEFINE_FUNC_PTR_(mret_t, mcoresetinp_t, mptr_t, mstr_t,
                         struct MerryICRes *);
 _MERRY_DEFINE_FUNC_PTR_(mret_t, mcoreprepcore_t, mptr_t, struct MerryICRes *);
+_MERRY_DEFINE_FUNC_PTR_(mresult_t, mcoreconfig_t, mstr_t, mcstr_t, mbool_t *);
 
 #endif

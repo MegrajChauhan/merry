@@ -45,6 +45,7 @@ struct MerryGraves {
 
   mcorecreatebase_t HOW_TO_CREATE_BASE[__CORE_TYPE_COUNT];
   mcoredeletebase_t HOW_TO_DESTROY_BASE[__CORE_TYPE_COUNT];
+  mcoreconfig_t CONFIG_CORE[__CORE_TYPE_COUNT];
 
   MerryConsts *_config;
   MerryGravesRequest *current_req;

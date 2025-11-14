@@ -2,7 +2,8 @@
 
 _MERRY_ALWAYS_INLINE_ void merry_HELP_msg() { printf("%s", HELP_MSG); }
 
-mresult_t merry_parse_arg(int argc, char **argv) {
+mresult_t merry_parse_arg(int argc, char **argv,
+                          mcoreconfig_t conf[__CORE_TYPE_COUNT]) {
   // ..... parsing
   consts.argc = argc;
   consts.argv = argv;
@@ -11,8 +12,10 @@ mresult_t merry_parse_arg(int argc, char **argv) {
   consts.prog_args_count = 0;
   consts.group_count_limit = 0;
   consts.core_count_limit = 0;
+  consts.current_mode_allowed_largest_ctype_id = 1;
   consts.graves_config.core_count_lim = mfalse;
   consts.graves_config.group_count_lim = mfalse;
+  consts.graves_config.test_mode = mfalse;
   int st = 1;
   while (st < argc) {
     switch (argv[st][0]) {
@@ -59,6 +62,22 @@ mresult_t merry_parse_arg(int argc, char **argv) {
         }
         if (used_nxt == mtrue)
           st++;
+        break;
+      }
+      case 'T': {
+        // This prefix belongs to the test core
+        // mbool_t used_nxt = mfalse;
+        // if (conf[__TEST_CORE](argv[st], (((st + 1) < argc) ? argv[st + 1] :
+        // NULL), &used_nxt) != MRES_SUCCESS)
+        //  return MRES_FAILURE; // display your own
+        break;
+      }
+      case 'R': {
+        // This prefix belongs to the regr core
+        // mbool_t used_nxt = mfalse;
+        // if (conf[__REGR_CORE](argv[st], (((st + 1) < argc) ? argv[st + 1] :
+        // NULL), &used_nxt) != MRES_SUCCESS)
+        //  return MRES_FAILURE; // display your own
         break;
       }
       default:
@@ -119,6 +138,18 @@ mresult_t merry_parse_cmd_option_Graves(mstr_t opt, const mstr_t nxt,
       return MRES_FAILURE;
     }
     break;
+  }
+  case 'm': {
+    *used_nxt = mfalse;
+    if (strcmp(opt, "-Gmtest") == 0) {
+      consts.graves_config.test_mode = mtrue;
+      consts.current_mode_allowed_largest_ctype_id = 1;
+      MLOG("Graves", "Enabled test mode", NULL);
+      break;
+    } else {
+      MFATAL("Graves", "Unknown value option %s", opt);
+      return MRES_FAILURE;
+    }
   }
   default:
     MFATAL("Graves", "Unknown option type %s", opt);

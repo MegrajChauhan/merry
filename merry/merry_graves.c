@@ -5,15 +5,15 @@ _MERRY_DEFINE_STATIC_LIST_(Group, MerryGravesGroup *);
 
 _MERRY_NO_RETURN_ void Merry_Graves_Run(int argc, char **argv) {
   MerryGraves GRAVES;
-  if (merry_parse_arg(argc, argv) == RET_FAILURE) {
+  // Now we perform pre-initialization
+  if (merry_graves_pre_init(&GRAVES) != MRES_SUCCESS)
+    goto GRAVES_FAILED_TO_START;
+
+  if (merry_parse_arg(argc, argv, GRAVES.CONFIG_CORE) == RET_FAILURE) {
     MFATAL("Graves", "Failed to parse input arguments", NULL);
     exit(-1);
   }
   GRAVES._config = CONSTS();
-
-  // Now we perform pre-initialization
-  if (merry_graves_pre_init(&GRAVES) != MRES_SUCCESS)
-    goto GRAVES_FAILED_TO_START;
 
   // We can now read the input file
   if (merry_graves_parse_input(&GRAVES) != MRES_SUCCESS)
@@ -46,6 +46,8 @@ mresult_t merry_graves_pre_init(MerryGraves *GRAVES) {
    * If we ever have config files, this is the ideal point to
    * parse them
    * */
+  // GRAVES->CONFIG_CORE[__TEST_CORE] = tc_config_core;
+  // GRAVES->CONFIG_CORE[__REGR_CORE] = rbc_config_core;
   merry_graves_launcher_set(GRAVES);
   return MRES_SUCCESS;
 }
@@ -123,8 +125,12 @@ mresult_t merry_graves_ready_everything(MerryGraves *GRAVES) {
 
   // Initialize the first core
   mcore_t first_core_type = merry_graves_obtain_first_valid_c_entry(GRAVES);
-  if (first_core_type == __CORE_TYPE_COUNT) {
-    merry_unreachable(); // unreachable literally
+  if (first_core_type >
+      GRAVES->_config->current_mode_allowed_largest_ctype_id) {
+    MFATAL("Graves", "Attempting to use a core that isn't ready or exists",
+           NULL);
+    merry_graves_group_destroy(grp);
+    return MRES_FAILURE;
   }
   if (merry_graves_init_a_core(GRAVES, first_core, first_core_type, 0x00) !=
       MRES_SUCCESS) {
@@ -228,9 +234,8 @@ mresult_t merry_graves_init_a_core(MerryGraves *GRAVES,
                                    maddress_t addr) {
   merry_check_ptr(repr);
 
-  if (type >= __CORE_TYPE_COUNT) {
-    merry_unreachable(); // shouldn't reach here
-  }
+  if (type > GRAVES->_config->current_mode_allowed_largest_ctype_id)
+    return MRES_NOT_ALLOWED;
 
   repr->base = GRAVES->HOW_TO_CREATE_BASE[type](&GRAVES->result.ic_res);
 

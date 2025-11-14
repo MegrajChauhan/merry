@@ -17,6 +17,7 @@ enum mresult_t {
   MRES_COMP_FAILURE, // sometimes we don't want to propagate other messages
   MRES_RESOURCE_LIM_REACHED,
   MRES_INTERRUPTED,
+  MRES_NOT_ALLOWED,
 };
 
 #endif

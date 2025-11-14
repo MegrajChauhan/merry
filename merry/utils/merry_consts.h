@@ -5,6 +5,7 @@
 // The ones in the config and utils are different category of contants
 
 #include <ctype.h>
+#include <merry_graves_defs.h>
 #include <merry_helpers.h>
 #include <merry_operations.h>
 #include <merry_types.h>
@@ -23,7 +24,8 @@ struct MerryConsts {
   struct {
     bit_group(group_count_lim, 1); // -Glgrpclim [value]
     bit_group(core_count_lim, 1);  // -Glcclim [value]
-    bit_group(res, 6);
+    bit_group(test_mode, 1);       // -Gmtest
+    bit_group(res, 5);
   } graves_config;
   /*
    * If the user wants to limit core count to specific group only then it can be
@@ -42,6 +44,12 @@ struct MerryConsts {
    * rise above the limit ever.
    * */
   msize_t core_count_limit;
+
+  /*
+   * If anyone wishes to test their pre-released core then they must use -Gmtest
+   * flag.
+   * */
+  msize_t current_mode_allowed_largest_ctype_id;
 
   int argc;
   char **argv;
@@ -70,7 +78,8 @@ _MERRY_INTERNAL_ mstr_t HELP_MSG =
 
 void merry_HELP_msg();
 
-mresult_t merry_parse_arg(int argc, char **argv);
+mresult_t merry_parse_arg(int argc, char **argv,
+                          mcoreconfig_t conf[__CORE_TYPE_COUNT]);
 
 MerryConsts *CONSTS();
 
