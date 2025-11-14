@@ -1,3 +1,4 @@
+#include "merry_protectors.h"
 #include <internal/rbc.h>
 #include <internal/rbc_instruction_handler.h>
 
@@ -69,6 +70,18 @@ mptr_t rbc_master_core_create(MerryCoreBase *base, maddress_t st_addr,
     merry_Interface_list_destroy(core->rbc_cbase.interfaces);
     merry_return_memory(core->rbc_cbase.stack, _RBC_STACK_LEN_);
     merry_RBCProcFrame_stack_destroy(core->rbc_cbase.stack_frames);
+    free(core);
+    source = IC_SOURCE_CORE;
+    goto RBC_CC_FAILED;
+  }
+
+  if ((ret = merry_cond_init(&core->private_cond)) != MRES_SUCCESS) {
+    MFATAL("RBC", "Failed to initialize component", NULL);
+    merry_RBCThread_list_destroy(core->rbc_cbase.child_threads);
+    merry_Interface_list_destroy(core->rbc_cbase.interfaces);
+    merry_return_memory(core->rbc_cbase.stack, _RBC_STACK_LEN_);
+    merry_RBCProcFrame_stack_destroy(core->rbc_cbase.stack_frames);
+    merry_cond_destroy(&core->local_shared_cond);
     free(core);
     source = IC_SOURCE_CORE;
     goto RBC_CC_FAILED;
@@ -472,57 +485,81 @@ msize_t rbc_master_core_run(mptr_t c) {
       case RBC_OP_JZ:
       case RBC_OP_JE:
         // the address to jmp should follow the layout.whole_word
-        if (cbase.flags.flags.zero == 1)
+        if (cbase.flags.flags.zero == 1) {
           cbase.PC = (layout.whole_word & 0xFFFFFFFFFFFF);
-        continue;
+          continue;
+        }
+        break;
       case RBC_OP_JNZ:
       case RBC_OP_JNE:
         // the address to jmp should follow the layout.whole_word
-        if (cbase.flags.flags.zero == 0)
+        if (cbase.flags.flags.zero == 0) {
           cbase.PC = (layout.whole_word & 0xFFFFFFFFFFFF);
-        continue;
+          continue;
+        }
+        break;
       case RBC_OP_JNC:
-        if (cbase.flags.flags.carry == 0)
+        if (cbase.flags.flags.carry == 0) {
           cbase.PC = (layout.whole_word & 0xFFFFFFFFFFFF);
-        continue;
+          continue;
+        }
+        break;
       case RBC_OP_JC:
-        if (cbase.flags.flags.carry == 1)
+        if (cbase.flags.flags.carry == 1) {
           cbase.PC = (layout.whole_word & 0xFFFFFFFFFFFF);
-        continue;
+          continue;
+        }
+        break;
       case RBC_OP_JNO:
-        if (cbase.flags.flags.overflow == 0)
+        if (cbase.flags.flags.overflow == 0) {
           cbase.PC = (layout.whole_word & 0xFFFFFFFFFFFF);
-        continue;
+          continue;
+        }
+        break;
       case RBC_OP_JO:
-        if (cbase.flags.flags.overflow == 1)
+        if (cbase.flags.flags.overflow == 1) {
           cbase.PC = (layout.whole_word & 0xFFFFFFFFFFFF);
-        continue;
+          continue;
+        }
+        break;
       case RBC_OP_JNN:
-        if (cbase.flags.flags.negative == 0)
+        if (cbase.flags.flags.negative == 0) {
           cbase.PC = (layout.whole_word & 0xFFFFFFFFFFFF);
-        continue;
+          continue;
+        }
+        break;
       case RBC_OP_JN:
-        if (cbase.flags.flags.negative == 1)
+        if (cbase.flags.flags.negative == 1) {
           cbase.PC = (layout.whole_word & 0xFFFFFFFFFFFF);
-        continue;
+          continue;
+        }
+        break;
       case RBC_OP_JS:
       case RBC_OP_JNG:
-        if (cbase.flags.flags.negative == 1)
+        if (cbase.flags.flags.negative == 1) {
           cbase.PC = (layout.whole_word & 0xFFFFFFFFFFFF);
-        continue;
+          continue;
+        }
+        break;
       case RBC_OP_JNS:
       case RBC_OP_JG:
-        if (cbase.flags.flags.negative == 0)
+        if (cbase.flags.flags.negative == 0) {
           cbase.PC = (layout.whole_word & 0xFFFFFFFFFFFF);
-        continue;
+          continue;
+        }
+        break;
       case RBC_OP_JGE:
-        if (cbase.flags.flags.negative == 0 || cbase.flags.flags.zero == 0)
+        if (cbase.flags.flags.negative == 0 || cbase.flags.flags.zero == 0) {
           cbase.PC = (layout.whole_word & 0xFFFFFFFFFFFF);
-        continue;
+          continue;
+        }
+        break;
       case RBC_OP_JSE:
-        if (cbase.flags.flags.negative == 1 || cbase.flags.flags.zero == 0)
+        if (cbase.flags.flags.negative == 1 || cbase.flags.flags.zero == 0) {
           cbase.PC = (layout.whole_word & 0xFFFFFFFFFFFF);
-        continue;
+          continue;
+        }
+        break;
       case RBC_OP_CALL:
         rbc_icall(&cbase, &core->kill_core, layout.whole_word);
         continue;
@@ -984,53 +1021,77 @@ msize_t rbc_master_core_run(mptr_t c) {
             rbc_imov_imm(&cbase, &core->kill_core, layout.whole_word);
           break;
         case RBC_OP_JFZ:
-          if (cbase.fflags.zf)
+          if (cbase.fflags.zf) {
             cbase.PC = (layout.whole_word & 0xFFFFFFFFFFFF);
-          continue;
+            continue;
+          }
+          break;
         case RBC_OP_JFNZ:
-          if (!cbase.fflags.zf)
+          if (!cbase.fflags.zf) {
             cbase.PC = (layout.whole_word & 0xFFFFFFFFFFFF);
-          continue;
+            continue;
+          }
+          break;
         case RBC_OP_JFN:
-          if (cbase.fflags.sf)
+          if (cbase.fflags.sf) {
             cbase.PC = (layout.whole_word & 0xFFFFFFFFFFFF);
-          continue;
+            continue;
+          }
+          break;
         case RBC_OP_JFNN:
-          if (!cbase.fflags.sf)
+          if (!cbase.fflags.sf) {
             cbase.PC = (layout.whole_word & 0xFFFFFFFFFFFF);
-          continue;
+            continue;
+          }
+          break;
         case RBC_OP_JFUF:
-          if (cbase.fflags.uof)
+          if (cbase.fflags.uof) {
             cbase.PC = (layout.whole_word & 0xFFFFFFFFFFFF);
-          continue;
+            continue;
+          }
+          break;
         case RBC_OP_JFNUF:
-          if (!cbase.fflags.uof)
+          if (!cbase.fflags.uof) {
             cbase.PC = (layout.whole_word & 0xFFFFFFFFFFFF);
-          continue;
+            continue;
+          }
+          break;
         case RBC_OP_JFO:
-          if (cbase.fflags.of)
+          if (cbase.fflags.of) {
             cbase.PC = (layout.whole_word & 0xFFFFFFFFFFFF);
-          continue;
+            continue;
+          }
+          break;
         case RBC_OP_JFNO:
-          if (!cbase.fflags.of)
+          if (!cbase.fflags.of) {
             cbase.PC = (layout.whole_word & 0xFFFFFFFFFFFF);
-          continue;
+            continue;
+          }
+          break;
         case RBC_OP_JFU:
-          if (cbase.fflags.uf)
+          if (cbase.fflags.uf) {
             cbase.PC = (layout.whole_word & 0xFFFFFFFFFFFF);
-          continue;
+            continue;
+          }
+          break;
         case RBC_OP_JFNU:
-          if (!cbase.fflags.uf)
+          if (!cbase.fflags.uf) {
             cbase.PC = (layout.whole_word & 0xFFFFFFFFFFFF);
-          continue;
+            continue;
+          }
+          break;
         case RBC_OP_JFI:
-          if (cbase.fflags.inv)
+          if (cbase.fflags.inv) {
             cbase.PC = (layout.whole_word & 0xFFFFFFFFFFFF);
-          continue;
+            continue;
+          }
+          break;
         case RBC_OP_JFNI:
-          if (!cbase.fflags.inv)
+          if (!cbase.fflags.inv) {
             cbase.PC = (layout.whole_word & 0xFFFFFFFFFFFF);
-          continue;
+            continue;
+          }
+          break;
         case RBC_OP_RETFZ:
           if (cbase.fflags.zf)
             rbc_iret(&cbase, &core->kill_core, layout.whole_word);
@@ -1106,12 +1167,6 @@ MerryCoreBase *rbc_master_core_create_base(MerryICRes *RES) {
     source = IC_SOURCE_CORE;
     goto RBC_BC_FAILED;
   }
-  if ((ret = merry_cond_init(&base->cond)) != MRES_SUCCESS) {
-    MFATAL("RBC", "Failed to obtain condition variable", NULL);
-    free(base);
-    source = IC_SOURCE_CORE;
-    goto RBC_BC_FAILED;
-  }
   base->type = __REGR_CORE;
   base->createc = rbc_master_core_create;
   base->deletec = rbc_master_core_destroy;
@@ -1145,7 +1200,6 @@ RBC_BC_FAILED:
 
 void rbc_master_core_destroy_base(MerryCoreBase *base) {
   merry_check_ptr(base);
-  merry_cond_destroy(&base->cond);
   free(base);
 }
 
@@ -1247,7 +1301,7 @@ mret_t rbc_master_core_prepare_core(mptr_t c, MerryICRes *RES) {
   // Now other fields
   core->rbc_cbase.req.args = &core->rbc_cbase.args;
   core->rbc_cbase.req.base = core->base;
-  core->rbc_cbase.req.used_cond = &core->base->cond;
+  core->rbc_cbase.req.used_cond = &core->private_cond;
 
   core->interrupt = mfalse;
   core->terminate = mfalse;

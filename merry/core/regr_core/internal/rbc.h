@@ -65,6 +65,7 @@ struct RBCMasterCore {
   // The child threads to the master core will use
   // the following shared variables for internal management
   mcond_t local_shared_cond;
+  mcond_t private_cond;
   _Atomic mbool_t interrupt;
   _Atomic mbool_t pause;
   _Atomic mbool_t terminate;

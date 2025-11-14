@@ -156,7 +156,7 @@ rbcret_t rbc_input_read(RBCInput *inp, mstr_t path, MerryICRes *res) {
   mICResSource_t source;
   msize_t ret =
       merry_open_file(&inp->input_file, path, _MERRY_FOPEN_READ_WRITE_, 0);
-  if (ret != MRES_SUCCESS) {
+  if (ret != INTERFACE_SUCCESS) {
     MFATAL("RBC", "Failed to read input file: FILE=%s", path);
     source = IC_SOURCE_INTERFACE;
     goto RBC_INP_PARSE_FAILED;

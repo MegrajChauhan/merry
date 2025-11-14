@@ -1,3 +1,6 @@
+#include "merry_operations.h"
+#include "merry_protectors.h"
+#include "merry_types.h"
 #include <test_core/tc/tc.h>
 
 mptr_t tc_create_core(MerryCoreBase *base, maddress_t st, MerryICRes *RES) {
@@ -6,6 +9,13 @@ mptr_t tc_create_core(MerryCoreBase *base, maddress_t st, MerryICRes *RES) {
     RES->source = IC_SOURCE_CORE;
     RES->ERRNO = errno;
     RES->_core_code = TC_SYS_FAILURE;
+    return RET_NULL;
+  }
+  if (merry_cond_init(&tc->cond) != MRES_SUCCESS) {
+    RES->source = IC_SOURCE_CORE;
+    RES->ERRNO = errno;
+    RES->_core_code = TC_SYS_FAILURE;
+    free(tc);
     return RET_NULL;
   }
   tc->PC = st;
@@ -88,14 +98,6 @@ MerryCoreBase *tc_create_base(MerryICRes *RES) {
     MFATAL("TC", "Failed to initialize core base", NULL);
     return RET_NULL;
   }
-  if (merry_cond_init(&base->cond) == RET_FAILURE) {
-    MFATAL("TC", "Failed to obtain condition variable", NULL);
-    free(base);
-    RES->source = IC_SOURCE_CORE;
-    RES->ERRNO = errno;
-    RES->_core_code = TC_SYS_FAILURE;
-    return RET_NULL;
-  }
   base->type = __TEST_CORE;
   base->createc = tc_create_core;
   base->deletec = tc_delete_core;
@@ -109,7 +111,6 @@ MerryCoreBase *tc_create_base(MerryICRes *RES) {
 
 void tc_destroy_base(MerryCoreBase *base) {
   merry_check_ptr(base);
-  merry_cond_destroy(&base->cond);
   free(base);
 }
 
@@ -119,7 +120,7 @@ void tc_pre_delete_core(mptr_t c) {
   TC *tc = (TC *)c;
   tc->base->interrupt = mtrue;
   tc->terminate = mtrue;
-  merry_cond_signal(&tc->base->cond); // if it is waiting
+  merry_cond_signal(&tc->cond); // if it is waiting
 }
 
 mret_t tc_set_inp(mptr_t c, mstr_t fname, MerryICRes *RES) {
@@ -138,7 +139,7 @@ mret_t tc_prep_core(mptr_t c, MerryICRes *RES) {
   tc->base->interrupt = mfalse;
   tc->terminate = mfalse;
   tc->_greq.base = tc->base;
-  tc->_greq.used_cond = &tc->base->cond;
+  tc->_greq.used_cond = &tc->cond;
   tc->_greq.args = &tc->args;
   msize_t fsize = 0;
   merry_file_size(tc->inp.file, &fsize);

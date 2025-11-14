@@ -1,9 +1,10 @@
+#include "merry_types.h"
 #include <test_core/comps/test_core_input.h>
 
 tcret_t tc_read_input(mstr_t fname, TCInp *inp) {
   // mbool_t res = mfalse;
-  mresult_t res = merry_open_file(&inp->file, fname, _MERRY_FOPEN_READ_, 0);
-  if (res != MRES_SUCCESS) {
+  msize_t res = merry_open_file(&inp->file, fname, _MERRY_FOPEN_READ_, 0);
+  if (res != INTERFACE_SUCCESS) {
     return TC_FAILURE;
   }
   // Now that we have the file

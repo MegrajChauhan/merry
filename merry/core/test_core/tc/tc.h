@@ -1,6 +1,7 @@
 #ifndef _TC_
 #define _TC_
 
+#include "merry_platform.h"
 #include <merry_graves_core_base.h>
 #include <merry_graves_request_queue.h>
 #include <stdlib.h>
@@ -18,6 +19,7 @@ struct TC {
   MerryGravesRequest _greq;
   MerryRequestArgs args;
   mbool_t terminate;
+  mcond_t cond;
 };
 
 mptr_t tc_create_core(MerryCoreBase *base, maddress_t st, MerryICRes *RES);

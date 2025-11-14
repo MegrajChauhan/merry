@@ -7,6 +7,7 @@ enum mcore_t {
   __TEST_CORE,
   // We can have many more types here
   __REGR_CORE,
+  __TMP1, // Unreleased core
   __CORE_TYPE_COUNT,
 };
 
