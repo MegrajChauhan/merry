@@ -159,6 +159,9 @@ void merry_graves_acquaint_with_cores(MerryGraves *GRAVES) {
   GRAVES->HOW_TO_DESTROY_BASE[__TEST_CORE] = tc_destroy_base;
   GRAVES->HOW_TO_CREATE_BASE[__REGR_CORE] = rbc_master_core_create_base;
   GRAVES->HOW_TO_DESTROY_BASE[__REGR_CORE] = rbc_master_core_destroy_base;
+  if (GRAVES->_config->graves_config.test_mode == mtrue) {
+    // List all of the test mode cores too!
+  }
 }
 
 void merry_graves_destroy(MerryGraves *GRAVES) {
