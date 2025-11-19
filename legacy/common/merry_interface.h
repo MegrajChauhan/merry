@@ -45,6 +45,18 @@ struct MerryInterface {
       _Atomic msize_t children_count;
       MerryInterface *parent;
     } memory_map;
+    struct {
+      // we can store much more information
+      mpid_t process_id;
+    } process;
+    struct {
+      msocket_t _s;
+      struct {
+        mbyte_t init:1;
+        mbyte_t in_use:1;
+        mbyte_t resb: 6;
+      }flags;
+    } sock;
   };
 };
 

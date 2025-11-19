@@ -42,14 +42,14 @@
 // tools
 
 // CHECK CONDITION AND IF IT FAILS, THROW ERROR AND EXIT
-#define merry_check_condition_and_exit_on_failure(cond)                        \
+#define merry_check_condition(cond, ACTION)                                    \
   do {                                                                         \
     if (surelyF(!(cond))) {                                                    \
       MFATAL(NULL,                                                             \
              "Condition: "_MERRY_STRINGIFY_(                                   \
                  (cond)) ": Failed. Line %d[FILE: %s]\n",                      \
              __LINE__, __FILE__);                                              \
-      exit(-1);                                                                \
+      ACTION;                                                                  \
     }                                                                          \
   } while (0)
 
@@ -60,7 +60,7 @@
 #define merry_suggest(msg, ...)
 #else
 #define _MERRY_TEST_
-#define merry_assert(cond) merry_check_condition_and_exit_on_failure(cond)
+#define merry_assert(cond) merry_check_condition(cond, exit(-1))
 
 /**
  * The existence of this pointer checker is based on:
@@ -77,5 +77,12 @@
     MFATAL(NULL, "Unreachable code execution: %s %d", __FILE__, __LINE__);     \
     exit(-1);                                                                  \
   } while (0)
+
+typedef union MerryQwordToPtr MerryQwordToPtr;
+
+union MerryQwordToPtr {
+	mqword_t qword;
+	mptr_t ptr;
+};
 
 #endif

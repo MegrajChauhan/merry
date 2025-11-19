@@ -1,22 +1,11 @@
 # Variable definitions
 CC = gcc
-FLAGS = -Wall -Wextra -MMD -MP -g -fsanitize=address -fno-omit-frame-pointer
-DIRS = merry/common \
-       merry/comps \
+FLAGS = -Wall -Wextra -MMD -MP -g -c -fPIC -fsanitize=address -fno-omit-frame-pointer
+DIRS = merry/def \
+       merry/abs \
        merry/core \
-       merry/core/test_core \
-       merry/core/regr_core \
-       merry/defs \
-       merry/graves \
-       merry/graves/abs \
-       merry/interface/hard \
-       merry/interface/soft \
-       merry/lib/defs \
-       merry/lib \
-       merry/use \
        merry/utils
-SRC_DIR = merry/ merry/core/test_core/ merry/core/regr_core/
-ASM_DIR = merry/interface/hard/
+SRC_DIR = merry/
 INC_DIRS = ${addprefix -I, ${DIRS}}
 FLAGS += ${flags}
 
@@ -31,15 +20,17 @@ FLAGS += ${flags}
 OUTPUT_DIR = build/
 OUTPUT_DEPS= build/
 
-FILES_TO_COMPILE = ${foreach _D, ${SRC_DIR},${wildcard ${_D}*.c}}
-ASM_FILES = ${wildcard ${ASM_DIR}*.S}
+FILES_TO_COMPILE = ${wildcard ${SRC_DIR}*.c}
 OUTPUT_FILES_NAME = ${patsubst %.c, ${OUTPUT_DIR}%.o, ${FILES_TO_COMPILE}}
 DEPS=${patsubst %.c, ${OUTPUT_DEPS}%.d, ${FILES_TO_COMPILE}}
 
-all: directories ${OUTPUT_FILES_NAME}
-	${CC} ${FLAGS} ${OUTPUT_FILES_NAME} ${ASM_FILES} mvm.c ${INC_DIRS} -o ${OUTPUT_DIR}mvm
+all: directories ${OUTPUT_FILES_NAME} main
+	${CC} -shared ${FLAGS} ${OUTPUT_DIR}merry.o ${OUTPUT_FILES_NAME} ${INC_DIRS} -o ${OUTPUT_DIR}merry.so
 
 WATCH_PROJECT: directories ${OUTPUT_FILES_NAME}
+
+main:
+	${CC} ${FLAGS} ${INC_DIRS} -c merry.c -o ${OUTPUT_DIR}merry.o
 
 ${OUTPUT_DIR}%.o: %.c
 	${CC} ${FLAGS} ${INC_DIRS} -c $< -o $@

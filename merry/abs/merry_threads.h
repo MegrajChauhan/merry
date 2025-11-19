@@ -7,6 +7,8 @@
 #include <merry_types.h>
 #include <merry_utils.h>
 
+typedef _THRET_T_ (*mthexec_t)(mptr_t);
+
 mresult_t merry_thread_create(mthread_t *th, mthexec_t func, mptr_t arg);
 
 mresult_t merry_create_detached_thread(mthread_t *th, mthexec_t func,

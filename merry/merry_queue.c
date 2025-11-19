@@ -21,7 +21,7 @@ mresult_t merry_create_squeue(MerrySQueue **queue, msize_t cap, msize_t elen) {
 mptr_t merry_squeue_top(MerrySQueue *queue) {
   merry_check_ptr(queue);
   if (merry_squeue_empty(queue))
-    return RET_NULL;
+    return NULL;
   return (mptr_t)(((char *)queue->buf + (queue->head * queue->elem_len)));
 }
 
@@ -87,7 +87,7 @@ mresult_t merry_create_squeue_atm(MerrySQueueAtm **queue, msize_t cap,
 mptr_t merry_squeue_atm_top(MerrySQueueAtm *queue) {
   merry_check_ptr(queue);
   if (merry_squeue_atm_empty(queue, queue->rear))
-    return RET_NULL;
+    return NULL;
   return (mptr_t)(((char *)queue->buf + (queue->head * queue->elem_len)));
 }
 

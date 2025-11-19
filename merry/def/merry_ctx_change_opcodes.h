@@ -1,0 +1,13 @@
+#ifndef _MERRY_CTX_UPDATE_OPCODES_
+#define _MERRY_CTX_UPDATE_OPCODES_
+
+typedef enum mctxopcode_t mctxopcode_t;
+
+enum mctxopcode_t {
+	CTX_CONFIG_NO_WAITING_FOR_CLIENT_CONN,
+	CTX_CONFIG_NON_STANDARD_PORT,
+	CTX_CONFIG_CUSTOM_ENTRIES,
+	CTX_CONFIG_SET_CORE_COUNT_LIMIT,
+};
+
+#endif
