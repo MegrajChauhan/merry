@@ -59,8 +59,10 @@ mresult_t merry_ctx_ready(MerryContext *ctx);
 mresult_t merry_ctx_destroy(MerryContext *ctx);
 
 // The following are just commands now
-mresult_t merry_create_core(MerryContext *ctx, mstr_t core_name, mid_t *core_id, mbool_t reuse_id);
+mresult_t merry_load_core(MerryContext *ctx, mstr_t core_name, mid_t *core_id, mbool_t reuse_id);
 
 mresult_t merry_destroy_core(MerryContext *ctx, mid_t core_id);
+
+mresult_t merry_unload_core(MerryContext *ctx, mid_t core_id);
 
 #endif

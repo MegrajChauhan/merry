@@ -33,27 +33,32 @@ mresult_t merry_ctx_config(MerryContext *ctx, mctxopcode_t OP, ...) {
 	if (ctx->owner_tid != pthread_self())
 		return MRES_OPER_NOT_PERM;
 
-	if (ctx->ctx_not_configurable)
-		return MRES_NOT_ALLOWED;
-
 	va_list args;
 	va_start(args, OP);
 
 	switch (OP) {
 		case CTX_CONFIG_NO_WAITING_FOR_CLIENT_CONN:
+			if (ctx->ctx_not_configurable)
+				return MRES_NOT_ALLOWED;
 			ctx->config.no_waiting_for_client_conn = mtrue;
 			break;
 		case CTX_CONFIG_NON_STANDARD_PORT:
+			if (ctx->ctx_not_configurable)
+				return MRES_NOT_ALLOWED;
 			ctx->config.non_standard_port = mtrue;
 			ctx->config.port_num = va_arg(args, msize_t);
 			break;
 		case CTX_CONFIG_CUSTOM_ENTRIES:
+			if (ctx->ctx_not_configurable)
+				return MRES_NOT_ALLOWED;
 			ctx->config.custom_config_file = mtrue;
 			ctx->config.path_to_custom_config_file = va_arg(args, mstr_t);
 			break;
 		case CTX_CONFIG_SET_CORE_COUNT_LIMIT:
 			ctx->config.set_limit_to_core_count = mtrue;
 			ctx->config.core_count_limit = va_arg(args, msize_t);
+			if (ctx->ctx_not_configurable && ctx->config.core_count_limit < ctx->active_core_count)
+				ctx->config.core_count_limit = ctx->active_core_count;
 			break;
 		default:
 			return MRES_INVALID_ARGS;
@@ -96,8 +101,6 @@ mresult_t merry_ctx_ready(MerryContext *ctx) {
     res = merry_conf_load_load(ctx->configs, config_path);
     if (res != MRES_SUCCESS)
     	return res;
-
-    ctx->core_count = core_count;
 
     res = merry_open_socket_conn(&ctx->listening_port, port);
 

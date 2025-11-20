@@ -40,10 +40,14 @@ mresult_t merry_socket_recv(msocket_t *sock, mbptr_t buf, msize_t len) {
   if (!sock || !buf || (len == 0))
     return MRES_INVALID_ARGS;
 
-  if (recv(*sock, (mptr_t)buf, len, 0) < 0)
-    return MRES_SYS_FAILURE;
+  for (msize_t i = 0; i < 10; i++) {
+     if (recv(*sock, (mptr_t)buf, len, 0) < 0)
+    	usleep(10);
+     else
+     	return MRES_SUCCESS;
+  }
 
-  return MRES_SUCCESS;
+  return MRES_SYS_FAILURE;
 }
 
 mresult_t merry_socket_send(msocket_t *sock, mbptr_t msg, msize_t len) {
