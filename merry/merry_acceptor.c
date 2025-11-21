@@ -22,5 +22,12 @@ void merry_acceptor_destroy(MerryAcceptor *acceptor) {
   free(acceptor);
 }
 
-_THRET_T_ merry_acceptor_run(mptr_t a);
+_THRET_T_ merry_acceptor_run(mptr_t a) {
+  MerryAcceptor *acceptor = (MerryAcceptor*)a;
+  while (!a->STOP) {
+    msocket_t fd;
+ 
+    if (merry_socket
+  }
+}
     
