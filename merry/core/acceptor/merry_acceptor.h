@@ -7,14 +7,14 @@
 #include <merry_operations.h>
 #include <merry_list.h>
 #include <merry_protector.h>
-#include <merry_client_list.h>
+#include <merry_queue.h>
 #include <stdlib.h>
 
 typedef struct MerryAcceptor MerryAcceptor;
 
 struct MerryAcceptor {
 	mmutex_t *shared_lock;
- MerryClientList **list;
+ MerrySQueue **queue;
 	msocket_t listening_socket;
 	msize_t accepted_connections; // the number of accepted connections
 	msize_t connection_limit;
@@ -22,7 +22,7 @@ struct MerryAcceptor {
 	msize_t STOP; // to close the acceptor
 };
 
-mresult_t merry_acceptor_init(MerryAcceptor **acceptor, mmutex_t *shared_lock, MerryClientList **list, msocket_t sock);
+mresult_t merry_acceptor_init(MerryAcceptor **acceptor, mmutex_t *shared_lock, MerryClientList **queue, msocket_t sock);
 
 void merry_acceptor_destroy(MerryAcceptor *acceptor);
 
