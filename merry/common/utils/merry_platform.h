@@ -17,6 +17,7 @@
 #include <sys/socket.h>
 #include <sys/stat.h>
 #include <sys/types.h>
+#include <sys/file.h>
 #include <unistd.h>
 #include <sys/random.h>
 
@@ -62,5 +63,7 @@ mbool_t merry_is_path_a_directory(mstr_t path);
 mbool_t merry_non_blocking_socket(msocket_t *sock);
 
 mbool_t merry_get_random_number(mqptr_t res);
+
+mresult_t merry_lock_file(mfd_t fd);
 
 #endif

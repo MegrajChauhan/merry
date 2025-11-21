@@ -55,3 +55,14 @@ mbool_t merry_get_random_number(mqptr_t res) {
 #endif
 	return mtrue;
 }
+
+mresult_t merry_lock_file(mfd_t fd) {
+#ifdef _USE_LINUX_
+	// this lock is always exclusive
+	if (flock(fd, LOCK_EX | LOCK_NB) != 0)
+		return MRES_SYS_FAILURE;
+#else
+
+#endif
+	return MRES_SUCCESS;
+}
