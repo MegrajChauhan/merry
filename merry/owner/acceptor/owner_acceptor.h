@@ -1,24 +1,17 @@
-#ifndef _MERRY_ACCEPTOR_
-#define _MERRY_ACCEPTOR_
+#ifndef _OWNER_ACCEPTOR_
+#define _OWNER_ACCEPTOR_
 
 #include <merry_types.h>
 #include <merry_utils.h>
 #include <merry_platform.h>
 #include <merry_operations.h>
 #include <merry_protector.h>
-#include <merry_acceptor_commands.h>
 #include <merry_queue.h>
 #include <stdlib.h>
 
-typedef struct MerryAcceptorCommand MerryAcceptorCommand;
-typedef struct MerryAcceptor MerryAcceptor;
+typedef struct OwnerAcceptor OwnerAcceptor;
 
-struct MerryAcceptorCommand {
-	maccop_t opcode;
-	msize_t custom_break;
-};
-
-struct MerryAcceptor {
+struct OwnerAcceptor {
 	mmutex_t *shared_lock;
 	MerrySQueue *queue;
 	mbool_t started;
