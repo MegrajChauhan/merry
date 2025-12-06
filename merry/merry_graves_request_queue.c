@@ -30,14 +30,9 @@ mresult_t merry_SEND_REQUEST(MerryGravesRequest *creq) {
   merry_cond_signal(g_queue.owner_cond);
   merry_cond_wait(creq->used_cond, g_queue.owner_lock);
   if (creq->fufilled == mfalse) {
-    // The request wasn't fulfilled and yet the core was awaken implying that
-    // something interferred which is not allowed and hence we will sleep until
-    // it is fulfilled
+  	// Interrupted...?
     merry_mutex_unlock(g_queue.owner_lock);
-    while (creq->fufilled == mfalse) {
-      usleep(10); // not the best choice
-    }
-    return MRES_SUCCESS; // done
+    return MRES_INTERRUPTED; // done
   }
   merry_mutex_unlock(g_queue.owner_lock);
   return MRES_SUCCESS;

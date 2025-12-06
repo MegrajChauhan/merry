@@ -20,6 +20,7 @@ typedef pthread_mutex_t mmutex_t;
 typedef pthread_cond_t mcond_t;
 typedef int mdataline_t;
 typedef int mfd_t;
+typedef mptr_t mmap_t;
 
 #elif defined(_USE_WIN_)
 #include <windows.h>
@@ -30,13 +31,9 @@ typedef CONDITION_VARIABLE mcond_t;
 typedef HANDLE mdataline_t;
 typedef HANDLE mfd_t;
 
-// For Pipes
-#define _MERRY_INHERIT_IN_FD_ 0
-#define _MERRY_INHERIT_OUT_FD_ 1
-
 #endif
 
-typedef mptr_t mdlentry_t; // same for windows and linux
+// typedef mptr_t mdlentry_t; // same for windows and linux
 
 _MERRY_DEFINE_FUNC_PTR_(_THRET_T_, mthexec_t, mptr_t);
 

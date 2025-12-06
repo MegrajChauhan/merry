@@ -12,6 +12,15 @@ typedef struct MerryGravesCoreRepr MerryGravesCoreRepr;
 struct MerryGravesCoreRepr {
   MerryCoreBase *base;
   mptr_t core;
+  atm_mbool_t dead;
+  mid_t id;
+  muid_t uid;
+  mguid_t guid;
+  mcore_t type;
+
+  msqword_t core_creation_lim; // -1 for None
+  msqword_t group_creation_lim; // -1 for None
+  msqword_t sub_core_creation_lim; // -1 for None
 };
 
 #endif

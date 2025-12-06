@@ -1,11 +1,11 @@
 #ifndef _MERRY_INTERFACE_
 #define _MERRY_INTERFACE_
 
-#include <merry_interface_defs.h>
 #include <merry_operations.h>
 #include <merry_platform.h>
 #include <merry_types.h>
 #include <merry_utils.h>
+#include <merry_interface_defs.h>
 #include <stdlib.h>
 
 typedef struct MerryInterface MerryInterface;
@@ -15,7 +15,6 @@ struct MerryInterface {
   union {
     struct {
       mfd_t fd;
-      msqword_t res;
       struct {
         mbyte_t file_opened : 1;
         mbyte_t read : 1;
@@ -40,8 +39,8 @@ struct MerryInterface {
     struct {
       // For now, we don't care about the type of mapping
       // and let the OS care for us
-      mptr_t map;
-      msize_t len;
+      mmap_t map;
+      msize_t len; // total length of the map
       _Atomic msize_t children_count;
       MerryInterface *parent;
     } memory_map;

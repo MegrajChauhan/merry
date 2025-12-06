@@ -12,6 +12,7 @@
 #define RET_FAILURE mfalse
 
 typedef unsigned char mbool_t; // bool
+typedef _Atomic mbool_t atm_mbool_t;
 
 // these are the memory data types
 typedef unsigned char mbyte_t;

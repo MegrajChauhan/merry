@@ -1,23 +1,16 @@
 #include <merry_file.h>
 
-minterfaceRet_t merry_open_file(MerryFile **file, mstr_t file_path,
+mresult_t merry_open_file(MerryFile **file, mstr_t file_path,
                                 mstr_t modes, int flags) {
   mresult_t res = merry_interface_init(file, INTERFACE_TYPE_FILE);
   if (!(*file)) {
-    switch (res) {
-    case MRES_SYS_FAILURE:
-      return INTERFACE_HOST_FAILURE;
-    case MRES_FAILURE:
-      return INTERFACE_FAILURE;
-    default:
-      return INTERFACE_FAILURE;
-    }
+	return res;
   }
   // Figure out the opening mode
   int mode, flag;
   if (merry_figure_out_file_modes(modes, flags, &mode, &flag) == RET_FAILURE) {
     merry_interface_destroy(*file);
-    return INTERFACE_INVALID_ARGS;
+    return MRES_INVALID_ARGS;
   }
 
   // With modes and flags, we can continue
@@ -26,7 +19,7 @@ minterfaceRet_t merry_open_file(MerryFile **file, mstr_t file_path,
   (*file)->file.fd = open(file_path, mode, flag);
   if ((*file)->file.fd == -1) {
     merry_interface_destroy(*file);
-    return INTERFACE_HOST_FAILURE;
+    return MRES_SYS_FAILURE;
   }
 #else
 // not yet
@@ -44,7 +37,7 @@ minterfaceRet_t merry_open_file(MerryFile **file, mstr_t file_path,
     (*file)->file.flags.write = 1;
   } else if (modes[0] == _MERRY_FOPEN_READ_[0])
     (*file)->file.flags.read = 1;
-  return INTERFACE_SUCCESS;
+  return MRES_SUCCESS;
 }
 
 mret_t merry_figure_out_file_modes(mstr_t modex, int flags, int *res_mode,
@@ -86,111 +79,117 @@ mret_t merry_figure_out_file_modes(mstr_t modex, int flags, int *res_mode,
   return RET_SUCCESS;
 }
 
-minterfaceRet_t merry_close_file(MerryFile *file) {
+mresult_t merry_close_file(MerryFile *file) {
   merry_check_ptr(file);
   if (file->interface_t != INTERFACE_TYPE_FILE) {
-    return INTERFACE_TYPE_INVALID;
+    return MRES_UNEXPECTED;
   }
   if (!file->file.flags.file_opened)
-    return INTERFACE_MISCONFIGURED;
+    return MRES_CONFIGURATION_INVALID;
 #ifdef _USE_LINUX_
   close(file->file.fd);
 #else
 // not yet
 #endif
   file->file.flags.file_opened = mfalse;
-  return INTERFACE_SUCCESS;
+  return MRES_SUCCESS;
 }
 
-minterfaceRet_t merry_destroy_file(MerryFile *file) {
+mresult_t merry_destroy_file(MerryFile *file) {
   merry_check_ptr(file);
   if (file->interface_t != INTERFACE_TYPE_FILE) {
-    return INTERFACE_TYPE_INVALID;
+    return MRES_UNEXPECTED;
   }
   if (file->file.flags.file_opened) {
     merry_close_file(file);
   }
   merry_interface_destroy(file);
-  return INTERFACE_SUCCESS;
+  return MRES_SUCCESS;
 }
 
-minterfaceRet_t merry_file_size(MerryFile *file, msize_t *res) {
+mresult_t merry_file_size(MerryFile *file, msize_t *res) {
   merry_check_ptr(file);
   if (file->interface_t != INTERFACE_TYPE_FILE)
-    return INTERFACE_TYPE_INVALID;
+    return MRES_UNEXPECTED;
   if (!file->file.flags.file_opened)
-    return INTERFACE_MISCONFIGURED;
+    return MRES_CONFIGURATION_INVALID;
 #ifdef _USE_LINUX_
   msqword_t old_pos = lseek(file->file.fd, 0, SEEK_CUR);
   *res = lseek(file->file.fd, 0, SEEK_END);
   lseek(file->file.fd, 0, old_pos);
 #endif
-  return INTERFACE_SUCCESS;
+  return MRES_SUCCESS;
 }
 
-minterfaceRet_t merry_file_seek(MerryFile *file, msqword_t off,
+mresult_t merry_file_seek(MerryFile *file,mqptr_t _res, msqword_t off,
                                 msize_t whence) {
   merry_check_ptr(file);
   if (file->interface_t != INTERFACE_TYPE_FILE)
-    return INTERFACE_TYPE_INVALID;
+    return MRES_UNEXPECTED;
   if (!file->file.flags.file_opened)
-    return INTERFACE_MISCONFIGURED;
+    return MRES_CONFIGURATION_INVALID;
   if (whence != SEEK_CUR && whence != SEEK_END && whence != SEEK_SET)
-    return INTERFACE_INVALID_ARGS;
+    return MRES_INVALID_ARGS;
 #ifdef _USE_LINUX_
-  if ((file->file.res = lseek(file->file.fd, off, whence)) == -1)
-    return INTERFACE_HOST_FAILURE;
+  mqword_t len;
+  if ((len = lseek(file->file.fd, off, whence)) == -1)
+    return MRES_SYS_FAILURE;
+  if (_res)
+  	*_res = len;
 #endif
-  return INTERFACE_SUCCESS;
+  return MRES_SUCCESS;
 }
 
-minterfaceRet_t merry_file_tell(MerryFile *file, msize_t *off) {
+mresult_t merry_file_tell(MerryFile *file, msize_t *off) {
   merry_check_ptr(file);
   merry_check_ptr(off);
   if (file->interface_t != INTERFACE_TYPE_FILE)
-    return INTERFACE_TYPE_INVALID;
+    return MRES_UNEXPECTED;
   if (!file->file.flags.file_opened)
-    return INTERFACE_MISCONFIGURED;
+    return MRES_CONFIGURATION_INVALID;
 #ifdef _USE_LINUX_
   if ((msqword_t)(*off = lseek(file->file.fd, 0, SEEK_CUR)) == -1)
-    return INTERFACE_HOST_FAILURE;
+    return MRES_SYS_FAILURE;
 #endif
-  return INTERFACE_SUCCESS;
+  return MRES_SUCCESS;
 }
 
-minterfaceRet_t merry_file_read(MerryFile *file, mbptr_t buf,
+mresult_t merry_file_read(MerryFile *file, mqptr_t _res,  mbptr_t buf,
                                 msize_t num_of_bytes) {
   merry_check_ptr(file);
   merry_check_ptr(buf);
   if (file->interface_t != INTERFACE_TYPE_FILE)
-    return INTERFACE_TYPE_INVALID;
+    return MRES_UNEXPECTED;
   if (!file->file.flags.file_opened || !file->file.flags.read)
-    return INTERFACE_MISCONFIGURED;
+    return MRES_CONFIGURATION_INVALID;
   if (!num_of_bytes)
-    return INTERFACE_SUCCESS;
+    return MRES_SUCCESS;
 
-  file->file.res = read(file->file.fd, buf, num_of_bytes);
-  if (file->file.res == -1)
-    return INTERFACE_HOST_FAILURE;
+  msqword_t len = read(file->file.fd, buf, num_of_bytes);
+  if (len == -1)
+    return MRES_SYS_FAILURE;
 
-  return INTERFACE_SUCCESS;
+  if (_res)
+  	*_res = len;
+  return MRES_SUCCESS;
 }
 
-minterfaceRet_t merry_file_write(MerryFile *file, mbptr_t buf,
+mresult_t merry_file_write(MerryFile *file,mqptr_t _res, mbptr_t buf,
                                  msize_t num_of_bytes) {
   merry_check_ptr(file);
   merry_check_ptr(buf);
   if (file->interface_t != INTERFACE_TYPE_FILE)
-    return INTERFACE_TYPE_INVALID;
+    return MRES_UNEXPECTED;
   if (!file->file.flags.file_opened ||
       (!file->file.flags.write && !file->file.flags.append))
-    return INTERFACE_MISCONFIGURED;
+    return MRES_CONFIGURATION_INVALID;
   if (!num_of_bytes)
-    return INTERFACE_SUCCESS;
+    return MRES_SUCCESS;
 
-  file->file.res = write(file->file.fd, buf, num_of_bytes);
-  if (file->file.res == -1)
-    return INTERFACE_HOST_FAILURE;
-
-  return INTERFACE_SUCCESS;
+  msqword_t len = write(file->file.fd, buf, num_of_bytes);
+  if (len == -1)
+    return MRES_SYS_FAILURE;
+  if (_res)
+    *_res = len;
+  return MRES_SUCCESS;
 }

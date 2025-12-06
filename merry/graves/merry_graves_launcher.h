@@ -7,6 +7,6 @@ _MERRY_INTERNAL_ MerryGraves *GRAVES;
 
 void merry_graves_launcher_set(MerryGraves *G);
 
-_THRET_T_ merry_graves_launcher(mptr_t b);
+_THRET_T_ merry_graves_launcher(mptr_t r);
 
 #endif

@@ -4,7 +4,6 @@
 #define _EBADINTERFACE -1
 
 typedef enum minterface_t minterface_t;
-typedef enum minterfaceRet_t minterfaceRet_t;
 
 enum minterface_t {
   INTERFACE_TYPE_FILE,
@@ -12,13 +11,4 @@ enum minterface_t {
   INTERFACE_TYPE_MEM_MAP,
 };
 
-enum minterfaceRet_t {
-  INTERFACE_FAILURE,
-  INTERFACE_SUCCESS,
-  INTERFACE_TYPE_INVALID,
-  INTERFACE_HOST_FAILURE,
-  INTERFACE_MISCONFIGURED,
-  INTERFACE_INVALID_ARGS,
-  INTERFACE_ACTION_DANGEROUS,
-};
 #endif

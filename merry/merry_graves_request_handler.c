@@ -8,11 +8,11 @@ REQ(create_core) {
    * - Or create a new core in an exisiting group
    * */
   MerryRequestArgs *args = req->args;
-  ;
+  MerryGravesCoreRepr *repr = (MerryGravesCoreRepr*)req->repr;
   if (args->create_core.new_core_type >= __CORE_TYPE_COUNT) {
     // Locally fatal i.e fatal to the core who will dump its
     // error messages and then terminate
-    req->result.result = MRES_INVALID_ARGS;
+    req->result = MRES_INVALID_ARGS;
     return;
   }
   MerryGravesCoreRepr *new_repr;
@@ -57,11 +57,9 @@ REQ(create_core) {
   args->create_core.new_uid = new_repr->base->uid;
   res = MRES_SUCCESS;
 CC_FAILURE:
-  req->result.result = res;
-  req->result.ERRNO = (res == MRES_SYS_FAILURE) ? errno : 0;
-  if (res == MRES_FAILURE)
-    req->result.ic_res = GRAVES->result.ic_res;
-  return;
+  req->result = res;
+  if (res == MRES_SYS_FAILURE) 
+  	repr->base->core_errno = errno;
 }
 
 REQ(create_group) {
@@ -72,13 +70,13 @@ REQ(create_group) {
   MerryGravesGroup *ngrp;
   mresult_t res = merry_graves_add_group(GRAVES, &ngrp);
   if (!ngrp) {
-    req->result.result = res;
+    req->result = res;
     if (res == MRES_SYS_FAILURE)
-      req->result.ERRNO = errno;
+      ((MerryGravesCoreRepr*)req->repr)->base->core_errno = errno;
     return;
   }
   args->create_group.new_guid = ngrp->group_id;
-  req->result.result = MRES_SUCCESS;
+  req->result = MRES_SUCCESS;
 }
 
 REQ(get_group_details) {
@@ -92,14 +90,13 @@ REQ(get_group_details) {
   mresult_t res =
       merry_Group_list_at(GRAVES->GRPS, &ngrp, args->get_group_details.guid);
   if (res != MRES_SUCCESS) {
-    req->result.result = res;
+    req->result = res;
     if (res == MRES_SYS_FAILURE)
-      req->result.ERRNO = errno;
+      ((MerryGravesCoreRepr*)req->repr)->base->core_errno = errno;
     return;
   }
   args->get_group_details.core_count = (ngrp)->core_count;
-  args->get_group_details.active_core_count = (ngrp)->active_core_count;
-  req->result.result = MRES_SUCCESS;
+  req->result = MRES_SUCCESS;
 }
 
 REQ(get_system_details) {
@@ -115,5 +112,5 @@ REQ(get_system_details) {
   args->get_system_details.core_count = GRAVES->core_count;
   args->get_system_details.active_core_count = GRAVES->active_core_count;
   // will never fail so don't worry
-  req->result.result = MRES_SUCCESS;
+  req->result = MRES_SUCCESS;
 }

@@ -35,6 +35,7 @@ mresult_t merry_graves_wants_work(MerryGravesRequest **req);
 void merry_graves_req_no_more_requests();
 
 void merry_graves_req_queue_free();
+
 mret_t merry_request_set_CREATE_CORE(MerryRequestArgs *args, mcore_t new_core_type, maddress_t st_address, mbool_t same_group, mbool_t new_group, mguid_t gid);
 mret_t merry_request_get_CREATE_CORE(MerryRequestArgs *args, mguid_t *gid, mid_t *id, muid_t *uid);
 mret_t merry_request_get_CREATE_GROUP(MerryRequestArgs *args, mguid_t *gid);
@@ -43,3 +44,4 @@ mret_t merry_request_get_GET_GROUP_DETAILS(MerryRequestArgs *args, msize_t *core
 mret_t merry_request_get_GET_SYSTEM_DETAILS(MerryRequestArgs *args, msize_t *grp_count, msize_t *core_count, msize_t *active_core_count);
 
 #endif
+ 

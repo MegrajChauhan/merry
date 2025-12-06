@@ -31,15 +31,12 @@ typedef struct MerryGraves MerryGraves;
 
 struct MerryGraves {
   MerryGroupList *GRPS; // all of the groups
-  msize_t overall_core_count;
   msize_t grp_count;
   MerryEntryList *C_ENTRIES;
-  mbool_t DIE;
 
   // needed fields
   mcond_t graves_cond;
   mmutex_t graves_lock;
-  msize_t return_value;
   msize_t core_count; // for the unique ID
   msize_t active_core_count;
 
@@ -49,7 +46,6 @@ struct MerryGraves {
 
   MerryConsts *_config;
   MerryGravesRequest *current_req;
-  MerryGravesRequestOperationResult result;
 };
 
 // Entry to Graves(doesn't return)
@@ -70,7 +66,7 @@ mresult_t merry_graves_ready_everything(MerryGraves *GRAVES);
 void merry_graves_acquaint_with_cores(MerryGraves *GRAVES);
 
 // This is the OVERSEER
-void merry_graves_START(mptr_t __);
+void merry_graves_START(MerryGraves *GRAVES);
 
 // Destroy Graves
 void merry_graves_destroy(MerryGraves *GRAVES);

@@ -65,7 +65,10 @@ mresult_t merry_graves_parse_input(MerryGraves *GRAVES) {
 
 mresult_t merry_graves_init(MerryGraves *GRAVES) {
   mresult_t res;
-  res = merry_Group_list_create(5, &GRAVES->GRPS);
+  msize_t grp_count = 5;
+  if (GRAVES->_config->graves_config.group_count_lim)
+  	grp_count = GRAVES->_config->group_count_limit; 
+  res = merry_Group_list_create(grp_count, &GRAVES->GRPS);
   if (!GRAVES->GRPS) {
     MFATAL("Graves", "Failed to initialize MERRY: Graves Initialization", NULL);
     return res;
@@ -88,10 +91,9 @@ mresult_t merry_graves_init(MerryGraves *GRAVES) {
   }
 
   GRAVES->current_req = NULL;
-  GRAVES->overall_core_count = 0;
-  GRAVES->return_value = 0;
   GRAVES->core_count = 0;
   GRAVES->grp_count = 0;
+  GRAVES->active_core_count = 0;
   /*
    * More fields as added
    * */
@@ -222,10 +224,22 @@ mresult_t merry_graves_add_core(MerryGraves *GRAVES, MerryGravesGroup *grp,
       GRAVES->active_core_count == GRAVES->_config->core_count_limit) {
     return MRES_RESOURCE_LIM_REACHED;
   }
+  *repr = (MerryGravesCoreRepr*)malloc(sizeof(MerryGravesCoreRepr));
+  if (!(*repr)) {
+  	MERROR("Graves", "Failed to allocate memory for new core", NULL);
+  	return MRES_SYS_FAILURE;
+  }
+  (*repr)->base = NULL;
+  (*repr)->core = NULL;
+  (*repr)->dead = mtrue;
+  (*repr)->core_creation_lim = -1;
+  (*repr)->group_creation_lim = -1;
+  (*repr)->sub_core_creation_lim = -1;
   mresult_t res = merry_graves_group_add_core(grp, repr);
 
   if (res != MRES_SUCCESS) {
     MERROR("Graves", "Failed to add a new CORE", NULL);
+	free(repr);
     return res;
   }
 
@@ -240,29 +254,29 @@ mresult_t merry_graves_init_a_core(MerryGraves *GRAVES,
   if (type > GRAVES->_config->current_mode_allowed_largest_ctype_id)
     return MRES_NOT_ALLOWED;
 
-  repr->base = GRAVES->HOW_TO_CREATE_BASE[type](&GRAVES->result.ic_res);
+  mresult_t res = GRAVES->HOW_TO_CREATE_BASE[type](&repr->base);
 
   if (!repr->base) {
     MERROR("Graves", "Failed to obtain a CORE BASE for a new core: TYPE=%zu",
            (msize_t)type);
-    return MRES_NOT_MERRY_FAILURE;
+    return res;
   }
 
-  repr->core = repr->base->createc(repr->base, addr, &GRAVES->result.ic_res);
+  res = repr->base->createc(repr->base, addr,(mptr_t)repr, &repr->core);
 
   if (!repr->core) {
     MERROR("Graves", "A core failed to initialize", NULL);
     GRAVES->HOW_TO_DESTROY_BASE[type](repr->base);
-    return MRES_NOT_MERRY_FAILURE;
+    return res;
   }
 
-  if (repr->base->setinp(repr->core, GRAVES->C_ENTRIES->buf[type],
-                         &GRAVES->result.ic_res) == RET_FAILURE) {
+  if ((res = repr->base->setinp(repr->core, GRAVES->C_ENTRIES->buf[type])) != MRES_SUCCESS) {
     MERROR("Graves", "A core failed to initialize", NULL);
     repr->base->deletec(repr->core);
     GRAVES->HOW_TO_DESTROY_BASE[type](repr->base);
-    return MRES_NOT_MERRY_FAILURE;
+    return res;
   }
+  repr->type = type;
 
   return MRES_SUCCESS;
 }
@@ -273,24 +287,27 @@ mresult_t merry_graves_boot_a_core(MerryGraves *GRAVES,
   merry_check_ptr(repr->base);
   merry_check_ptr(repr->core);
 
-  if (repr->base->prepcore(repr->core, &GRAVES->result.ic_res) == RET_FAILURE) {
+  mresult_t res;
+  if ((res = repr->base->prepcore(repr->core)) != MRES_SUCCESS) {
     MERROR("Graves", "A core failed to BOOT[ID=%zu, UID=%zu, GUID=%zu]",
-           repr->base->id, repr->base->uid, repr->base->guid);
+           repr->id, repr->uid, repr->guid);
     repr->base->deletec(repr->core);
-    GRAVES->HOW_TO_DESTROY_BASE[repr->base->type](repr->base);
-    return MRES_NOT_MERRY_FAILURE;
+    GRAVES->HOW_TO_DESTROY_BASE[repr->type](repr->base);
+    return res;
   }
 
   mthread_t th;
   if (merry_create_detached_thread(&th, merry_graves_launcher,
-                                   (mptr_t)repr->base) != MRES_SUCCESS) {
+                                   (mptr_t)repr) != MRES_SUCCESS) {
     MERROR("Graves", "A core failed to BOOT[ID=%zu, UID=%zu, GUID=%zu]",
-           repr->base->id, repr->base->uid, repr->base->guid);
+           repr->id, repr->uid, repr->guid);
     repr->base->deletec(repr->core);
-    GRAVES->HOW_TO_DESTROY_BASE[repr->base->type](repr->base);
+    GRAVES->HOW_TO_DESTROY_BASE[repr->type](repr->base);
     return MRES_SYS_FAILURE;
   }
-
+  repr->dead = mfalse;
+  repr->active_core_count++;
+  
   return MRES_SUCCESS;
 }
 
@@ -303,9 +320,9 @@ void merry_graves_give_IDs_to_cores(MerryGraves *GRAVES,
 
   // Initialized and ready to RUN
   // Assigning IDs needed Here
-  repr->base->guid = grp->group_id;
-  repr->base->id = merry_graves_group_index_for(grp, repr);
-  repr->base->uid = GRAVES->core_count++;
+  repr->guid = grp->group_id;
+  repr->id = merry_graves_group_index_for(grp, repr);
+  repr->uid = GRAVES->core_count++;
 }
 
 _MERRY_ALWAYS_INLINE_ void
@@ -313,11 +330,10 @@ merry_graves_failed_core_booting(MerryGraves *GRAVES) {
   GRAVES->core_count--;
 }
 
-void merry_graves_START(mptr_t __) {
+void merry_graves_START(MerryGraves* GRAVES) {
   // Boot the first core
   // Since the first steps have been successfull
   // Let's extract the first core directly with no shame
-  MerryGraves *GRAVES = (MerryGraves *)__;
   mresult_t res;
   MerryGravesCoreRepr *first_core;
   res = merry_graves_group_get_core(GRAVES->GRPS->buf[0], &first_core, 0);
@@ -329,9 +345,6 @@ void merry_graves_START(mptr_t __) {
            NULL);
     goto GRAVES_OVERSEER_END;
   }
-  merry_mutex_lock(&GRAVES->graves_lock);
-  merry_cond_wait(&GRAVES->graves_cond, &GRAVES->graves_lock);
-  merry_mutex_unlock(&GRAVES->graves_lock);
   while (1) {
     merry_mutex_lock(&GRAVES->graves_lock);
     if (merry_graves_wants_work(&GRAVES->current_req) == MRES_FAILURE) {
@@ -344,48 +357,43 @@ void merry_graves_START(mptr_t __) {
     } else {
       // Hanling Requests
       merry_mutex_unlock(&GRAVES->graves_lock);
+      MerryGravesCoreRepr *repr = (MerryGravesCoreRepr*)GRAVES->current_req->repr;
+	  if (!repr || repr->dead) {
+	  	// Invalid request
+	  	MERROR("Graves", "Invalid Request posted by UNKNOWN CORE.", NULL);
+	  	continue;
+	  }
       MerryGravesGroup *grp =
-          GRAVES->GRPS->buf[GRAVES->current_req->base->guid];
-      MerryGravesCoreRepr *repr;
-      res = merry_graves_group_find_core(grp, &repr,
-                                         GRAVES->current_req->base->uid,
-                                         GRAVES->current_req->base->id);
-      if (res != MRES_SUCCESS) {
-        // The core died during the process somewhere
-        continue;
-      }
-      /*
-       * Since a core cannot change any of its IDs and nor can it be
-       * dead if it is making a request, the above won't fail
-       * */
+          GRAVES->GRPS->buf[repr->guid];
       MLOG("GRAVES", "REQUEST: ID=%zu, UID=%zu, GUID=%zu",
-           GRAVES->current_req->base->id, GRAVES->current_req->base->uid,
-           GRAVES->current_req->base->guid);
+           repr->id, repr->uid,
+           repr->guid);
       switch (GRAVES->current_req->type) {
         // .. Requests
       case NOP: // will define purpose
         break;
       case CREATE_CORE:
-        req_create_core(GRAVES, repr, grp, GRAVES->current_req);
+        req_create_core(GRAVES, grp, GRAVES->current_req);
         break;
       case CREATE_GROUP:
-        req_create_group(GRAVES, repr, grp, GRAVES->current_req);
+        req_create_group(GRAVES, grp, GRAVES->current_req);
         break;
       case GET_GROUP_DETAILS:
-        req_get_group_details(GRAVES, repr, grp, GRAVES->current_req);
+        req_get_group_details(GRAVES, grp, GRAVES->current_req);
         break;
       case GET_SYSTEM_DETAILS:
-        req_get_system_details(GRAVES, repr, grp, GRAVES->current_req);
+        req_get_system_details(GRAVES, grp, GRAVES->current_req);
         break;
       default:
         // Unknown requests will result in a panic by default
         MLOG("Graves", "Unknown REQUEST made: ID=%zu, UID=%zu, GUID=%zu",
-             GRAVES->current_req->base->id, GRAVES->current_req->base->uid,
-             GRAVES->current_req->base->guid);
+             repr->id, repr->uid,
+             repr->guid);
       }
       // After handling the request
       GRAVES->current_req->fufilled = mtrue;
-      merry_cond_signal(GRAVES->current_req->used_cond);
+      if (GRAVES->current_req->used_cond)
+      	merry_cond_signal(GRAVES->current_req->used_cond);
     }
   }
 

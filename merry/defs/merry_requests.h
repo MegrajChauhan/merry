@@ -46,45 +46,16 @@ enum mgreq_t {
 
 typedef struct MerryGravesRequest MerryGravesRequest;
 typedef union MerryRequestArgs MerryRequestArgs;
-typedef struct MerryGravesRequestOperationResult
-    MerryGravesRequestOperationResult;
-
-// InterCore Result
-typedef struct MerryICRes MerryICRes;
-// The source of the IC result
-typedef enum mICResSource_t mICResSource_t;
-
-enum mICResSource_t {
-  IC_SOURCE_INTERFACE,
-  IC_SOURCE_MERRY,
-  IC_SOURCE_CORE,
-};
-
-struct MerryICRes {
-  mICResSource_t source;
-  msize_t ERRNO;
-  union {
-    minterfaceRet_t _interface_ret;
-    mresult_t _merry_ret;
-    msize_t _core_code; // convention-based
-  };
-};
 
 struct MerryCoreBase;
 
-struct MerryGravesRequestOperationResult {
-  mresult_t result;
-  msize_t ERRNO;
-  MerryICRes ic_res;
-};
-
 struct MerryGravesRequest {
   mgreq_t type;
-  _Atomic mbool_t fufilled;
-  struct MerryCoreBase *base;
+  atm_mbool_t fufilled;
+  mptr_t repr;
   mcond_t *used_cond;
   MerryRequestArgs *args;
-  MerryGravesRequestOperationResult result;
+  mresult_t result;
 };
 
 /*
@@ -113,7 +84,6 @@ union MerryRequestArgs {
     mguid_t guid; // what group you want
     // result
     msize_t core_count;
-    msize_t active_core_count;
   } get_group_details;
 
   struct {

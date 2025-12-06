@@ -14,14 +14,14 @@ typedef struct MerryInterface MerryPipe;
 
 mresult_t merry_open_merrypipe(MerryPipe **pipe);
 
-minterfaceRet_t merry_pipe_close_read_end(MerryPipe *pipe);
+mresult_t merry_pipe_close_read_end(MerryPipe *pipe);
 
-minterfaceRet_t merry_pipe_close_write_end(MerryPipe *pipe);
+mresult_t merry_pipe_close_write_end(MerryPipe *pipe);
 
-minterfaceRet_t merry_pipe_close_both_ends(MerryPipe *pipe);
+mresult_t merry_pipe_close_both_ends(MerryPipe *pipe);
 
-minterfaceRet_t merry_merrypipe_reopen(MerryPipe *pipe);
+mresult_t merry_merrypipe_reopen(MerryPipe *pipe);
 
-minterfaceRet_t merry_destroy_pipe(MerryPipe *pipe);
+mresult_t merry_destroy_pipe(MerryPipe *pipe);
 
 #endif

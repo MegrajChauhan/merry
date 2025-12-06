@@ -1,6 +1,8 @@
 #ifndef _MERRY_OPERATIONS_
 #define _MERRY_OPERATIONS_
 
+#include <merry_types.h>
+
 typedef enum mresult_t mresult_t;
 
 enum mresult_t {
@@ -9,6 +11,7 @@ enum mresult_t {
   MRES_SUCCESS,
   MRES_SYS_FAILURE, // glibc or syscall failed
   MRES_NOT_EXISTS,  // if something is accessed but it doesn't exist
+  MRES_NOT_FULFILLED, // something was requested, it was valid but it didn't match some conditions
   MRES_CONT_FULL,
   MRES_CONT_EMPTY,
   MRES_INVALID_ARGS,
@@ -18,6 +21,8 @@ enum mresult_t {
   MRES_RESOURCE_LIM_REACHED,
   MRES_INTERRUPTED,
   MRES_NOT_ALLOWED,
+  MRES_UNEXPECTED,
+  MRES_CONFIGURATION_INVALID
 };
 
 #endif
