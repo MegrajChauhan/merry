@@ -33,6 +33,8 @@ typedef msize_t muid_t;  // UID of something
 typedef msize_t mguid_t; // Group ID of something
 typedef msbyte_t mret_t;
 
+typedef _Atomic msize_t atm_msize_t;
+
 // define function pointers
 #define _MERRY_DEFINE_FUNC_PTR_(ret, func_name, ...)                           \
   typedef ret (*func_name)(__VA_ARGS__);

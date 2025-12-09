@@ -37,13 +37,18 @@ struct MerryInterface {
       mbool_t resb;
     } cpipe; // communication pipe
     struct {
-      // For now, we don't care about the type of mapping
-      // and let the OS care for us
       mmap_t map;
-      msize_t len; // total length of the map
-      _Atomic msize_t children_count;
-      MerryInterface *parent;
-    } memory_map;
+      msize_t len;
+	  atm_msize_t refr_count;
+      struct {
+      	mbyte_t share : 1; // is this map sharable with other cores?
+      	mbyte_t resb : 7;      	
+      } flags;
+    } memory;
+    struct {
+    	MerryInterface *file;
+    	
+    } mem_mapped_file;
   };
 };
 

@@ -8,7 +8,7 @@ typedef enum minterface_t minterface_t;
 enum minterface_t {
   INTERFACE_TYPE_FILE,
   INTERFACE_TYPE_PIPE,
-  INTERFACE_TYPE_MEM_MAP,
+  INTERFACE_TYPE_MAPPED_MEMORY,
 };
 
 #endif
