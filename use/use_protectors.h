@@ -1,7 +1,6 @@
 #ifndef _USE_PROTECTORS_
 #define _USE_PROTECTORS_
 
-#include <merry_protectors.h>
 #include <use_defs.h>
 #include <use_utils.h>
 

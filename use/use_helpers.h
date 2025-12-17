@@ -1,9 +1,9 @@
-#ifndef _HELPERS_
-#define _HELPERS_
+#ifndef _USE_HELPERS_
+#define _USE_HELPERS_
 
-#include <merry_config.h>
-#include <merry_types.h>
-#include <string.h>
+#include <use_types.h>
+#include <use_config.h>
+#include <use_defs.h>
 
 #define sign_extend8(val)                                                      \
   do {                                                                         \
@@ -23,82 +23,80 @@
 
 #define bit_group(name, len) unsigned name : len
 
-typedef union MerryPtrToQword MerryPtrToQword;
-typedef union MerryHostMemLayout MerryHostMemLayout;
-typedef union MerryFloatToDword MerryFloatToDword;
-typedef union MerryDoubleToQword MerryDoubleToQword;
+typedef union PtrToQword PtrToQword;
+typedef union HostMemLayout HostMemLayout;
+typedef union FloatToDword FloatToDword;
+typedef union DoubleToQword DoubleToQword;
 
-union MerryPtrToQword {
-  mptr_t ptr;
-  mqword_t qword;
+union PtrToQword {
+  ptr_t ptr;
+  qword_t qword;
 };
 
-union MerryHostMemLayout {
+union HostMemLayout {
 
-#if _MERRY_ENDIANNESS_ == _MERRY_LITTLE_ENDIAN_
+#if _MENDIANNESS_ == _MLITTLE_ENDIAN_
   struct {
-    mbyte_t b7;
-    mbyte_t b6;
-    mbyte_t b5;
-    mbyte_t b4;
-    mbyte_t b3;
-    mbyte_t b2;
-    mbyte_t b1;
-    mbyte_t b0;
+    byte_t b7;
+    byte_t b6;
+    byte_t b5;
+    byte_t b4;
+    byte_t b3;
+    byte_t b2;
+    byte_t b1;
+    byte_t b0;
   } bytes;
 
   struct {
-    mword_t w3;
-    mword_t w2;
-    mword_t w1;
-    mword_t w0;
+    word_t w3;
+    word_t w2;
+    word_t w1;
+    word_t w0;
   } half_half_words;
 
   struct {
-    mdword_t w1;
-    mdword_t w0;
+    dword_t w1;
+    dword_t w0;
   } half_words;
 #else
   struct {
-    mbyte_t b0;
-    mbyte_t b1;
-    mbyte_t b2;
-    mbyte_t b4;
-    mbyte_t b5;
-    mbyte_t b3;
-    mbyte_t b6;
-    mbyte_t b7;
+    byte_t b0;
+    byte_t b1;
+    byte_t b2;
+    byte_t b4;
+    byte_t b5;
+    byte_t b3;
+    byte_t b6;
+    byte_t b7;
   } bytes;
 
   struct {
-    mword_t w0;
-    mword_t w1;
-    mword_t w2;
-    mword_t w3;
+    word_t w0;
+    word_t w1;
+    word_t w2;
+    word_t w3;
   } half_half_words;
 
   struct {
-    mdword_t w0;
-    mdword_t w1;
+    dword_t w0;
+    dword_t w1;
   } half_words;
 #endif
-  mqword_t whole_word;
+  qword_t whole_word;
 };
 
-union MerryFloatToDword {
+union FloatToDword {
   float fl_val;
-  mdword_t d_val;
+  dword_t d_val;
 };
 
-union MerryDoubleToQword {
+union DoubleToQword {
   double d_val;
-  mqword_t q_val;
+  qword_t q_val;
 };
 
-// void merry_LITTLE_ENDIAN_to_BIG_ENDIAN(MerryHostMemLayout *le);
+extern result_t open_pipe(dataline_t *rline, dataline_t *wline) _ALIAS_(merry_open_pipe);
 
-mresult_t merry_open_pipe(mdataline_t *rline, mdataline_t *wline);
-
-mbool_t merry_is_path_a_directory(mstr_t path);
+extern bool_t is_path_a_directory(str_t path) _ALIAS_(merry_is_path_a_directory);
 
 #endif

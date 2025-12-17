@@ -56,4 +56,6 @@ typedef void *mptr_t;
 #define _THRET_T_ unsigned __stdcall
 #endif
 
+_MERRY_DEFINE_FUNC_PTR_(_THRET_T_, mthexec_t, mptr_t);
+
 #endif

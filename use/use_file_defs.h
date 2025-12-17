@@ -1,0 +1,24 @@
+#ifndef _USE_FILE_DEFS_
+#define _USE_FILE_DEFS_
+
+#define _FOPEN_READ_ "r"
+#define _FOPEN_WRITE_ "w"
+#define _FOPEN_READ_WRITE_ "rw"
+#define _FOPEN_APPEND_ "a"
+
+#define _FOPEN_CREATE_ 0x01
+
+// permissions for new files
+#define _FOPEN_READ_PERMISSION_USR_ 0x04
+#define _FOPEN_WRITE_PERMISSION_USR_ 0x08
+#define _FOPEN_EXECUTE_PERMISSION_USR_ 0x10
+
+#define _FOPEN_READ_PERMISSION_GRP_ 0x20
+#define _FOPEN_WRITE_PERMISSION_GRP_ 0x40
+#define _FOPEN_EXECUTE_PERMISSION_GRP_ 0x80
+
+#define _FOPEN_READ_PERMISSION_OTH_ 0x100
+#define _FOPEN_WRITE_PERMISSION_OTH_ 0x200
+#define _FOPEN_EXECUTE_PERMISSION_OTH_ 0x400
+
+#endif

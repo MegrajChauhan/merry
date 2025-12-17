@@ -39,15 +39,15 @@ struct MerryInterface {
     struct {
       mmap_t map;
       msize_t len;
-	  atm_msize_t refr_count;
-      struct {
-      	mbyte_t share : 1; // is this map sharable with other cores?
-      	mbyte_t resb : 7;      	
-      } flags;
     } memory;
     struct {
     	MerryInterface *file;
-    	
+    	mmap_t map;
+    	msize_t len; // length of file
+    	struct {
+    		mbyte_t update_backing_file:1; // if set, changes to the map will be reflected on the backing file
+    		mbyte_t resb: 7;
+    	} flags;
     } mem_mapped_file;
   };
 };

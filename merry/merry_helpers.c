@@ -1,4 +1,4 @@
-#include <merry_platform.h>
+#include <merry_helpers.h>
 
 mresult_t merry_open_pipe(mdataline_t *rline, mdataline_t *wline) {
   merry_check_ptr(rline);

@@ -1,7 +1,6 @@
 #ifndef _USE_HARDWARE_FLAGS_
 #define _USE_HARDWARE_FLAGS_
 
-#include <merry_flags_regr.h>
 #include <use_types.h>
 #include <use_utils.h>
 

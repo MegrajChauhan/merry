@@ -1,11 +1,11 @@
-#ifndef _USE_INTERFACE_BASE_
-#define _USE_INTERFACE_BASE_
+#ifndef _USE_INTERFACE_
+#define _USE_INTERFACE_
 
-#include <merry_interface.h>
 #include <use_defs.h>
-#include <use_utils.h>
 
-typedef MerryInterface Interface;
+struct MerryInterface;
+
+typedef struct MerryInterface Interface;
 
 extern result_t interface_init(Interface **interface, interface_t type)
     _ALIAS_(merry_interface_init);
