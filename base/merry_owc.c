@@ -10,7 +10,7 @@ mresult_t merry_owc_speak(MerryOWC *owc, mbptr_t data, msize_t len) {
 
   if (surelyF(owc->cpipe._wclosed)) {
     return MRES_NOT_ALLOWED; // maybe the channel was configured to be a
-                                    // listener for this owner
+                             // listener for this owner
   }
   if (surelyF(!len))
     return MRES_SUCCESS;
@@ -29,7 +29,7 @@ mresult_t merry_owc_listen(MerryOWC *owc, mbptr_t buf, msize_t n) {
     return MRES_CONFIGURATION_INVALID;
   if (surelyF(owc->cpipe._rclosed)) {
     return MRES_NOT_ALLOWED; // maybe the channel was configured to be a
-                                    // speaker for this owner
+                             // speaker for this owner
   }
   if (surelyF(!n))
     return MRES_SUCCESS;

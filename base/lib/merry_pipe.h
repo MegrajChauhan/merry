@@ -2,13 +2,13 @@
 #define _MERRY_PIPE_
 
 #include <merry_config.h>
+#include <merry_helpers.h>
 #include <merry_interface.h>
 #include <merry_logger.h>
-#include <merry_results.h>
 #include <merry_platform.h>
+#include <merry_results.h>
 #include <merry_types.h>
 #include <merry_utils.h>
-#include <merry_helpers.h>
 #include <stdlib.h>
 
 typedef struct MerryInterface MerryPipe;

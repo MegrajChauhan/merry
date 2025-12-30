@@ -64,7 +64,8 @@ mresult_t merry_merrypipe_reopen(MerryPipe *pipe) {
   if (pipe->interface_t != INTERFACE_TYPE_PIPE)
     return MRES_UNEXPECTED;
   mresult_t res;
-  if ((res = merry_open_pipe(&pipe->cpipe._read_fd, &pipe->cpipe._write_fd)) != MRES_SUCCESS) {
+  if ((res = merry_open_pipe(&pipe->cpipe._read_fd, &pipe->cpipe._write_fd)) !=
+      MRES_SUCCESS) {
     return res;
   }
   pipe->cpipe._in_use = mtrue;

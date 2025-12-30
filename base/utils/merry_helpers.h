@@ -2,10 +2,10 @@
 #define _HELPERS_
 
 #include <merry_config.h>
+#include <merry_platform.h>
+#include <merry_results.h>
 #include <merry_types.h>
 #include <string.h>
-#include <merry_results.h>
-#include <merry_platform.h>
 
 #define sign_extend8(val)                                                      \
   do {                                                                         \
@@ -102,5 +102,7 @@ union MerryDoubleToQword {
 mresult_t merry_open_pipe(mdataline_t *rline, mdataline_t *wline);
 
 mbool_t merry_is_path_a_directory(mstr_t path);
+
+msize_t merry_align_value(msize_t val, msize_t align_to);
 
 #endif

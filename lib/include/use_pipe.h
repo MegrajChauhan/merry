@@ -2,8 +2,8 @@
 #define _USE_PIPE_
 
 #include <use_defs.h>
-#include <use_utils.h>
 #include <use_interface.h>
+#include <use_utils.h>
 
 typedef Interface Pipe;
 

@@ -2,8 +2,8 @@
 #define _MERRY_PROTECTORS_
 
 #include <merry_config.h>
-#include <merry_results.h>
 #include <merry_platform.h>
+#include <merry_results.h>
 #include <merry_types.h>
 #include <merry_utils.h>
 

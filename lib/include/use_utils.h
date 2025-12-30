@@ -3,7 +3,7 @@
 
 #define stringfy(x) #x
 #define glue(x, y) x##y
-#define toggle(x) (~x)>>63
+#define toggle(x) (~x) >> 63
 #define to_bool(x) !!(x) // convert x to bool
 
 #define _ALWAYS_INLINE_ inline __attribute__((always_inline))

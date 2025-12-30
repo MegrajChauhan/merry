@@ -1,10 +1,10 @@
 #include <merry_file.h>
 
-mresult_t merry_open_file(MerryFile **file, mstr_t file_path,
-                                mstr_t modes, int flags) {
+mresult_t merry_open_file(MerryFile **file, mstr_t file_path, mstr_t modes,
+                          int flags) {
   mresult_t res = merry_interface_init(file, INTERFACE_TYPE_FILE);
   if (!(*file)) {
-	return res;
+    return res;
   }
   // Figure out the opening mode
   int mode, flag;
@@ -121,8 +121,8 @@ mresult_t merry_file_size(MerryFile *file, msize_t *res) {
   return MRES_SUCCESS;
 }
 
-mresult_t merry_file_seek(MerryFile *file,mqptr_t _res, msqword_t off,
-                                msize_t whence) {
+mresult_t merry_file_seek(MerryFile *file, mqptr_t _res, msqword_t off,
+                          msize_t whence) {
   merry_check_ptr(file);
   if (file->interface_t != INTERFACE_TYPE_FILE)
     return MRES_UNEXPECTED;
@@ -135,7 +135,7 @@ mresult_t merry_file_seek(MerryFile *file,mqptr_t _res, msqword_t off,
   if ((len = lseek(file->file.fd, off, whence)) == -1)
     return MRES_SYS_FAILURE;
   if (_res)
-  	*_res = len;
+    *_res = len;
 #endif
   return MRES_SUCCESS;
 }
@@ -154,8 +154,8 @@ mresult_t merry_file_tell(MerryFile *file, msize_t *off) {
   return MRES_SUCCESS;
 }
 
-mresult_t merry_file_read(MerryFile *file, mqptr_t _res,  mbptr_t buf,
-                                msize_t num_of_bytes) {
+mresult_t merry_file_read(MerryFile *file, mqptr_t _res, mbptr_t buf,
+                          msize_t num_of_bytes) {
   merry_check_ptr(file);
   merry_check_ptr(buf);
   if (file->interface_t != INTERFACE_TYPE_FILE)
@@ -170,12 +170,12 @@ mresult_t merry_file_read(MerryFile *file, mqptr_t _res,  mbptr_t buf,
     return MRES_SYS_FAILURE;
 
   if (_res)
-  	*_res = len;
+    *_res = len;
   return MRES_SUCCESS;
 }
 
-mresult_t merry_file_write(MerryFile *file,mqptr_t _res, mbptr_t buf,
-                                 msize_t num_of_bytes) {
+mresult_t merry_file_write(MerryFile *file, mqptr_t _res, mbptr_t buf,
+                           msize_t num_of_bytes) {
   merry_check_ptr(file);
   merry_check_ptr(buf);
   if (file->interface_t != INTERFACE_TYPE_FILE)

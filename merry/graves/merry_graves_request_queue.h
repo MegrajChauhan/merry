@@ -1,12 +1,12 @@
 #ifndef _MERRY_GRAVES_REQUEST_QUEUE_
 #define _MERRY_GRAVES_REQUEST_QUEUE_
 
-#include <merry_core_types.h>
 #include <merry_core_interface.h>
-#include <merry_results.h>
+#include <merry_core_types.h>
 #include <merry_protectors.h>
 #include <merry_queue.h>
 #include <merry_requests.h>
+#include <merry_results.h>
 
 typedef struct MerryGravesRequestQueueHandler MerryGravesRequestQueueHandler;
 _MERRY_DECLARE_QUEUE_(GravesRequest, MerryGravesRequest *);
@@ -36,4 +36,3 @@ void merry_graves_req_no_more_requests();
 void merry_graves_req_queue_free();
 
 #endif
- 

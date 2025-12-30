@@ -4,7 +4,7 @@
 typedef enum mcore_t mcore_t;
 
 enum mcore_t {
-	__CORE_TYPE_COUNT,
+  __CORE_TYPE_COUNT,
 };
 
 #endif

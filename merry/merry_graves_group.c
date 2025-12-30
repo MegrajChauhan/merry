@@ -1,6 +1,6 @@
 #include <merry_graves_groups.h>
 
-_MERRY_DEFINE_STATIC_LIST_(CoreRepr, MerryCoreRepr*);
+_MERRY_DEFINE_STATIC_LIST_(CoreRepr, MerryCoreRepr *);
 
 mresult_t merry_graves_group_create(MerryGravesGroup **grp, msize_t gid) {
   *grp = (MerryGravesGroup *)malloc(sizeof(MerryGravesGroup));
@@ -77,9 +77,9 @@ void merry_graves_group_destroy(MerryGravesGroup *grp) {
   // This is a risky operation so Graves will have to, by default,
   // terminate all cores belonging to this group
   for (msize_t i = 0; i < grp->core_count; i++) {
-     free(grp->all_cores->buf[i]);
+    free(grp->all_cores->buf[i]);
   }
-  
+
   merry_CoreRepr_list_destroy(grp->all_cores);
   free(grp);
 }

@@ -1,10 +1,10 @@
 #ifndef _MERRY_REQUESTS_
 #define _MERRY_REQUESTS_
 
-#include <merry_types.h>
 #include <merry_platform.h>
 #include <merry_request_types.h>
 #include <merry_results.h>
+#include <merry_types.h>
 
 typedef struct MerryGravesRequest MerryGravesRequest;
 typedef union MerryRequestArgs MerryRequestArgs;
@@ -25,12 +25,12 @@ union MerryRequestArgs {
 };
 
 struct MerryGravesRequest {
-	mgreq_t type;
-	atm_mbool_t fufilled;
-	mcond_t *used_cond;
-	MerryRequestArgs args;
-	mresult_t result;
-	msize_t err;
+  mgreq_t type;
+  atm_mbool_t fufilled;
+  mcond_t *used_cond;
+  MerryRequestArgs args;
+  mresult_t result;
+  msize_t err;
 };
 
 #endif

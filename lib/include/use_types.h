@@ -37,7 +37,8 @@ typedef sbyte_t ret_t;
 typedef _Atomic size_t atm_size_t;
 
 // define function pointers
-#define _DEFINE_FUNC_PTR_(ret, func_name, ...) typedef ret (*func_name)(__VA_ARGS__)
+#define _DEFINE_FUNC_PTR_(ret, func_name, ...)                                 \
+  typedef ret (*func_name)(__VA_ARGS__)
 
 // pointers for memory types
 typedef byte_t *bptr_t;

@@ -2,8 +2,8 @@
 #define _USE_MMEM_
 
 #include <use_defs.h>
-#include <use_types.h>
 #include <use_interface.h>
+#include <use_types.h>
 
 typedef Interface MappedMemory;
 

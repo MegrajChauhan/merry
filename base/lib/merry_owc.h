@@ -5,9 +5,9 @@
 #include <merry_config.h>
 #include <merry_pipe.h>
 #include <merry_platform.h>
+#include <merry_results.h>
 #include <merry_types.h>
 #include <merry_utils.h>
-#include <merry_results.h>
 
 typedef MerryPipe MerryOWC;
 

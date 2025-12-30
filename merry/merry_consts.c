@@ -1,9 +1,10 @@
 #include <merry_consts.h>
 
-_MERRY_ALWAYS_INLINE_ void merry_HELP_msg(MerryCoreInterface interfaces[__CORE_TYPE_COUNT]) {
-  printf("%s", HELP_MSG); 
+_MERRY_ALWAYS_INLINE_ void
+merry_HELP_msg(MerryCoreInterface interfaces[__CORE_TYPE_COUNT]) {
+  printf("%s", HELP_MSG);
   for (msize_t i = 0; i < __CORE_TYPE_COUNT; i++) {
-  	interfaces[i].chelp();
+    interfaces[i].chelp();
   }
 }
 

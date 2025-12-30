@@ -9,9 +9,10 @@ enum mresult_t {
   MRES_FAILURE,
   MRES_NOT_MERRY_FAILURE,
   MRES_SUCCESS,
-  MRES_SYS_FAILURE, // glibc or syscall failed
-  MRES_NOT_EXISTS,  // if something is accessed but it doesn't exist
-  MRES_NOT_FULFILLED, // something was requested, it was valid but it didn't match some conditions
+  MRES_SYS_FAILURE,   // glibc or syscall failed
+  MRES_NOT_EXISTS,    // if something is accessed but it doesn't exist
+  MRES_NOT_FULFILLED, // something was requested, it was valid but it didn't
+                      // match some conditions
   MRES_CONT_FULL,
   MRES_CONT_EMPTY,
   MRES_INVALID_ARGS,
@@ -22,7 +23,8 @@ enum mresult_t {
   MRES_INTERRUPTED,
   MRES_NOT_ALLOWED,
   MRES_UNEXPECTED,
-  MRES_CONFIGURATION_INVALID
+  MRES_CONFIGURATION_INVALID,
+  MRES_UNRECOGNIZED,
 };
 
 #endif

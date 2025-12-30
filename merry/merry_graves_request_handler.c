@@ -19,14 +19,13 @@ REQ(create_core) {
   mresult_t res = MRES_SUCCESS;
   grp = merry_graves_get_group(args->create_core.gid);
   if (!grp) {
-	  res  =MRES_INVALID_ARGS;
-      goto CC_FAILURE;
+    res = MRES_INVALID_ARGS;
+    goto CC_FAILURE;
   }
   res = merry_graves_add_core(grp, &new_repr);
   if (res != MRES_SUCCESS)
     goto CC_FAILURE;
-  res = merry_graves_init_a_core(new_repr,
-                                 args->create_core.new_core_type,
+  res = merry_graves_init_a_core(new_repr, args->create_core.new_core_type,
                                  args->create_core.st_addr);
   if (res != MRES_SUCCESS)
     goto CC_FAILURE;
@@ -39,8 +38,8 @@ REQ(create_core) {
   res = MRES_SUCCESS;
 CC_FAILURE:
   req->result = res;
-  if (res == MRES_SYS_FAILURE) 
-  	req->err = errno;
+  if (res == MRES_SYS_FAILURE)
+    req->err = errno;
 }
 
 REQ(create_group) {

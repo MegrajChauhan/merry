@@ -28,7 +28,7 @@
 #include <merry_utils.h>
 #include <stdlib.h>
 
-_MERRY_DECLARE_STATIC_LIST_(CoreRepr, MerryCoreRepr*);
+_MERRY_DECLARE_STATIC_LIST_(CoreRepr, MerryCoreRepr *);
 
 typedef struct MerryGravesGroup MerryGravesGroup;
 

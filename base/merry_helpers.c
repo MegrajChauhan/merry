@@ -27,3 +27,11 @@ mbool_t merry_is_path_a_directory(mstr_t path) {
     return S_ISDIR(s.st_mode) ? mtrue : mfalse;
   return mfalse;
 }
+
+msize_t merry_align_value(msize_t val, msize_t align_to) {
+  if (align_to == 0 || val == 0)
+    return 0;
+  if (val % align_to == 0)
+    return val;
+  return val + (align_to - (val % align_to));
+}
