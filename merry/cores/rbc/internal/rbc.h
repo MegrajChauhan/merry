@@ -12,6 +12,7 @@
 #include <merry_threads.h>
 #include <merry_types.h>
 #include <merry_utils.h>
+#include <merry_graves_request_queue.h>
 #include <rbc/comp/inp/rbc_inp_reader.h>
 #include <rbc/comp/mem/rbc_ram.h>
 #include <rbc/def/consts/rbc_consts.h>
@@ -26,10 +27,16 @@ _MERRY_DECLARE_STACK_(RBCProcFrame, RBCStackFrame);
 /* We are going to need so many more different lists and stacks! Oh Lord! */
 
 typedef struct RBCCore RBCCore;
+typedef struct RBCState RBCState;
+
+struct RBCState {
+	atm_mbool_t stop;
+	atm_mbool_t interrupt;
+};
 
 struct RBCCore {
-  MerryCoreState *state;
-  MerryCoreIdentity *iden;
+  RBCState state;
+  MerryCoreIdentity iden;
   MerryInterfaceList *interfaces;
   mqword_t REGISTER_FILE[RBC_REG_COUNT];
   mstr_t inp_path;
@@ -41,14 +48,10 @@ struct RBCCore {
   MerryRBCProcFrameStack *stack_frames;
   RBCFlagsRegr flags;
   RBCFFlagsRegr fflags;
-  msize_t check_after;
   RBCInput *inp;
 };
 
-// for internal requests
-void rbc_make_internal_request(RBCCore *core, mgreq_t req);
-
-mresult_t rbc_core_create(MerryCoreState *state, MerryCoreIdentity *iden,
+mresult_t rbc_core_create(MerryCoreIdentity iden,
                           maddress_t st_addr, mptr_t *ptr);
 
 void rbc_core_destroy(mptr_t c);
@@ -62,5 +65,7 @@ mresult_t rbc_core_set_input(mptr_t c, mstr_t path);
 mresult_t rbc_core_prepare_core(mptr_t c);
 
 mresult_t rbc_core_config(mstr_t opt, mcstr_t val, mbool_t *used);
+
+mresult_t rbc_core_set_flags(mptr_t core, msize_t op);
 
 #endif

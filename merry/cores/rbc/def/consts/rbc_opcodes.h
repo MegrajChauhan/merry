@@ -5,7 +5,7 @@ typedef enum rbcRBC_OP_t rbcop_t;
 
 enum rbcRBC_OP_t {
   RBC_OP_NOP,    // 00
-  RBC_OP_HALT,   // 01
+  RBC_OP_RES24,   // 01
   RBC_OP_SYSINT, // 02 Program requests Handled by RBC Locally
   RBC_OP_MINT,   // 03 program requests Handled by Graves
   RBC_OP_RES1,   // 04

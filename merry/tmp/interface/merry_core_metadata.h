@@ -2,6 +2,7 @@
 #define _MERRY_CORE_METADATA_
 
 #include <merry_types.h>
+#include <merry_core_types.h>
 
 typedef struct MerryCoreMetadata MerryCoreMetadata;
 typedef struct MerryCoreIdentity MerryCoreIdentity;
@@ -14,8 +15,7 @@ struct MerryCoreIdentity {
 
 struct MerryCoreMetadata {
   MerryCoreIdentity iden;
-  atm_mbool_t running; // Set to mfalse iff the core has terminated
-  atm_mbool_t stopped; // set to mtrue iff the core was paused because of itself
+  mcore_t type;
 };
 
 #endif

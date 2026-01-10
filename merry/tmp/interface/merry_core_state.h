@@ -7,11 +7,8 @@
 typedef struct MerryCoreState MerryCoreState;
 
 struct MerryCoreState {
-  // Flags that Graves will use to send information
-  atm_mbool_t interrupt; // interrupt the core
-  atm_mbool_t stop;
-
-  msize_t core_errno; // The errno for each core
+  // The state of the core
+  atm_mbool_t running;
 };
 
 #endif

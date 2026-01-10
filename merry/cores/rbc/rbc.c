@@ -4,9 +4,7 @@
 _MERRY_DEFINE_STATIC_LIST_(Interface, MerryInterface *);
 _MERRY_DEFINE_STACK_(RBCProcFrame, RBCStackFrame);
 
-void rbc_make_internal_request(RBCCore *core, mgreq_t req) {}
-
-mresult_t rbc_core_create(MerryCoreState *state, MerryCoreIdentity *iden,
+mresult_t rbc_core_create(MerryCoreIdentity iden,
                           maddress_t st_addr, mptr_t *ptr) {
   mresult_t ret;
   RBCCore *core = (RBCCore *)malloc(sizeof(RBCCore));
@@ -48,10 +46,11 @@ mresult_t rbc_core_create(MerryCoreState *state, MerryCoreIdentity *iden,
 
   core->SP = 0;
   core->BP = 0;
-  core->state = state;
   core->iden = iden;
   core->PC = st_addr;
   *ptr = (mptr_t)core;
+  core->state.stop = mfalse;
+  core->state.interrupt = mfalse;
 
   return MRES_SUCCESS;
 RBC_CC_FAILED:
@@ -76,18 +75,20 @@ msize_t rbc_core_run(mptr_t c) {
   merry_check_ptr(c);
 
   RBCCore *core = (RBCCore *)c;
-  register atm_mbool_t *interrupt = &core->state->interrupt;
-  register msize_t chk = core->check_after;
+  register atm_mbool_t* stop = &core->state.stop;
+  register atm_mbool_t* intr = &core->state.interrupt;
   MerryHostMemLayout layout, mem;
   MerryFloatToDword ftod;
   MerryDoubleToQword dtoq;
+  msize_t ret = 0;
 
   while (mtrue) {
-    if (!surelyF(chk)) {
+    if (!surelyF()) {
       if (*interrupt) {
         // handle the interrupt
-        if (core->state->stop)
+        if (core->state->stop) {
           break;
+        }
         *interrupt = mfalse;
       }
       chk = 3;
@@ -100,7 +101,8 @@ msize_t rbc_core_run(mptr_t c) {
           "RBC",
           "Memory access invalid: Accessing address that doesn't exist PC=%zu",
           core->PC);
-
+          ret = 1;
+          break;
     } else {
       switch (layout.bytes.b0) {
       case RBC_OP_NOP:
@@ -127,14 +129,10 @@ msize_t rbc_core_run(mptr_t c) {
       case RBC_OP_RES21:
       case RBC_OP_RES22:
       case RBC_OP_RES23:
-        break;
-      case RBC_OP_HALT:
-        core->terminate = mtrue;
-        core->interrupt = mtrue;
-        core->check_after = 0;
+      case RBC_OP_RES24:
         break;
       case RBC_OP_SYSINT:
-        rbc_isysint(&core->& core->kill_core);
+        rbc_isysint(core, );
         break;
       case RBC_OP_MINT:
         rbc_imint(&core->& core->kill_core);

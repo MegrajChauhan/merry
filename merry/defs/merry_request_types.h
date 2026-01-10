@@ -5,6 +5,7 @@ typedef enum mgreq_t mgreq_t;
 
 enum mgreq_t {
   NOP,                // do nothing(needed)
+  CORE_STOP,          // The core is terminating
   CREATE_CORE,        // Creating a new core
                       // DESC: Create a new core to execute some more code
                       //       in parallel

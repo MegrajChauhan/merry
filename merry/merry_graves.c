@@ -7,10 +7,10 @@ void merry_register_core(mcore_t type, mcorecreate_t ccreate,
                          mcoredeletecore_t cdel, mcoreexec_t cexec,
                          mcorepredel_t cpredel, mcoresetinp_t csetinp,
                          mcoreprepcore_t cprepc, mcoreconfig_t cconf,
-                         mcorehelp_t chelp) {
+                         mcorehelp_t chelp, mcoresetflag_t csflag) {
   if (interfaces[type].set)
     return;
-  if (!ccreate || !cdel || !cexec || !cpredel || !csetinp || !cprepc || !cconf)
+  if (!ccreate || !cdel || !cexec || !cpredel || !csetinp || !cprepc || !cconf || !csflag)
     return;
   MerryCoreInterface *i = &interfaces[type];
   i->ccreate = ccreate;
@@ -21,6 +21,7 @@ void merry_register_core(mcore_t type, mcorecreate_t ccreate,
   i->cprepc = cprepc;
   i->cconf = cconf;
   i->chelp = chelp;
+  i->csflag = csflag;
   i->set = mtrue;
 }
 
@@ -240,7 +241,6 @@ mresult_t merry_graves_add_core(MerryGravesGroup *grp, MerryCoreRepr **repr) {
     return res;
   }
 
-  GRAVES.core_count++;
   return MRES_SUCCESS;
 }
 
@@ -249,7 +249,7 @@ mresult_t merry_graves_init_a_core(MerryCoreRepr *repr, mcore_t type,
   MerryCoreInterface *i = &interfaces[type];
   mresult_t res;
 
-  res = i->ccreate(&repr->state, repr->metadata.iden, addr, &repr->core);
+  res = i->ccreate(repr->metadata.iden, addr, &repr->core);
 
   if (res != MRES_SUCCESS) {
     MERROR("Graves", "A core failed to initialize", NULL);

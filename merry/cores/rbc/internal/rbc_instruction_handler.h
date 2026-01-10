@@ -8,9 +8,9 @@
 #include <regr_core/internal/rbc.h>
 
 #define rbc_ihdlr(name)                                                        \
-  void rbc_i##name(RBCCoreBase *base, _Atomic mbool_t *kcore)
+  void rbc_i##name(RBCCore *core, _Atomic mbool_t *kcore)
 #define rbc_ihdlrX(name)                                                       \
-  void rbc_i##name(RBCCoreBase *base, _Atomic mbool_t *kcore,                  \
+  void rbc_i##name(RBCCore *core, _Atomic mbool_t *kcore,                  \
                    mqword_t instruction)
 void rbc_compare_f32(float a, float b, RBCFFlagsRegr *regr);
 void rbc_compare_f64(double a, double b, RBCFFlagsRegr *regr);

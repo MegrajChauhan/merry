@@ -12,7 +12,6 @@ struct MerryCoreRepr {
   MerryCoreMetadata metadata;
   MerryCoreState state;
   mptr_t core;
-  mcore_t type;
 };
 
 #endif
