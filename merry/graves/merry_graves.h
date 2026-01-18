@@ -4,17 +4,11 @@
 // The Big Boss
 #include <merry_config.h>
 #include <merry_consts.h>
-#include <merry_core_interface.h>
-#include <merry_core_metadata.h>
 #include <merry_core_repr.h>
-#include <merry_core_state.h>
-#include <merry_core_types.h>
 #include <merry_graves_defs.h>
 #include <merry_graves_groups.h>
-#include <merry_graves_input.h>
 #include <merry_graves_request_queue.h>
 #include <merry_list.h>
-#include <merry_logger.h>
 #include <merry_protectors.h>
 #include <merry_requests.h>
 #include <merry_results.h>
@@ -30,7 +24,6 @@ typedef struct MerryGraves MerryGraves;
 struct MerryGraves {
   MerryGroupList *GRPS; // all of the groups
   msize_t grp_count;
-  MerryEntryList *C_ENTRIES;
 
   // needed fields
   mcond_t graves_cond;
@@ -67,11 +60,9 @@ void merry_graves_destroy();
 void merry_graves_cleanup_groups();
 
 // Utilities
-mcore_t merry_graves_obtain_first_valid_c_entry();
 mresult_t merry_graves_add_group(MerryGravesGroup **grp);
 mresult_t merry_graves_add_core(MerryGravesGroup *grp, MerryCoreRepr **repr);
-mresult_t merry_graves_init_a_core(MerryCoreRepr *repr, mcore_t type,
-                                   maddress_t addr);
+mresult_t merry_graves_init_a_core(MerryCoreRepr *repr, maddress_t addr);
 mresult_t merry_graves_boot_a_core(MerryCoreRepr *repr);
 void merry_graves_give_IDs_to_cores(MerryCoreRepr *repr, MerryGravesGroup *grp);
 void merry_graves_failed_core_booting();
@@ -81,8 +72,8 @@ MerryGravesGroup *merry_graves_get_group(mguid_t gid);
 _THRET_T_ merry_graves_core_launcher(mptr_t r);
 
 /* Request Handlers */
-REQ(create_core);
-REQ(create_group);
-REQ(get_system_details);
+// REQ(create_core);
+// REQ(create_group);
+// REQ(get_system_details);
 
 #endif

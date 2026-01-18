@@ -1,7 +1,8 @@
-#include <regr_core/comp/inp/rbc_inp_reader.h>
+#include <merry_input_reader.h>
 
-_MERRY_INTERNAL_ mresult_t rbc_input_parse_header(RBCInput *inp, msize_t flen) {
+_MERRY_INTERNAL_ mresult_t merry_input_parse_header(MerryInput *inp, msize_t flen) {
   // inp will be valid
+  MDBG("Parsing Header", NULL);
   mbyte_t chunk[8] = {0};
   MerryHostMemLayout dlen, ilen, dbg_len;
   dlen.whole_word = 0;
@@ -16,24 +17,21 @@ _MERRY_INTERNAL_ mresult_t rbc_input_parse_header(RBCInput *inp, msize_t flen) {
     goto OPERATION_FAILURE;
   }
 
-  // The magic bytes for RBC is RIF(RBC Input File)
-  if (chunk[0] != 'R' || chunk[1] != 'I' || chunk[2] != 'F') {
-    MLOG("RBC",
-         "Unknown Input File Type received: The IDENTIFICATION bytes %b%b%b "
-         "expected but got %b%b%b",
-         'R', 'I', 'F', chunk[0], chunk[1], chunk[2]);
+  if (chunk[0] != 'M' || chunk[1] != 'I' || chunk[2] != 'F') {
+    MERR("Unknown Input File Type received: The IDENTIFICATION bytes 'RIF' "
+         "expected but got %b%b%b", chunk[0], chunk[1], chunk[2]);
     ret = MRES_UNRECOGNIZED;
     goto OPERATION_FAILURE;
   }
+  MDBG("File Signature Identified", NULL);
 
   if (chunk[3] != _MERRY_BYTE_ORDER_) {
-    MFATAL("RBC",
-           "Mismatched ENDIANNESS. The host and the inpu file must have the "
-           "same endianness.",
-           NULL);
+    MERR("Mismatched ENDIANNESS. The host and the input file must have the "
+           "same endianness.", NULL);
     ret = MRES_UNRECOGNIZED;
     goto OPERATION_FAILURE;
   }
+  MDBG("ENDIANNESS matched", NULL);
 
   // Now time for the lengths
   if ((ret = merry_file_read(inp->input_file, chunk, 8)) != MRES_SUCCESS) {
@@ -50,19 +48,19 @@ _MERRY_INTERNAL_ mresult_t rbc_input_parse_header(RBCInput *inp, msize_t flen) {
   ilen.bytes.b7 = chunk[7];
 
   if (ilen.whole_word == 0) {
-    MLOG("RBC", "No instructions provided: Instruction section length is 0",
+    MERR("No instructions provided: Instruction section length is 0",
          NULL);
     ret = MRES_UNRECOGNIZED;
     goto OPERATION_FAILURE;
   }
   // Must be divisible by 8
   if (ilen.whole_word % 8 != 0) {
-    MLOG("RBC",
-         "Mis-aligned instruction section length: Must be divisible by 8",
-         NULL);
+    MERR("Mis-aligned instruction section length: %zu is not divisible by 8",
+         ilen.whole_word);
     ret = MRES_UNRECOGNIZED;
     goto OPERATION_FAILURE;
   }
+  MDBG("Intruction section: Length=%zu BYTES", ilen.whole_word);
 
   if ((ret = merry_file_read(inp->input_file, chunk, 8)) != MRES_SUCCESS) {
     goto OPERATION_FAILURE;
@@ -77,6 +75,8 @@ _MERRY_INTERNAL_ mresult_t rbc_input_parse_header(RBCInput *inp, msize_t flen) {
   dlen.bytes.b6 = chunk[6];
   dlen.bytes.b7 = chunk[7];
 
+  MDBG("Data section: Length=%zu BYTES", dlen.whole_word);
+
   if ((ret = merry_file_read(inp->input_file, chunk, 8)) != MRES_SUCCESS) {
     goto OPERATION_FAILURE;
   }
@@ -89,8 +89,11 @@ _MERRY_INTERNAL_ mresult_t rbc_input_parse_header(RBCInput *inp, msize_t flen) {
   dbg_len.bytes.b5 = chunk[5];
   dbg_len.bytes.b6 = chunk[6];
   dbg_len.bytes.b7 = chunk[7];
+
+    MDBG("Debug section: Length=%zu BYTES", dbg_len.whole_word);
+  
   if ((ilen.whole_word + dlen.whole_word + dbg_len.whole_word) > flen) {
-    MLOG("RBC",
+    MERR(
          "Input file header's information doesn't match with what was read",
          NULL);
     ret = MRES_UNRECOGNIZED;
@@ -99,20 +102,23 @@ _MERRY_INTERNAL_ mresult_t rbc_input_parse_header(RBCInput *inp, msize_t flen) {
 
   inp->data_len = dlen.whole_word;
   inp->instruction_len = ilen.whole_word;
+  MDBG("Header Parsing Succeded", NULL);
   return MRES_SUCCESS;
 OPERATION_FAILURE:
-  MLOG("RBC", "Failed to parse the header for input file", NULL);
+  MDBG("Header Parsing Failed", NULL);
   return ret;
 }
 
-RBCInput *rbc_input_init() {
-  RBCInput *inp = (RBCInput *)malloc(sizeof(RBCInput));
+MerryInput *merry_input_init() {
+  MDBG("Initializing Input Reader", NULL);
+  MerryInput *inp = (MerryInput *)malloc(sizeof(MerryInput));
   if (!inp) {
-    MFATAL("RBC", "Failed to allocate memory for input", NULL);
+    MERR("Failed to allocate memory for input reader", NULL);
     return RET_NULL;
   }
   if (merry_mapped_file_create(&inp->mapped) != MRES_SUCCESS) {
     free(inp);
+    MDBG("Failed to initialize input reader", NULL);
     return RET_NULL;
   }
   inp->data = NULL;
@@ -120,67 +126,71 @@ RBCInput *rbc_input_init() {
   inp->input_file = NULL;
   inp->instruction_len = 0;
   inp->instructions = NULL;
+  MDBG("Successfully initialized input reader", NULL);
   return inp;
 }
 
-mresult_t rbc_input_read(RBCInput *inp, mstr_t path) {
+mresult_t merry_input_read(MerryInput *inp, mstr_t path) {
   merry_check_ptr(inp);
   merry_check_ptr(path);
+
+  MDBG("Reading Input File %s", path);
 
   mresult_t ret =
       merry_open_file(&inp->input_file, path, _MERRY_FOPEN_READ_WRITE_, 0);
   if (ret != MRES_SUCCESS) {
-    MFATAL("RBC", "Failed to read input file: FILE=%s", path);
-    goto RBC_INP_PARSE_FAILED;
+    MERR("Failed to read input file: FILE=%s", path);
+    goto MERRY_INP_PARSE_FAILED;
   }
   msize_t fsize = 0;
   if ((ret = merry_file_size(inp->input_file, &fsize)) != MRES_SUCCESS)
     merry_unreachable(); // should never fail
   if (fsize == 0) {
-    MFATAL("RBC", "Empty Input File! Nothing to execute! FILE=%s", path);
-    goto RBC_INP_PARSE_FAILED;
+    MERR("Empty Input File! Nothing to execute! FILE=%s", path);
+    goto MERRY_INP_PARSE_FAILED;
   }
 
-  if ((ret = rbc_input_parse_header(inp, fsize, res)) != MRES_SUCCESS) {
-    MLOG("RBC", "While parsing input file: PATH=%s", path);
-    goto RBC_INP_PARSE_FAILED;
+  if ((ret = merry_input_parse_header(inp, fsize, res)) != MRES_SUCCESS) {
+    MERR("While parsing input file: PATH=%s", path);
+    goto MERRY_INP_PARSE_FAILED;
   }
 
-  inp->data_len = rbc_align(inp->data_len, _RBC_PAGE_LEN_IN_BYTES_);
+  inp->data_len = merry_align(inp->data_len, _MERRY_PAGE_LEN_IN_BYTES_);
 
   // Now finally allocate the memory
   msize_t total_len = inp->data_len + inp->instruction_len + 32;
 
   if ((ret = merry_mapped_file_map(inp->mapped, path,
                                    _MERRY_MAPPED_FILE_ALIGN_FILE_LEN_,
-                                   _RBC_PAGE_LEN_IN_BYTES_)) != MRES_SUCCESS) {
-    goto RBC_INP_PARSE_FAILED;
+                                   _MERRY_PAGE_LEN_IN_BYTES_)) != MRES_SUCCESS) {
+    goto MERRY_INP_PARSE_FAILED;
   }
 
   ret = merry_mapped_file_obtain_ptr(inp->mapped, &inp->instructions, 32);
 
   if (ret != MRES_SUCCESS) {
-    MFATAL("RBC", "Failed to obtain memory for program: PATH=%s", path);
-    goto RBC_INP_PARSE_FAILED;
+    MERR("Failed to obtain memory for program: PATH=%s", path);
+    goto MERRY_INP_PARSE_FAILED;
   }
 
   ret = merry_mapped_file_obtain_ptr(inp->mapped, &inp->data,
                                      32 + inp->instruction_len);
 
   if (ret != MRES_SUCCESS) {
-    MFATAL("RBC", "Failed to obtain memory for program: PATH=%s", path);
-    goto RBC_INP_PARSE_FAILED;
+    MERR("Failed to obtain memory for program: PATH=%s", path);
+    goto MERRY_INP_PARSE_FAILED;
   }
 
+  MDBG("Read Input file '%s' successfully", path);
   return MRES_SUCCESS;
-RBC_INP_PARSE_FAILED:
-  MLOG("RBC", "Failed to parse the header for input file", NULL);
+MERRY_INP_PARSE_FAILED:
   merry_destroy_file(inp->input_file);
   merry_mapped_file_unmap(inp->mapped);
+  MDBG("Failed to read Input file '%s'", path);
   return ret;
 }
 
-void rbc_input_destroy(RBCInput *inp) {
+void merry_input_destroy(MerryInput *inp) {
   merry_check_ptr(inp);
   merry_check_ptr(inp->input_file);
   merry_check_ptr(inp->data);
@@ -190,4 +200,5 @@ void rbc_input_destroy(RBCInput *inp) {
   merry_mapped_file_destroy(inp->mapped);
   merry_destroy_file(inp->input_file);
   free(inp);
+  MDBG("Input Reader Destroyed", NULL);
 }

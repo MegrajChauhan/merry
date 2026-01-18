@@ -10,6 +10,7 @@
 
 #include <merry_types.h>
 #include <merry_utils.h>
+#include <merry_core.h>
 
 typedef struct MerryCoreState MerryCoreState;
 typedef struct MerryCoreProperties MerryCoreProperties;
@@ -35,7 +36,7 @@ struct MerryCoreRepr {
 	MerryCoreState state;
 	MerryCoreProperties props;
 	MerryCoreIdentity iden;
-	mptr_t core;
+	MerryCore *core;
 };
 
 #endif

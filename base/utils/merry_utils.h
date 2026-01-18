@@ -40,6 +40,7 @@
 #define _MERRY_INTERNAL_                                                       \
   static // for a variable or a function that is localized to a module only
 #define _MERRY_LOCAL_ static // any static variable inside a function
+#define _MERRY_EXTERNAL_ extern
 
 // tools
 
@@ -47,7 +48,7 @@
 #define merry_check_condition_and_exit_on_failure(cond)                        \
   do {                                                                         \
     if (surelyF(!(cond))) {                                                    \
-      MFATAL(NULL,                                                             \
+      MDBG(                                                             \
              "Condition: "_MERRY_STRINGIFY_(                                   \
                  (cond)) ": Failed. Line %d[FILE: %s]\n",                      \
              __LINE__, __FILE__);                                              \
@@ -58,8 +59,6 @@
 #ifdef _MERRY_RELEASE_
 #define merry_assert(cond)
 #define merry_check_ptr(ptr)
-#define merry_log(msg, ...)
-#define merry_suggest(msg, ...)
 #else
 #define _MERRY_TEST_
 #define merry_assert(cond) merry_check_condition_and_exit_on_failure(cond)
@@ -76,7 +75,7 @@
 
 #define merry_unreachable()                                                    \
   do {                                                                         \
-    MFATAL(NULL, "Unreachable code execution: %s %d", __FILE__, __LINE__);     \
+    MERR("Unreachable code execution: %s %d", __FILE__, __LINE__);     \
     exit(-1);                                                                  \
   } while (0)
 

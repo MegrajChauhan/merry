@@ -1,6 +1,6 @@
-#include "merry_graves_request_queue.h"
-#include "merry_types.h"
-#include "merry_utils.h"
+#include <merry_graves_request_queue.h>
+#include <merry_types.h>
+#include <merry_utils.h>
 
 _MERRY_DEFINE_QUEUE_(GravesRequest, MerryGravesRequest *);
 
@@ -75,56 +75,4 @@ void merry_graves_req_register_wakeup(mcond_t *owner_cond,
                                       mmutex_t *owner_lock) {
   g_queue.owner_cond = owner_cond;
   g_queue.owner_lock = owner_lock;
-}
-
-mresult_t merry_init_request(MerryGravesRequest **req, mcond_t *cond,
-                             mbool_t async) {
-  if (!req)
-    return MRES_INVALID_ARGS;
-  if (!async && !cond)
-    return MRES_INVALID_ARGS;
-  MerryGravesRequest *r =
-      (MerryGravesRequest *)malloc(sizeof(MerryGravesRequest));
-  if (!r)
-    return MRES_SYS_FAILURE;
-  r->used_cond = cond;
-  *req = r;
-  return MRES_SUCCESS;
-}
-
-_MERRY_ALWAYS_INLINE_ mresult_t
-merry_set_request_CREATE_CORE(MerryGravesRequest *req, mcore_t new_core_type,
-                              maddress_t st_address, mguid_t gid) {
-  if (!req)
-    return MRES_INVALID_ARGS;
-  req->type = CREATE_CORE;
-  req->args.create_core.new_core_type = new_core_type;
-  req->args.create_core.st_addr = st_address;
-  req->args.create_core.gid = gid;
-  return MRES_SUCCESS;
-}
-
-_MERRY_ALWAYS_INLINE_ mresult_t
-merry_set_request_CREATE_GROUP(MerryGravesRequest *req) {
-  if (!req)
-    return MRES_INVALID_ARGS;
-  req->type = CREATE_GROUP;
-  return MRES_SUCCESS;
-}
-
-_MERRY_ALWAYS_INLINE_ mresult_t merry_get_request_result_CREATE_CORE(
-    MerryGravesRequest *req, msize_t *id, msize_t *uid) {
-  if (!req || !id || !uid || req->type != CREATE_CORE)
-    return MRES_INVALID_ARGS;
-  *id = req->args.create_core.new_id;
-  *uid = req->args.create_core.new_uid;
-  return MRES_SUCCESS;
-}
-
-_MERRY_ALWAYS_INLINE_ mresult_t
-merry_get_request_result_CREATE_GROUP(MerryGravesRequest *req, msize_t *gid) {
-  if (!req || !gid || req->type != CREATE_GROUP)
-    return MRES_INVALID_ARGS;
-  *gid = req->args.create_group.new_guid;
-  return MRES_SUCCESS;
 }

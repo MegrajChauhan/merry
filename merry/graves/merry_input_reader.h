@@ -1,5 +1,5 @@
-#ifndef _RBC_INP_READER_
-#define _RBC_INP_READER_
+#ifndef _MERRY_INP_READER_
+#define _MERRY_INP_READER_
 
 #include <merry_file.h>
 #include <merry_helpers.h>
@@ -8,13 +8,9 @@
 #include <merry_results.h>
 #include <merry_types.h>
 #include <merry_utils.h>
-#include <regr_core/def/consts/rbc_consts.h>
-#include <regr_core/def/consts/rbc_mem_defs.h>
-#include <regr_core/internal/rbc_utils.h>
 #include <stdlib.h>
 
 /*
- * RBC will use a similar file format to MVM
  * The format will look something like this:
  * <IDENTIFICATION[Magic Numbers]> <ENDIANNESS OF THE INSTRUCTIONS AND DATA> ->
  * Identification Header[We will have a few bytes left to be used for something
@@ -44,9 +40,9 @@
  * memory to structure it as it sees fit
  * */
 
-typedef struct RBCInput RBCInput;
+typedef struct MerryInput MerryInput;
 
-struct RBCInput {
+struct MerryInput {
   MerryFile *input_file;
   MerryMappedFile *mapped;
   mbptr_t instructions;
@@ -55,10 +51,10 @@ struct RBCInput {
   msize_t data_len;
 };
 
-RBCInput *rbc_input_init();
+MerryInput *merry_input_init();
 
-mresult_t rbc_input_read(RBCInput *inp, mstr_t path);
+mresult_t merry_input_read(MerryInput *inp, mstr_t path);
 
-void rbc_input_destroy(RBCInput *inp);
+void merry_input_destroy(MerryInput *inp);
 
 #endif

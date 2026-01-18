@@ -46,10 +46,6 @@ mresult_t merry_graves_group_create(MerryGravesGroup **grp, msize_t gid);
 mresult_t merry_graves_group_add_core(MerryGravesGroup *grp,
                                       MerryCoreRepr *core);
 
-mresult_t merry_graves_group_find_core(MerryGravesGroup *grp,
-                                       MerryCoreRepr **res, msize_t uid,
-                                       msize_t id);
-
 MerryCoreRepr *merry_graves_group_find_dead_core(MerryGravesGroup *grp);
 
 mresult_t merry_graves_group_get_core(MerryGravesGroup *grp,

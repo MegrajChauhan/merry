@@ -1,8 +1,6 @@
 #ifndef _MERRY_GRAVES_REQUEST_QUEUE_
 #define _MERRY_GRAVES_REQUEST_QUEUE_
 
-#include <merry_core_interface.h>
-#include <merry_core_types.h>
 #include <merry_protectors.h>
 #include <merry_queue.h>
 #include <merry_requests.h>

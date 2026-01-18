@@ -1,5 +1,5 @@
-#ifndef _RBC_
-#define _RBC_
+#ifndef _MERRY_CORE_
+#define _MERRY_CORE_
 
 #include <merry_core_interface.h>
 #include <merry_flags_regr.h>
@@ -13,42 +13,29 @@
 #include <merry_types.h>
 #include <merry_utils.h>
 #include <merry_graves_request_queue.h>
-#include <rbc/comp/inp/rbc_inp_reader.h>
-#include <rbc/comp/mem/rbc_ram.h>
-#include <rbc/def/consts/rbc_consts.h>
-#include <rbc/def/consts/rbc_opcodes.h>
-#include <rbc/def/consts/rbc_registers.h>
-#include <rbc/def/consts/rbc_sysint.h>
-#include <rbc/def/declr/rbc_internals.h>
+#include <merry_core_internals.h>
+#include <merry_core_defs.h>
+#include <merry_core_registers.h>
+#include <merry_core_sysint.h>
 #include <stdlib.h>
 
 _MERRY_DECLARE_STATIC_LIST_(Interface, MerryInterface *);
-_MERRY_DECLARE_STACK_(RBCProcFrame, RBCStackFrame);
+_MERRY_DECLARE_STACK_(CoreProcFrame, MerryCoreStackFrame);
 /* We are going to need so many more different lists and stacks! Oh Lord! */
 
-typedef struct RBCCore RBCCore;
-typedef struct RBCState RBCState;
+typedef struct MerryCore MerryCore;
 
-struct RBCState {
-	atm_mbool_t stop;
-	atm_mbool_t interrupt;
-};
+struct MerryCore {
+  MerryCoreRAM *ram;
+  MerryInterfaceList *interfaces; // we will need a much more complicated data structure
+  MerryCoreProcFrameStack *frame_stack;
 
-struct RBCCore {
-  RBCState state;
-  MerryCoreIdentity iden;
-  MerryInterfaceList *interfaces;
-  mqword_t REGISTER_FILE[RBC_REG_COUNT];
-  mstr_t inp_path;
-  RBCMemory *iram, *dram;
+  MerryCoreFlagsRegr flags;
+  MerryCoreFFlagsRegr fflags;
+  mqword_t _registers[MERRY_CORE_REG_COUNT];
+  maddress_t BP, SP;
   maddress_t PC;
-  maddress_t SP, BP;
-  MerryMappedMemory *st;
-  mqptr_t stack;
-  MerryRBCProcFrameStack *stack_frames;
-  RBCFlagsRegr flags;
-  RBCFFlagsRegr fflags;
-  RBCInput *inp;
+  
 };
 
 mresult_t rbc_core_create(MerryCoreIdentity iden,

@@ -38,26 +38,6 @@ mresult_t merry_graves_group_add_core(MerryGravesGroup *grp,
   return MRES_SUCCESS;
 }
 
-mresult_t merry_graves_group_find_core(MerryGravesGroup *grp,
-                                       MerryCoreRepr **res, msize_t uid,
-                                       msize_t id) {
-  // Find the core and return it
-  // if it is dead, return NULL and set is_dead to mtrue
-  // "id" basically refers to the core's index into the group's
-  // dynamic array
-  MerryCoreRepr *repr;
-  mresult_t result = merry_CoreRepr_list_at(grp->all_cores, &repr, id);
-  if (result != MRES_SUCCESS)
-    return MRES_INVALID_ARGS;
-  if (!(repr)->core)
-    return MRES_NOT_EXISTS;
-  if ((repr)->metadata.iden.uid != uid) {
-    return MRES_NOT_FULFILLED;
-  }
-  *res = repr;
-  return MRES_SUCCESS;
-}
-
 MerryCoreRepr *merry_graves_group_find_dead_core(MerryGravesGroup *grp) {
   for (msize_t i = 0; i < grp->core_count; i++) {
     if (!grp->all_cores->buf[i]->core)

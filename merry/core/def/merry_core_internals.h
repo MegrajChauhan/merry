@@ -1,14 +1,14 @@
-#ifndef _RBC_INTERNALS_
-#define _RBC_INTERNALS_
+#ifndef _MERRY_INTERNALS_
+#define _MERRY_INTERNALS_
 
 #include <merry_helpers.h>
 #include <merry_types.h>
 
-typedef union RBCFlagsRegr RBCFlagsRegr;
-typedef struct RBCFFlagsRegr RBCFFlagsRegr;
-typedef struct RBCStackFrame RBCStackFrame;
+typedef union MerryCoreFlagsRegr MerryCoreFlagsRegr;
+typedef struct MerryCoreFFlagsRegr MerryCoreFFlagsRegr;
+typedef struct MerryCoreStackFrame MerryCoreStackFrame;
 
-struct RBCFFlagsRegr {
+struct MerryCoreFFlagsRegr {
   bit_group(zf, 1);  // zero flag
   bit_group(sf, 1);  // sign flag
   bit_group(uof, 1); // unordered flag
@@ -18,7 +18,7 @@ struct RBCFFlagsRegr {
   bit_group(res, 2); // reserved
 };
 
-union RBCFlagsRegr {
+union MerryCoreFlagsRegr {
   struct {
 #if defined(_MERRY_HOST_CPU_x86_64_ARCH_)
     // This defines the flags structure for the AMD64 processors
@@ -43,7 +43,7 @@ union RBCFlagsRegr {
   mqword_t regr;
 };
 
-struct RBCStackFrame {
+struct MerryCoreStackFrame {
   maddress_t RET_ADDR;
   maddress_t FRAME_BP;
   maddress_t JMP_TO;
