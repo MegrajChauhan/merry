@@ -2,7 +2,7 @@
 
 _MERRY_DEFINE_STATIC_LIST_(MerryCoreRAMPage, MerryCoreRAMPage);
 
-MerryCoreRAM *merry_memory_init() {
+MerryCoreRAM *merry_core_memory_init() {
   MerryCoreRAM *mem = (MerryCoreRAM *)malloc(sizeof(MerryCoreRAM));
   if (!mem) {
     MERR("Failed to allocate memory for Core RAM", NULL);
@@ -13,7 +13,7 @@ MerryCoreRAM *merry_memory_init() {
   return mem;
 }
 
-mresult_t merry_memory_populate(MerryCoreRAM *mem, msize_t space_len,
+mresult_t merry_core_memory_populate(MerryCoreRAM *mem, msize_t space_len,
                               mbptr_t addr_space) {
   merry_check_ptr(mem);
   merry_check_ptr(addr_space);
@@ -40,7 +40,7 @@ mresult_t merry_memory_populate(MerryCoreRAM *mem, msize_t space_len,
   return MRES_SUCCESS;
 }
 
-mresult_t merry_memory_read_byte(MerryCoreRAM *mem, maddress_t addr,
+mresult_t merry_core_memory_read_byte(MerryCoreRAM *mem, maddress_t addr,
                                      mbptr_t store_in) {
   merry_check_ptr(mem);
   merry_check_ptr(store_in);
@@ -51,7 +51,7 @@ mresult_t merry_memory_read_byte(MerryCoreRAM *mem, maddress_t addr,
   return MRES_SUCCESS;
 }
 
-mresult_t merry_memory_read_word(MerryCoreRAM *mem, maddress_t addr,
+mresult_t merry_core_memory_read_word(MerryCoreRAM *mem, maddress_t addr,
                                      mwptr_t store_in) {
   merry_check_ptr(mem);
   merry_check_ptr(store_in);
@@ -62,7 +62,7 @@ mresult_t merry_memory_read_word(MerryCoreRAM *mem, maddress_t addr,
   return MRES_SUCCESS;
 }
 
-mresult_t merry_memory_read_dword(MerryCoreRAM *mem, maddress_t addr,
+mresult_t merry_core_memory_read_dword(MerryCoreRAM *mem, maddress_t addr,
                                       mdptr_t store_in) {
   merry_check_ptr(mem);
   merry_check_ptr(store_in);
@@ -73,7 +73,7 @@ mresult_t merry_memory_read_dword(MerryCoreRAM *mem, maddress_t addr,
   return MRES_SUCCESS;
 }
 
-mresult_t merry_memory_read_qword(MerryCoreRAM *mem, maddress_t addr,
+mresult_t merry_core_memory_read_qword(MerryCoreRAM *mem, maddress_t addr,
                                       mqptr_t store_in) {
   merry_check_ptr(mem);
   merry_check_ptr(store_in);
@@ -84,7 +84,7 @@ mresult_t merry_memory_read_qword(MerryCoreRAM *mem, maddress_t addr,
   return MRES_SUCCESS;
 }
 
-mresult_t merry_memory_read_byte_atm(MerryCoreRAM *mem, maddress_t addr,
+mresult_t merry_core_memory_read_byte_atm(MerryCoreRAM *mem, maddress_t addr,
                                          mbptr_t store_in) {
   merry_check_ptr(mem);
   merry_check_ptr(store_in);
@@ -97,7 +97,7 @@ mresult_t merry_memory_read_byte_atm(MerryCoreRAM *mem, maddress_t addr,
   return MRES_SUCCESS;
 }
 
-mresult_t merry_memory_read_word_atm(MerryCoreRAM *mem, maddress_t addr,
+mresult_t merry_core_memory_read_word_atm(MerryCoreRAM *mem, maddress_t addr,
                                          mwptr_t store_in) {
   merry_check_ptr(mem);
   merry_check_ptr(store_in);
@@ -110,7 +110,7 @@ mresult_t merry_memory_read_word_atm(MerryCoreRAM *mem, maddress_t addr,
   return MRES_SUCCESS;
 }
 
-mresult_t merry_memory_read_dword_atm(MerryCoreRAM *mem, maddress_t addr,
+mresult_t merry_core_memory_read_dword_atm(MerryCoreRAM *mem, maddress_t addr,
                                           mdptr_t store_in) {
   merry_check_ptr(mem);
   merry_check_ptr(store_in);
@@ -123,7 +123,7 @@ mresult_t merry_memory_read_dword_atm(MerryCoreRAM *mem, maddress_t addr,
   return MRES_SUCCESS;
 }
 
-mresult_t merry_memory_read_qword_atm(MerryCoreRAM *mem, maddress_t addr,
+mresult_t merry_core_memory_read_qword_atm(MerryCoreRAM *mem, maddress_t addr,
                                           mqptr_t store_in) {
   merry_check_ptr(mem);
   merry_check_ptr(store_in);
@@ -136,7 +136,7 @@ mresult_t merry_memory_read_qword_atm(MerryCoreRAM *mem, maddress_t addr,
   return MRES_SUCCESS;
 }
 
-mresult_t merry_memory_read_bulk(MerryCoreRAM *mem, maddress_t addr,
+mresult_t merry_core_memory_read_bulk(MerryCoreRAM *mem, maddress_t addr,
                                      msize_t len, mbptr_t store_in) {
   merry_check_ptr(mem);
   merry_check_ptr(store_in);
@@ -174,7 +174,7 @@ mresult_t merry_memory_read_bulk(MerryCoreRAM *mem, maddress_t addr,
   return MRES_SUCCESS;
 }
 
-mresult_t merry_memory_write_byte(MerryCoreRAM *mem, maddress_t addr,
+mresult_t merry_core_memory_write_byte(MerryCoreRAM *mem, maddress_t addr,
                                       mbyte_t store) {
   merry_check_ptr(mem);
   if (surelyF(addr >= mem->max_address))
@@ -184,7 +184,7 @@ mresult_t merry_memory_write_byte(MerryCoreRAM *mem, maddress_t addr,
   return MRES_SUCCESS;
 }
 
-mresult_t merry_memory_write_word(MerryCoreRAM *mem, maddress_t addr,
+mresult_t merry_core_memory_write_word(MerryCoreRAM *mem, maddress_t addr,
                                       mword_t store) {
   merry_check_ptr(mem);
   if (surelyF(addr >= mem->max_address))
@@ -194,7 +194,7 @@ mresult_t merry_memory_write_word(MerryCoreRAM *mem, maddress_t addr,
   return MRES_SUCCESS;
 }
 
-mresult_t merry_memory_write_dword(MerryCoreRAM *mem, maddress_t addr,
+mresult_t merry_core_memory_write_dword(MerryCoreRAM *mem, maddress_t addr,
                                        mdword_t store) {
   merry_check_ptr(mem);
   if (surelyF(addr >= mem->max_address))
@@ -204,7 +204,7 @@ mresult_t merry_memory_write_dword(MerryCoreRAM *mem, maddress_t addr,
   return MRES_SUCCESS;
 }
 
-mresult_t merry_memory_write_qword(MerryCoreRAM *mem, maddress_t addr,
+mresult_t merry_core_memory_write_qword(MerryCoreRAM *mem, maddress_t addr,
                                        mqword_t store) {
   merry_check_ptr(mem);
   if (surelyF(addr >= mem->max_address))
@@ -214,7 +214,7 @@ mresult_t merry_memory_write_qword(MerryCoreRAM *mem, maddress_t addr,
   return MRES_SUCCESS;
 }
 
-mresult_t merry_memory_write_byte_atm(MerryCoreRAM *mem, maddress_t addr,
+mresult_t merry_core_memory_write_byte_atm(MerryCoreRAM *mem, maddress_t addr,
                                           mbyte_t store) {
   merry_check_ptr(mem);
   if (surelyF(addr >= mem->max_address))
@@ -226,7 +226,7 @@ mresult_t merry_memory_write_byte_atm(MerryCoreRAM *mem, maddress_t addr,
   return MRES_SUCCESS;
 }
 
-mresult_t merry_memory_write_word_atm(MerryCoreRAM *mem, maddress_t addr,
+mresult_t merry_core_memory_write_word_atm(MerryCoreRAM *mem, maddress_t addr,
                                           mword_t store) {
   merry_check_ptr(mem);
   if (surelyF(addr >= mem->max_address))
@@ -238,7 +238,7 @@ mresult_t merry_memory_write_word_atm(MerryCoreRAM *mem, maddress_t addr,
   return MRES_SUCCESS;
 }
 
-mresult_t merry_memory_write_dword_atm(MerryCoreRAM *mem, maddress_t addr,
+mresult_t merry_core_memory_write_dword_atm(MerryCoreRAM *mem, maddress_t addr,
                                            mdword_t store) {
   merry_check_ptr(mem);
   if (surelyF(addr >= mem->max_address))
@@ -250,7 +250,7 @@ mresult_t merry_memory_write_dword_atm(MerryCoreRAM *mem, maddress_t addr,
   return MRES_SUCCESS;
 }
 
-mresult_t merry_memory_write_qword_atm(MerryCoreRAM *mem, maddress_t addr,
+mresult_t merry_core_memory_write_qword_atm(MerryCoreRAM *mem, maddress_t addr,
                                            mqword_t store) {
   merry_check_ptr(mem);
   if (surelyF(addr >= mem->max_address))
@@ -262,7 +262,7 @@ mresult_t merry_memory_write_qword_atm(MerryCoreRAM *mem, maddress_t addr,
   return MRES_SUCCESS;
 }
 
-mresult_t merry_memory_write_bulk(MerryCoreRAM *mem, maddress_t addr,
+mresult_t merry_core_memory_write_bulk(MerryCoreRAM *mem, maddress_t addr,
                                       msize_t len, mbptr_t store) {
   merry_check_ptr(mem);
   merry_check_ptr(store);
@@ -298,7 +298,7 @@ mresult_t merry_memory_write_bulk(MerryCoreRAM *mem, maddress_t addr,
   return MRES_SUCCESS;
 }
 
-mresult_t merry_memory_cmpxchg(MerryCoreRAM *mem, maddress_t addr, mbyte_t exp,
+mresult_t merry_core_memory_cmpxchg(MerryCoreRAM *mem, maddress_t addr, mbyte_t exp,
                                    mbyte_t des) {
   merry_check_ptr(mem);
   if (surelyF(addr >= mem->max_address))
@@ -310,7 +310,7 @@ mresult_t merry_memory_cmpxchg(MerryCoreRAM *mem, maddress_t addr, mbyte_t exp,
   return MRES_SUCCESS;
 }
 
-void merry_memory_destroy(MerryCoreRAM *mem) {
+void merry_core_memory_destroy(MerryCoreRAM *mem) {
   // The pages and the memory buffer is none of RAM's concern
   merry_check_ptr(mem);
   merry_MerryCoreRAMPage_list_destroy(mem->pg_list);

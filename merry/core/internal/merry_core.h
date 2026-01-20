@@ -26,33 +26,28 @@ _MERRY_DECLARE_STACK_(CoreProcFrame, MerryCoreStackFrame);
 typedef struct MerryCore MerryCore;
 
 struct MerryCore {
-  MerryCoreRAM *ram;
+  MerryCoreRAM *iram, *dram;
   MerryInterfaceList *interfaces; // we will need a much more complicated data structure
-  MerryCoreProcFrameStack *frame_stack;
+  MerryCoreProcFrameStack *stack_frames;
+  MerryMappedMemory *st;
 
   MerryCoreFlagsRegr flags;
   MerryCoreFFlagsRegr fflags;
   mqword_t _registers[MERRY_CORE_REG_COUNT];
   maddress_t BP, SP;
-  maddress_t PC;
-  
+  maddress_t PC;  
+  MerryHostMemLayout IR;
+  mqptr_t stack;
 };
 
-mresult_t rbc_core_create(MerryCoreIdentity iden,
-                          maddress_t st_addr, mptr_t *ptr);
+mresult_t merry_core_create(maddress_t st_addr, MerryCore **core);
 
-void rbc_core_destroy(mptr_t c);
+void merry_core_destroy(MerryCore* c);
 
-msize_t rbc_core_run(mptr_t c);
+msize_t merry_core_run(MerryCore* c);
 
-void rbc_core_prep_for_deletion(mptr_t c);
+mresult_t merry_core_prepare_inst(MerryCore* c, mbptr_t inst, msize_t len);
 
-mresult_t rbc_core_set_input(mptr_t c, mstr_t path);
-
-mresult_t rbc_core_prepare_core(mptr_t c);
-
-mresult_t rbc_core_config(mstr_t opt, mcstr_t val, mbool_t *used);
-
-mresult_t rbc_core_set_flags(mptr_t core, msize_t op);
+mresult_t merry_core_prepare_data(MerryCore* c, mbptr_t data, msize_t len);
 
 #endif

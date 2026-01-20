@@ -38,54 +38,54 @@ struct MerryCoreRAM {
 };
 
 // Initialize a memory(Just Initialization. Pages not populated)
-MerryCoreRAM *merry_memory_init();
+MerryCoreRAM *merry_core_memory_init();
 
-mresult_t merry_memory_populate(MerryCoreRAM *mem, msize_t space_len,
+mresult_t merry_core_memory_populate(MerryCoreRAM *mem, msize_t space_len,
                               mbptr_t addr_space);
 
 // Reads
-mresult_t merry_memory_read_byte(MerryCoreRAM *mem, maddress_t addr,
+mresult_t merry_core_memory_read_byte(MerryCoreRAM *mem, maddress_t addr,
                                      mbptr_t store_in);
-mresult_t merry_memory_read_word(MerryCoreRAM *mem, maddress_t addr,
+mresult_t merry_core_memory_read_word(MerryCoreRAM *mem, maddress_t addr,
                                      mwptr_t store_in);
-mresult_t merry_memory_read_dword(MerryCoreRAM *mem, maddress_t addr,
+mresult_t merry_core_memory_read_dword(MerryCoreRAM *mem, maddress_t addr,
                                       mdptr_t store_in);
-mresult_t merry_memory_read_qword(MerryCoreRAM *mem, maddress_t addr,
+mresult_t merry_core_memory_read_qword(MerryCoreRAM *mem, maddress_t addr,
                                       mqptr_t store_in);
-mresult_t merry_memory_read_byte_atm(MerryCoreRAM *mem, maddress_t addr,
+mresult_t merry_core_memory_read_byte_atm(MerryCoreRAM *mem, maddress_t addr,
                                          mbptr_t store_in);
-mresult_t merry_memory_read_word_atm(MerryCoreRAM *mem, maddress_t addr,
+mresult_t merry_core_memory_read_word_atm(MerryCoreRAM *mem, maddress_t addr,
                                          mwptr_t store_in);
-mresult_t merry_memory_read_dword_atm(MerryCoreRAM *mem, maddress_t addr,
+mresult_t merry_core_memory_read_dword_atm(MerryCoreRAM *mem, maddress_t addr,
                                           mdptr_t store_in);
-mresult_t merry_memory_read_qword_atm(MerryCoreRAM *mem, maddress_t addr,
+mresult_t merry_core_memory_read_qword_atm(MerryCoreRAM *mem, maddress_t addr,
                                           mqptr_t store_in);
-mresult_t merry_memory_read_bulk(MerryCoreRAM *mem, maddress_t addr,
+mresult_t merry_core_memory_read_bulk(MerryCoreRAM *mem, maddress_t addr,
                                      msize_t len, mbptr_t store_in);
 
 // Writes
-mresult_t merry_memory_write_byte(MerryCoreRAM *mem, maddress_t addr,
+mresult_t merry_core_memory_write_byte(MerryCoreRAM *mem, maddress_t addr,
                                       mbyte_t store);
-mresult_t merry_memory_write_word(MerryCoreRAM *mem, maddress_t addr,
+mresult_t merry_core_memory_write_word(MerryCoreRAM *mem, maddress_t addr,
                                       mword_t store);
-mresult_t merry_memory_write_dword(MerryCoreRAM *mem, maddress_t addr,
+mresult_t merry_core_memory_write_dword(MerryCoreRAM *mem, maddress_t addr,
                                        mdword_t store);
-mresult_t merry_memory_write_qword(MerryCoreRAM *mem, maddress_t addr,
+mresult_t merry_core_memory_write_qword(MerryCoreRAM *mem, maddress_t addr,
                                        mqword_t store);
-mresult_t merry_memory_write_byte_atm(MerryCoreRAM *mem, maddress_t addr,
+mresult_t merry_core_memory_write_byte_atm(MerryCoreRAM *mem, maddress_t addr,
                                           mbyte_t store);
-mresult_t merry_memory_write_word_atm(MerryCoreRAM *mem, maddress_t addr,
+mresult_t merry_core_memory_write_word_atm(MerryCoreRAM *mem, maddress_t addr,
                                           mword_t store);
-mresult_t merry_memory_write_dword_atm(MerryCoreRAM *mem, maddress_t addr,
+mresult_t merry_core_memory_write_dword_atm(MerryCoreRAM *mem, maddress_t addr,
                                            mdword_t store);
-mresult_t merry_memory_write_qword_atm(MerryCoreRAM *mem, maddress_t addr,
+mresult_t merry_core_memory_write_qword_atm(MerryCoreRAM *mem, maddress_t addr,
                                            mqword_t store);
-mresult_t merry_memory_write_bulk(MerryCoreRAM *mem, maddress_t addr,
+mresult_t merry_core_memory_write_bulk(MerryCoreRAM *mem, maddress_t addr,
                                       msize_t len, mbptr_t store);
 
-mresult_t merry_memory_cmpxchg(MerryCoreRAM *mem, maddress_t addr, mbyte_t exp,
+mresult_t merry_core_memory_cmpxchg(MerryCoreRAM *mem, maddress_t addr, mbyte_t exp,
                                    mbyte_t des);
 
-void merry_memory_destroy(MerryCoreRAM *mem);
+void merry_core_memory_destroy(MerryCoreRAM *mem);
 
 #endif
