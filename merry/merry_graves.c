@@ -6,11 +6,12 @@ _MERRY_DEFINE_STATIC_LIST_(Group, MerryGravesGroup *);
 
 _MERRY_NO_RETURN_ void Merry_Graves_Run(int argc, char **argv) {
   // Now we perform pre-initialization
+  MDBG("Running Merry", NULL);
   if (merry_graves_pre_init() != MRES_SUCCESS)
     goto GRAVES_FAILED_TO_START;
 
   if (merry_parse_arg(argc, argv, interfaces) == RET_FAILURE) {
-    MFATAL("Graves", "Failed to parse input arguments", NULL);
+    MERR("Failed to parse input arguments", NULL);
     exit(-1);
   }
   GRAVES._config = CONSTS();
@@ -28,14 +29,16 @@ _MERRY_NO_RETURN_ void Merry_Graves_Run(int argc, char **argv) {
     goto GRAVES_FAILED_TO_START;
 
   // Finally Ready to RUN the VM
+  MDBG("Successfully Initialized Merry", NULL);
   merry_graves_START();
 
   // Exit
+  MDBG("Terminating", NULL);
   exit(0);
 
 GRAVES_FAILED_TO_START:
   // Graves couldn't fully initialize
-  exit(-1);
+  MDBG("Failed to Initialize Merry", NULL);
   merry_graves_destroy();
   exit(-1);
 }
@@ -45,10 +48,22 @@ mresult_t merry_graves_pre_init() {
    * If we ever have config files, this is the ideal point to
    * parse them
    * */
+  MDBG("Getting Configurations...", NULL);
   return MRES_SUCCESS;
 }
 
 mresult_t merry_graves_parse_input() {
+  MDBG("Parsing Input File", NULL);
+  GRAVES.input = merry_input_init();
+  if (!GRAVES.input) {
+    MDBG("Failed to parse Input File", NULL);
+  	return MRES_FAILURE;
+  }
+  MDBG("File: %s", GRAVES._config->argv[GRAVES._config->inp_file_index]);
+  if (merry_input_read(GRAVES.input, GRAVES._config->argv[GRAVES._config->inp_file_index]) != MRES_SUCCESS) {
+  	MDBG("Failed to parse Input File", NULL);
+  	return MRES_FAILURE;
+  }
   return MRES_SUCCESS;
 }
 
@@ -59,23 +74,21 @@ mresult_t merry_graves_init() {
     grp_count = GRAVES._config->group_count_limit;
   res = merry_Group_list_create(grp_count, &GRAVES.GRPS);
   if (!GRAVES.GRPS) {
-    // MFATAL("Graves", "Failed to initialize MERRY: Graves Initialization", NULL);
+    MERR("Failed to initialize MERRY: Failed to create GROUP List", NULL);
     return res;
   }
 
   if (merry_cond_init(&GRAVES.graves_cond) != MRES_SUCCESS) {
-    // MFATAL("Graves",
-    //        "Failed to initialize MERRY: Graves Initialization[Failed to obtain "
-    //        "condition variable]",
-    //        NULL);
+    MERR("Failed to initialize MERRY: Graves Initialization[Failed to obtain "
+           "condition variable]",
+           NULL);
     return MRES_FAILURE;
   }
 
   if (merry_mutex_init(&GRAVES.graves_lock) != MRES_SUCCESS) {
-    // MFATAL("Graves",
-    //        "Failed to initialize MERRY: Graves Initialization[Failed to obtain "
-    //        "mutex lock]",
-    //        NULL);
+    MERR("Failed to initialize MERRY: Graves Initialization[Failed to obtain "
+           "mutex lock]",
+           NULL);
     return MRES_FAILURE;
   }
 
@@ -97,7 +110,7 @@ mresult_t merry_graves_ready_everything() {
   MerryGravesGroup *grp;
   mresult_t res = merry_graves_add_group(&grp);
   if (!(grp)) {
-    // MFATAL("Graves", "Failed to create first GROUP", NULL);
+    MERR("Failed to create first GROUP", NULL);
     return res;
   }
 
@@ -106,7 +119,7 @@ mresult_t merry_graves_ready_everything() {
   res = merry_graves_add_core(grp, &first_core);
 
   if (!first_core) {
-    // MFATAL("Graves", "Failed to add first CORE", NULL);
+    MERR("Failed to add first CORE", NULL);
     merry_graves_group_destroy(grp);
     return res;
   }
@@ -114,7 +127,7 @@ mresult_t merry_graves_ready_everything() {
   // Initialize the first core
   if (merry_graves_init_a_core(first_core, 0x00) !=
       MRES_SUCCESS) {
-    // MFATAL("Graves", "Failed to initialize the first core...", NULL);
+    MERR("Failed to initialize the first core...", NULL);
     merry_graves_group_destroy(grp);
     return MRES_FAILURE;
   }
@@ -122,7 +135,7 @@ mresult_t merry_graves_ready_everything() {
 
   // Finally Initialize the Request Queue
   if (merry_graves_req_queue_init() == RET_FAILURE) {
-    // MFATAL("Graves", "Failed to initialize REQUEST QUEUE HANDLER", NULL);
+    // MERR("Graves", "Failed to initialize REQUEST QUEUE HANDLER", NULL);
     /// TODO: Delete the core
     first_core->core = NULL;
     merry_graves_group_destroy(grp);
@@ -278,7 +291,7 @@ void merry_graves_START() {
     return;
 
   if (merry_graves_boot_a_core(first_core) != MRES_SUCCESS) {
-    // MFATAL("Graves", "[<BOOT>] Failed to start the VM [First core boot failed]",
+    // MERR("Graves", "[<BOOT>] Failed to start the VM [First core boot failed]",
            // NULL);
     goto GRAVES_OVERSEER_END;
   }

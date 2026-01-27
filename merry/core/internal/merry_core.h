@@ -17,6 +17,7 @@
 #include <merry_core_defs.h>
 #include <merry_core_registers.h>
 #include <merry_core_sysint.h>
+#include <merry_core_instruction_handler.h>
 #include <stdlib.h>
 
 _MERRY_DECLARE_STATIC_LIST_(Interface, MerryInterface *);
@@ -33,11 +34,12 @@ struct MerryCore {
 
   MerryCoreFlagsRegr flags;
   MerryCoreFFlagsRegr fflags;
-  mqword_t _registers[MERRY_CORE_REG_COUNT];
+  mqword_t REGISTER_FILE[MERRY_CORE_REG_COUNT];
   maddress_t BP, SP;
   maddress_t PC;  
   MerryHostMemLayout IR;
   mqptr_t stack;
+  msize_t ret;
 };
 
 mresult_t merry_core_create(maddress_t st_addr, MerryCore **core);

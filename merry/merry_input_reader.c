@@ -18,7 +18,7 @@ _MERRY_INTERNAL_ mresult_t merry_input_parse_header(MerryInput *inp, msize_t fle
   }
 
   if (chunk[0] != 'M' || chunk[1] != 'I' || chunk[2] != 'F') {
-    MERR("Unknown Input File Type received: The IDENTIFICATION bytes 'RIF' "
+    MERR("Unknown Input File Type received: The IDENTIFICATION bytes 'MIF' "
          "expected but got %b%b%b", chunk[0], chunk[1], chunk[2]);
     ret = MRES_UNRECOGNIZED;
     goto OPERATION_FAILURE;

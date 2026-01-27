@@ -8,6 +8,7 @@
 #include <merry_graves_defs.h>
 #include <merry_graves_groups.h>
 #include <merry_graves_request_queue.h>
+#include <merry_graves_input_reader.h>
 #include <merry_list.h>
 #include <merry_protectors.h>
 #include <merry_requests.h>
@@ -23,6 +24,7 @@ typedef struct MerryGraves MerryGraves;
 
 struct MerryGraves {
   MerryGroupList *GRPS; // all of the groups
+  MerryInput *input;
   msize_t grp_count;
 
   // needed fields

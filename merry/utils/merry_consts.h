@@ -69,10 +69,9 @@ _MERRY_INTERNAL_ mstr_t HELP_MSG =
     "    -Glcclim   [value]       set limit to the number of active core "
     "allowed\n";
 
-void merry_HELP_msg(MerryCoreInterface interfaces[__CORE_TYPE_COUNT]);
+void merry_HELP_msg();
 
-mresult_t merry_parse_arg(int argc, char **argv,
-                          MerryCoreInterface interfaces[__CORE_TYPE_COUNT]);
+mresult_t merry_parse_arg(int argc, char **argv);
 
 MerryConsts *CONSTS();
 
