@@ -1,7 +1,6 @@
 #ifndef _MERRY_CORE_
 #define _MERRY_CORE_
 
-#include <merry_core_interface.h>
 #include <merry_flags_regr.h>
 #include <merry_list.h>
 #include <merry_logger.h>
@@ -18,6 +17,7 @@
 #include <merry_core_registers.h>
 #include <merry_core_sysint.h>
 #include <merry_core_instruction_handler.h>
+#include <merry_core_ram.h>
 #include <stdlib.h>
 
 _MERRY_DECLARE_STATIC_LIST_(Interface, MerryInterface *);

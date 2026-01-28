@@ -1,4 +1,5 @@
-#include <merry_core_core->IR_handler.h>
+#include <merry_core_instruction_handler.h>
+#include <merry_core.h>
 
 void merry_core_compare_f32(float a, float b, MerryCoreFFlagsRegr *regr) {
   regr->zf = (a == b && a == 0.0f);
@@ -45,7 +46,7 @@ merry_core_ihdlr(sysint) {
  * */
 merry_core_ihdlr(mint) {
   merry_check_ptr(core);
-  MerryRequestArgs *args = &core->args;
+  // MerryRequestArgs *args = &core->args;
   switch (core->REGISTER_FILE[MERRY_CORE_R15]) {
   default:
     core->REGISTER_FILE[MERRY_CORE_R15] = MRES_INVALID_ARGS;
@@ -114,11 +115,11 @@ merry_core_ihdlr(mul_reg) {
   register mbyte_t op2 = core->IR.whole_word & MERRY_CORE_R15;
   core->REGISTER_FILE[op1] *= core->REGISTER_FILE[op2];
   core->flags.regr = merry_obtain_flags_regr();
-  return mtrue
+  return mtrue;
 }
 
 merry_core_ihdlr(div_imm) {
-  register mbyte_t op1 = core->IR & MERRY_CORE_R15;
+  register mbyte_t op1 = core->IR.whole_word & MERRY_CORE_R15;
   mqword_t op2;
   core->PC += 8;
   if (merry_core_memory_read_qword(core->iram, core->PC, &op2) !=
@@ -148,7 +149,7 @@ merry_core_ihdlr(div_reg) {
 }
 
 merry_core_ihdlr(mod_imm) {
-  register mbyte_t op1 = core->IR & MERRY_CORE_R15;
+  register mbyte_t op1 = core->IR.whole_word & MERRY_CORE_R15;
   mqword_t op2;
   core->PC += 8;
   if (merry_core_memory_read_qword(core->iram, core->PC, &op2) !=
@@ -273,8 +274,8 @@ merry_core_ihdlr(fmul32) {
 }
 
 merry_core_ihdlr(fdiv32) {
-  register mqword_t op1 = (core->IR >> 4) & MERRY_CORE_R15;
-  register mqword_t op2 = (core->IR)&MERRY_CORE_R15;
+  register mqword_t op1 = (core->IR.whole_word >> 4) & MERRY_CORE_R15;
+  register mqword_t op2 = (core->IR.whole_word)&MERRY_CORE_R15;
   register MerryFloatToDword a;
   register MerryFloatToDword b;
   a.d_val = core->REGISTER_FILE[op1];
@@ -766,7 +767,7 @@ merry_core_ihdlr(ret) {
   }
 
   MerryCoreStackFrame frame;
-  if ((merry_RBCProcFrame_stack_pop(core->stack_frames, &frame)) !=
+  if ((merry_CoreProcFrame_stack_pop(core->stack_frames, &frame)) !=
       MRES_SUCCESS) {
     MERR("Failed to restore stack frame: PC=%zu", core->PC);
     return mfalse;
@@ -980,7 +981,7 @@ merry_core_ihdlr(push_reg) {
   return mtrue;
 }
 
-merry_core_ihdlr(popq) {
+merry_core_ihdlr(pop64) {
   if (core->SP == 0) {
     MERR("Stack Underflow", NULL);
     return mfalse;
@@ -1011,7 +1012,7 @@ merry_core_ihdlr(popa) {
     core->SP--;
     core->REGISTER_FILE[i] = core->stack[core->SP];
   }
-  return mtrue
+  return mtrue;
 }
 
 merry_core_ihdlr(loadsq) {
@@ -1203,7 +1204,7 @@ merry_core_ihdlr(storeb) {
 
 merry_core_ihdlr(loadw) {
   register mbyte_t op1 = (core->IR.whole_word >> 48) & MERRY_CORE_R15;
-  mbyte_t imm;
+  mword_t imm;
   if (merry_core_memory_read_word(core->dram, core->IR.whole_word & 0xFFFFFFFFFFFF, &imm) != MRES_SUCCESS) {
     MERR("INVALID OPERAND at PC=%zu", core->PC);
     return mfalse;
@@ -1225,7 +1226,7 @@ merry_core_ihdlr(storew) {
 
 merry_core_ihdlr(loadd) {
   register mbyte_t op1 = (core->IR.whole_word >> 48) & MERRY_CORE_R15;
-  mbyte_t imm;
+  mdword_t imm;
   if (merry_core_memory_read_dword(core->dram, core->IR.whole_word & 0xFFFFFFFFFFFF, &imm) != MRES_SUCCESS) {
     MERR("INVALID OPERAND at PC=%zu", core->PC);
     return mfalse;
@@ -1247,7 +1248,7 @@ merry_core_ihdlr(stored) {
 
 merry_core_ihdlr(loadq) {
   register mbyte_t op1 = (core->IR.whole_word >> 48) & MERRY_CORE_R15;
-  mbyte_t imm;
+  mqword_t imm;
   if (merry_core_memory_read_qword(core->dram, core->IR.whole_word & 0xFFFFFFFFFFFF, &imm) != MRES_SUCCESS) {
     MERR("INVALID OPERAND at PC=%zu", core->PC);
     return mfalse;
@@ -1295,7 +1296,7 @@ merry_core_ihdlr(storeb_reg) {
 merry_core_ihdlr(loadw_reg) {
   register mbyte_t op1 = (core->IR.whole_word >> 4) & MERRY_CORE_R15;
   register mbyte_t op2 = core->IR.whole_word & MERRY_CORE_R15;
-  mbyte_t imm;
+  mword_t imm;
   if (merry_core_memory_read_word(core->dram, core->REGISTER_FILE[op2], &imm) !=
       MRES_SUCCESS) {
     MERR("INVALID OPERAND at PC=%zu", core->PC);
@@ -1320,7 +1321,7 @@ register mbyte_t op1 = (core->IR.whole_word >> 4) & MERRY_CORE_R15;
 merry_core_ihdlr(loadd_reg) {
   register mbyte_t op1 = (core->IR.whole_word >> 4) & MERRY_CORE_R15;
   register mbyte_t op2 = core->IR.whole_word & MERRY_CORE_R15;
-  mbyte_t imm;
+  mdword_t imm;
   if (merry_core_memory_read_dword(core->dram, core->REGISTER_FILE[op2], &imm) !=
       MRES_SUCCESS) {
     MERR("INVALID OPERAND at PC=%zu", core->PC);
@@ -1345,7 +1346,7 @@ merry_core_ihdlr(stored_reg) {
 merry_core_ihdlr(loadq_reg) {
   register mbyte_t op1 = (core->IR.whole_word >> 4) & MERRY_CORE_R15;
   register mbyte_t op2 = core->IR.whole_word & MERRY_CORE_R15;
-  mbyte_t imm;
+  mqword_t imm;
   if (merry_core_memory_read_qword(core->dram, core->REGISTER_FILE[op2], &imm) !=
       MRES_SUCCESS) {
     MERR("INVALID OPERAND at PC=%zu", core->PC);
@@ -1392,7 +1393,7 @@ merry_core_ihdlr(atm_storeb) {
 
 merry_core_ihdlr(atm_loadw) {
   register mbyte_t op1 = (core->IR.whole_word >> 48) & MERRY_CORE_R15;
-  mbyte_t imm;
+  mword_t imm;
   if (merry_core_memory_read_word_atm(core->dram, core->IR.whole_word & 0xFFFFFFFFFFFF,
                                &imm) != MRES_SUCCESS) {
     MERR("INVALID OPERAND at PC=%zu", core->PC);
@@ -1415,7 +1416,7 @@ merry_core_ihdlr(atm_storew) {
 
 merry_core_ihdlr(atm_loadd) {
   register mbyte_t op1 = (core->IR.whole_word >> 48) & MERRY_CORE_R15;
-  mbyte_t imm;
+  mdword_t imm;
   if (merry_core_memory_read_dword_atm(core->dram, core->IR.whole_word & 0xFFFFFFFFFFFF,
                                &imm) != MRES_SUCCESS) {
     MERR("INVALID OPERAND at PC=%zu", core->PC);
@@ -1438,7 +1439,7 @@ merry_core_ihdlr(atm_stored) {
 
 merry_core_ihdlr(atm_loadq) {
   register mbyte_t op1 = (core->IR.whole_word >> 48) & MERRY_CORE_R15;
-  mbyte_t imm;
+  mqword_t imm;
   if (merry_core_memory_read_qword_atm(core->dram, core->IR.whole_word & 0xFFFFFFFFFFFF,
                                &imm) != MRES_SUCCESS) {
     MERR("INVALID OPERAND at PC=%zu", core->PC);
@@ -1487,7 +1488,7 @@ merry_core_ihdlr(atm_storeb_reg) {
 merry_core_ihdlr(atm_loadw_reg) {
   register mbyte_t op1 = (core->IR.whole_word >> 4) & MERRY_CORE_R15;
   register mbyte_t op2 = core->IR.whole_word & MERRY_CORE_R15;
-  mbyte_t imm;
+  mword_t imm;
   if (merry_core_memory_read_word_atm(core->dram, core->REGISTER_FILE[op2], &imm) !=
       MRES_SUCCESS) {
     MERR("INVALID OPERAND at PC=%zu", core->PC);
@@ -1512,7 +1513,7 @@ merry_core_ihdlr(atm_storew_reg) {
 merry_core_ihdlr(atm_loadd_reg) {
   register mbyte_t op1 = (core->IR.whole_word >> 4) & MERRY_CORE_R15;
   register mbyte_t op2 = core->IR.whole_word & MERRY_CORE_R15;
-  mbyte_t imm;
+  mdword_t imm;
   if (merry_core_memory_read_dword_atm(core->dram, core->REGISTER_FILE[op2], &imm) !=
       MRES_SUCCESS) {
     MERR("INVALID OPERAND at PC=%zu", core->PC);
@@ -1537,7 +1538,7 @@ merry_core_ihdlr(atm_stored_reg) {
 merry_core_ihdlr(atm_loadq_reg) {
   register mbyte_t op1 = (core->IR.whole_word >> 4) & MERRY_CORE_R15;
   register mbyte_t op2 = core->IR.whole_word & MERRY_CORE_R15;
-  mbyte_t imm;
+  mqword_t imm;
   if (merry_core_memory_read_qword_atm(core->dram, core->REGISTER_FILE[op2], &imm) !=
       MRES_SUCCESS) {
     MERR("INVALID OPERAND at PC=%zu", core->PC);
@@ -1612,7 +1613,7 @@ merry_core_ihdlr(cmpxchg) {
 merry_core_ihdlr(cmpxchg_reg) {
   register mbyte_t desired = (core->IR.whole_word >> 8) & 0xFF;
   register mbyte_t expected = core->IR.whole_word & 0xFF;
-  mqword_t address = core->REGISTER_FILE[(core->IR >> 16) & MERRY_CORE_R15];
+  mqword_t address = core->REGISTER_FILE[(core->IR.whole_word >> 16) & MERRY_CORE_R15];
   mret_t ret = merry_core_memory_cmpxchg(core->dram, address, desired, expected);
   core->flags.regr = merry_obtain_flags_regr();
   if (ret != MRES_SUCCESS) {

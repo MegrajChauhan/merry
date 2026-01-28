@@ -30,7 +30,7 @@ struct MerryCoreRAMPage {
 	} repr;
 };
 
-_MERRY_DECLARE_STATIC_LIST_(MerryCoreRAMPage, MerryCoreRAMPage);
+_MERRY_DECLARE_STATIC_LIST_(CoreRAMPage, MerryCoreRAMPage);
 
 struct MerryCoreRAM {
   MerryCoreRAMPageList *pg_list;

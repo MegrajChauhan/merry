@@ -1,6 +1,6 @@
 #include <merry_log_subsystem.h>
 
-_MERRY_INTERNAL_ mcstr_t *lvl_str[] = {
+_MERRY_INTERNAL_ mcstr_t lvl_str[] = {
     "INFO",
     "WARN",
     "ERROR",

@@ -8,6 +8,7 @@
 #include <merry_results.h>
 #include <merry_types.h>
 #include <merry_utils.h>
+#include <merry_core_defs.h>
 #include <stdlib.h>
 
 /*

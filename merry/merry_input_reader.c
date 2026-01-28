@@ -13,7 +13,7 @@ _MERRY_INTERNAL_ mresult_t merry_input_parse_header(MerryInput *inp, msize_t fle
   mresult_t ret;
 
   // Read the header
-  if ((ret = merry_file_read(inp->input_file, chunk, 8)) != MRES_SUCCESS) {
+  if ((ret = merry_file_read(inp->input_file, NULL, chunk, 8)) != MRES_SUCCESS) {
     goto OPERATION_FAILURE;
   }
 
@@ -34,7 +34,7 @@ _MERRY_INTERNAL_ mresult_t merry_input_parse_header(MerryInput *inp, msize_t fle
   MDBG("ENDIANNESS matched", NULL);
 
   // Now time for the lengths
-  if ((ret = merry_file_read(inp->input_file, chunk, 8)) != MRES_SUCCESS) {
+  if ((ret = merry_file_read(inp->input_file, NULL,chunk, 8)) != MRES_SUCCESS) {
     goto OPERATION_FAILURE;
   }
 
@@ -62,7 +62,7 @@ _MERRY_INTERNAL_ mresult_t merry_input_parse_header(MerryInput *inp, msize_t fle
   }
   MDBG("Intruction section: Length=%zu BYTES", ilen.whole_word);
 
-  if ((ret = merry_file_read(inp->input_file, chunk, 8)) != MRES_SUCCESS) {
+  if ((ret = merry_file_read(inp->input_file, NULL, chunk, 8)) != MRES_SUCCESS) {
     goto OPERATION_FAILURE;
   }
 
@@ -77,7 +77,7 @@ _MERRY_INTERNAL_ mresult_t merry_input_parse_header(MerryInput *inp, msize_t fle
 
   MDBG("Data section: Length=%zu BYTES", dlen.whole_word);
 
-  if ((ret = merry_file_read(inp->input_file, chunk, 8)) != MRES_SUCCESS) {
+  if ((ret = merry_file_read(inp->input_file, NULL, chunk, 8)) != MRES_SUCCESS) {
     goto OPERATION_FAILURE;
   }
 
@@ -145,24 +145,24 @@ mresult_t merry_input_read(MerryInput *inp, mstr_t path) {
   msize_t fsize = 0;
   if ((ret = merry_file_size(inp->input_file, &fsize)) != MRES_SUCCESS)
     merry_unreachable(); // should never fail
-  if (fsize == 0) {
+  if (fsize == 0 || fsize < 40) {
     MERR("Empty Input File! Nothing to execute! FILE=%s", path);
     goto MERRY_INP_PARSE_FAILED;
   }
 
-  if ((ret = merry_input_parse_header(inp, fsize, res)) != MRES_SUCCESS) {
+  if ((ret = merry_input_parse_header(inp, fsize)) != MRES_SUCCESS) {
     MERR("While parsing input file: PATH=%s", path);
     goto MERRY_INP_PARSE_FAILED;
   }
 
-  inp->data_len = merry_align(inp->data_len, _MERRY_PAGE_LEN_IN_BYTES_);
+  inp->data_len = merry_align_value(inp->data_len, _MERRY_CORE_PAGE_LEN_IN_BYTES_);
 
   // Now finally allocate the memory
   msize_t total_len = inp->data_len + inp->instruction_len + 32;
 
   if ((ret = merry_mapped_file_map(inp->mapped, path,
                                    _MERRY_MAPPED_FILE_ALIGN_FILE_LEN_,
-                                   _MERRY_PAGE_LEN_IN_BYTES_)) != MRES_SUCCESS) {
+                                   _MERRY_CORE_PAGE_LEN_IN_BYTES_)) != MRES_SUCCESS) {
     goto MERRY_INP_PARSE_FAILED;
   }
 

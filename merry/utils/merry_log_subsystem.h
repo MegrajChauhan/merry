@@ -2,7 +2,7 @@
 #define _MERRY_LOG_SUBSYSTEM_
 
 #include <merry_logger.h>
-#include <stdargs.h>
+#include <stdarg.h>
 #include <stdio.h>
 
 // Definitions for functions that do the displaying

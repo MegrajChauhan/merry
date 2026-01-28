@@ -16,6 +16,7 @@ mresult_t merry_parse_arg(int argc, char **argv) {
   consts.core_count_limit = 0;
   consts.graves_config.core_count_lim = mfalse;
   consts.graves_config.group_count_lim = mfalse;
+  consts.graves_config.log_dbg = mfalse;
   int st = 1;
   while (st < argc) {
     switch (argv[st][0]) {
@@ -120,6 +121,11 @@ mresult_t merry_parse_cmd_option_Graves(mstr_t opt, const mstr_t nxt,
       return MRES_FAILURE;
     }
     break;
+  }
+  case 'f': {
+  	if (strcmp(opt, "-Gfdbg") == 0)
+  		consts.graves_config.log_dbg = mtrue;
+  	break;
   }
   default:
     printf("Unknown option type %s", opt);

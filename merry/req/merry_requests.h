@@ -14,7 +14,6 @@ union MerryRequestArgs {
   	msize_t ret;
   } stop_core;
   struct {
-    mcore_t new_core_type;
     maddress_t st_addr;
     mguid_t gid; // The group that the core should belong to
     // Results

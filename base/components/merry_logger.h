@@ -2,6 +2,7 @@
 #define _MERRY_LOGGER_
 
 #include <merry_config.h>
+#include <merry_defs.h>
 #include <merry_helpers.h>
 #include <stdio.h>
 

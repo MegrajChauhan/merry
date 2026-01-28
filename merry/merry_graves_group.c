@@ -32,8 +32,8 @@ mresult_t merry_graves_group_add_core(MerryGravesGroup *grp,
       return resl;
     merry_CoreRepr_list_push(grp->all_cores, &core);
   }
-  core->metadata.iden.id = merry_CoreRepr_list_size(grp->all_cores) - 1;
-  core->metadata.iden.gid = grp->group_id;
+  core->iden.id = merry_CoreRepr_list_size(grp->all_cores) - 1;
+  core->iden.gid = grp->group_id;
   grp->core_count++;
   return MRES_SUCCESS;
 }

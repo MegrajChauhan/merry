@@ -6,6 +6,9 @@ DIRS = merry/cores \
        merry/graves \
        merry/interface \
        merry/req \
+       merry/core/comp \
+       merry/core/def \
+       merry/core/internal \
        base/abs/hard \
        base/abs/soft \
        base/abs/os \
@@ -15,8 +18,8 @@ DIRS = merry/cores \
        base/lib \
        base/lib_defs \
        base/utils \
-       merry/utils
-SRC_DIR = merry/
+       merry/utils 
+SRC_DIR = merry/ merry/core/
 INC_DIRS = ${addprefix -I, ${DIRS}}
 FLAGS += ${flags}
 
@@ -29,7 +32,7 @@ DEPS=${patsubst %.c, ${OUTPUT_DEPS}%.d, ${FILES_TO_COMPILE}}
 
 all: directories ${OUTPUT_FILES_NAME}
 	make -C base
-	${CC} ${FLAGS} ${OUTPUT_FILES_NAME} mvm.c -Lbuild -lmbase ${INC_DIRS} -o ${OUTPUT_DIR}merry
+	${CC} ${FLAGS} ${OUTPUT_FILES_NAME} mvm.c -Lbuild -lmbase ${INC_DIRS} -o ${OUTPUT_DIR}mvm
 
 WATCH_PROJECT: directories ${OUTPUT_FILES_NAME}
 

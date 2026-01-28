@@ -5,7 +5,6 @@
 // The ones in the config and utils are different category of contants
 
 #include <ctype.h>
-#include <merry_core_interface.h>
 #include <merry_helpers.h>
 #include <merry_results.h>
 #include <merry_types.h>
@@ -20,11 +19,14 @@ struct MerryConsts {
   /*
    * Configure Graves
    * Options are prefixed with -G or --G
+   * Gl -> Graves limit
+   * Gf -> Graves flag
    * */
   struct {
     bit_group(group_count_lim, 1); // -Glgrpclim [value]
     bit_group(core_count_lim, 1);  // -Glcclim [value]
-    bit_group(res, 6);
+    bit_group(log_dbg, 1);         // -Gfdbg
+    bit_group(res, 5);
   } graves_config;
   /*
    * If the user wants to limit core count to specific group only then it can be

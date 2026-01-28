@@ -32,7 +32,7 @@ mresult_t merry_core_create(maddress_t st_addr, MerryCore **core) {
     free(c);
     goto MERRY_CC_FAILED;
   }
-  merry_mapped_memory_obtain_ptr(c->st, &c->stack);
+  merry_mapped_memory_obtain_ptr(c->st, (mbptr_t*)&c->stack);
   if ((ret = merry_CoreProcFrame_stack_init(&c->stack_frames,
                                            _MERRY_CORE_CALL_DEPTH_)) != MRES_SUCCESS) {
     MERR("Failed to initialize the stack", NULL);
@@ -74,7 +74,7 @@ msize_t merry_core_run(MerryCore* c) {
           c->ret = 1;
           break;
     } else {
-      running = c->HDLRS[c->IR.bytes.b0](c);
+      running = HDLRS[c->IR.bytes.b0](c);
       c->PC += 8;
     }
   }

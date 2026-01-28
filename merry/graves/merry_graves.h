@@ -8,7 +8,7 @@
 #include <merry_graves_defs.h>
 #include <merry_graves_groups.h>
 #include <merry_graves_request_queue.h>
-#include <merry_graves_input_reader.h>
+#include <merry_input_reader.h>
 #include <merry_list.h>
 #include <merry_protectors.h>
 #include <merry_requests.h>
@@ -16,6 +16,7 @@
 #include <merry_threads.h>
 #include <merry_types.h>
 #include <merry_utils.h>
+#include <merry_log_subsystem.h>
 #include <stdlib.h>
 
 _MERRY_DECLARE_STATIC_LIST_(Group, MerryGravesGroup *);
@@ -66,8 +67,7 @@ mresult_t merry_graves_add_group(MerryGravesGroup **grp);
 mresult_t merry_graves_add_core(MerryGravesGroup *grp, MerryCoreRepr **repr);
 mresult_t merry_graves_init_a_core(MerryCoreRepr *repr, maddress_t addr);
 mresult_t merry_graves_boot_a_core(MerryCoreRepr *repr);
-void merry_graves_give_IDs_to_cores(MerryCoreRepr *repr, MerryGravesGroup *grp);
-void merry_graves_failed_core_booting();
+void merry_graves_give_IDs_to_cores(MerryCoreRepr *repr);
 
 MerryGravesGroup *merry_graves_get_group(mguid_t gid);
 
