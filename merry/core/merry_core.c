@@ -53,7 +53,7 @@ MERRY_CC_FAILED:
 }
 
 void merry_core_destroy(MerryCore* c) {
-  merry_check_ptr(c);
+  if (!c) return;
 
   merry_Interface_list_destroy(c->interfaces);
   merry_CoreProcFrame_stack_destroy(c->stack_frames);
@@ -65,7 +65,6 @@ void merry_core_destroy(MerryCore* c) {
 }
 
 msize_t merry_core_run(MerryCore* c) {
-  merry_check_ptr(c);
   mbool_t running = mtrue;
   while (running) {
     if (surelyF(
@@ -82,8 +81,7 @@ msize_t merry_core_run(MerryCore* c) {
 }
 
 mresult_t merry_core_prepare_inst(MerryCore* c, mbptr_t inst, msize_t len) {
-	merry_check_ptr(c);
-	merry_check_ptr(inst);
+	if (!c || !inst) return MRES_INVALID_ARGS;
 	c->iram = merry_core_memory_init();
 	if (!c->iram) 
 		return MRES_SYS_FAILURE;    
@@ -91,8 +89,7 @@ mresult_t merry_core_prepare_inst(MerryCore* c, mbptr_t inst, msize_t len) {
 }
 
 mresult_t merry_core_prepare_data(MerryCore* c, mbptr_t data, msize_t len) {
-	merry_check_ptr(c);
-	merry_check_ptr(data);
+    if (!c || !data) return MRES_INVALID_ARGS;
 	c->dram = merry_core_memory_init();
 	if (!c->dram) 
 		return MRES_SYS_FAILURE;    

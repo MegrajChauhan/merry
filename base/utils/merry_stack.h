@@ -35,6 +35,7 @@
 #define _MERRY_DEFINE_STACK_(name, type)                                       \
   mresult_t merry_##name##_stack_init(Merry##name##Stack **stack,              \
                                       msize_t cap) {                           \
+    if (!stack) return MRES_INVALID_ARGS; \
     *stack = (Merry##name##Stack *)malloc(sizeof(Merry##name##Stack));         \
     if (!(*stack)) {                                                           \
       return MRES_SYS_FAILURE;                                                 \
@@ -52,9 +53,8 @@
   }                                                                            \
   mresult_t merry_##name##_stack_init_ext_buf(Merry##name##Stack **stack,      \
                                               type *buf, msize_t len) {        \
-    merry_check_ptr(buf);                                                      \
-    if (len == 0)                                                              \
-      merry_unreachable();                                                     \
+    if (!stack || len == 0)                                                              \
+      return MRES_INVALID_ARGS;                                                     \
     *stack = (Merry##name##Stack *)malloc(sizeof(Merry##name##Stack));         \
     if (!(*stack)) {                                                           \
       return MRES_SYS_FAILURE;                                                 \
@@ -68,9 +68,7 @@
   }                                                                            \
   mresult_t merry_##name##_stack_push(Merry##name##Stack *stack,               \
                                       type *value) {                           \
-    merry_check_ptr(stack);                                                    \
-    merry_check_ptr(stack->buf);                                               \
-    merry_check_ptr(value);                                                    \
+    if (!stack || !value) return MRES_INVALID_ARGS; \
     if (merry_is_stack_full(stack))                                            \
       return MRES_CONT_FULL;                                                   \
     stack->sp++;                                                               \
@@ -78,8 +76,7 @@
     return MRES_SUCCESS;                                                       \
   }                                                                            \
   mresult_t merry_##name##_stack_pop(Merry##name##Stack *stack, type *elem) {  \
-    merry_check_ptr(stack);                                                    \
-    merry_check_ptr(stack->buf);                                               \
+    if (!stack || !elem) return MRES_INVALID_ARGS; \
     if (merry_is_stack_empty(stack))                                           \
       return MRES_CONT_EMPTY;                                                  \
     *elem = stack->buf[stack->sp];                                             \
@@ -87,14 +84,12 @@
     return MRES_SUCCESS;                                                       \
   }                                                                            \
   void merry_##name##_stack_clear(Merry##name##Stack *stack) {                 \
-    merry_check_ptr(stack);                                                    \
-    merry_check_ptr(stack->buf);                                               \
+    if (!stack) return; \
     stack->sp = (msize_t) - 1;                                                 \
   }                                                                            \
   void merry_##name##_stack_destroy(Merry##name##Stack *stack) {               \
-    merry_check_ptr(stack);                                                    \
-    merry_check_ptr(stack->buf);                                               \
-    if (!stack->external_buffer)                                               \
+    if (!stack) return; \
+    if (stack->external_buffer)                                               \
       free(stack->buf);                                                        \
     free(stack);                                                               \
   }

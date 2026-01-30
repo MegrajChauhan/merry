@@ -48,7 +48,7 @@ mresult_t merry_mapped_memory_unmap(MerryMappedMemory *mem) {
 }
 
 mresult_t merry_mapped_memory_obtain_ptr(MerryMappedMemory *mem, mbptr_t *ptr) {
-  if (!mem)
+  if (!mem || !ptr)
     return MRES_INVALID_ARGS;
   if (mem->interface_t != INTERFACE_TYPE_MAPPED_MEMORY)
     return MRES_CONFIGURATION_INVALID;

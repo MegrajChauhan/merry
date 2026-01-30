@@ -1,7 +1,7 @@
 #include "merry_queue.h"
 
 mresult_t merry_create_squeue(MerrySQueue **queue, msize_t cap, msize_t elen) {
-  if (surelyF(cap == 0 || elen == 0))
+  if (surelyF(!queue || cap == 0 || elen == 0))
     return MRES_INVALID_ARGS;
   *queue = (MerrySQueue *)malloc(sizeof(MerrySQueue));
   if (!(*queue)) {
@@ -19,15 +19,14 @@ mresult_t merry_create_squeue(MerrySQueue **queue, msize_t cap, msize_t elen) {
 }
 
 mptr_t merry_squeue_top(MerrySQueue *queue) {
-  merry_check_ptr(queue);
+  if (!queue) return RET_NULL;
   if (merry_squeue_empty(queue))
     return RET_NULL;
   return (mptr_t)(((char *)queue->buf + (queue->head * queue->elem_len)));
 }
 
 mresult_t merry_squeue_enqueue(MerrySQueue *queue, mptr_t elem) {
-  merry_check_ptr(queue);
-  merry_check_ptr(elem);
+  if (!queue || !elem) return MRES_INVALID_ARGS;
 
   if (merry_squeue_full(queue))
     return MRES_CONT_FULL;
@@ -41,8 +40,7 @@ mresult_t merry_squeue_enqueue(MerrySQueue *queue, mptr_t elem) {
 }
 
 mresult_t merry_squeue_dequeue(MerrySQueue *queue, mptr_t elem) {
-  merry_check_ptr(queue);
-  merry_check_ptr(elem);
+  if (!queue || !elem) return MRES_INVALID_ARGS;
 
   if (merry_squeue_empty(queue))
     return MRES_CONT_EMPTY;
@@ -59,15 +57,14 @@ mresult_t merry_squeue_dequeue(MerrySQueue *queue, mptr_t elem) {
 }
 
 void merry_destroy_squeue(MerrySQueue *queue) {
-  merry_check_ptr(queue);
-  merry_check_ptr(queue->buf);
+  if (!queue) return;
   free(queue->buf);
   free(queue);
 }
 
 mresult_t merry_create_squeue_atm(MerrySQueueAtm **queue, msize_t cap,
                                   msize_t elen) {
-  if (surelyF(cap == 0 || elen == 0))
+  if (surelyF(!queue || cap == 0 || elen == 0))
     return MRES_INVALID_ARGS;
   *queue = (MerrySQueueAtm *)malloc(sizeof(MerrySQueueAtm));
   if (!(*queue)) {
@@ -85,15 +82,14 @@ mresult_t merry_create_squeue_atm(MerrySQueueAtm **queue, msize_t cap,
 }
 
 mptr_t merry_squeue_atm_top(MerrySQueueAtm *queue) {
-  merry_check_ptr(queue);
+  if (!queue) return RET_NULL;
   if (merry_squeue_atm_empty(queue, queue->rear))
     return RET_NULL;
   return (mptr_t)(((char *)queue->buf + (queue->head * queue->elem_len)));
 }
 
 mresult_t merry_squeue_atm_enqueue(MerrySQueueAtm *queue, mptr_t elem) {
-  merry_check_ptr(queue);
-  merry_check_ptr(elem);
+  if (!queue || !elem) return MRES_INVALID_ARGS;
 
   msize_t id = atomic_fetch_add(&queue->rear, 1);
   msize_t inx = (id) % queue->buf_cap;
@@ -106,8 +102,7 @@ mresult_t merry_squeue_atm_enqueue(MerrySQueueAtm *queue, mptr_t elem) {
 }
 
 mresult_t merry_squeue_atm_dequeue(MerrySQueueAtm *queue, mptr_t elem) {
-  merry_check_ptr(queue);
-  merry_check_ptr(elem);
+  if (!queue || !elem) return MRES_INVALID_ARGS;
 
   if (merry_squeue_atm_empty(queue, queue->rear))
     return MRES_CONT_EMPTY;
@@ -124,8 +119,7 @@ mresult_t merry_squeue_atm_dequeue(MerrySQueueAtm *queue, mptr_t elem) {
 }
 
 void merry_destroy_squeue_atm(MerrySQueueAtm *queue) {
-  merry_check_ptr(queue);
-  merry_check_ptr(queue->buf);
+  if (!queue) return;
   free(queue->buf);
   free(queue);
 }

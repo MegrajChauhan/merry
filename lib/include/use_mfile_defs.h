@@ -1,6 +1,0 @@
-#ifndef _USE_MFILE_DEFS_
-#define _USE_MFILE_DEFS_
-
-#define _MFILE_UPDATE_BACKING_FILE_ 0b00000001
-
-#endif

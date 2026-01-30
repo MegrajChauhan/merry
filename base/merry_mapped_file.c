@@ -16,7 +16,7 @@ mresult_t merry_mapped_file_create(MerryMappedFile **fmap) {
 
 mresult_t merry_mapped_file_map(MerryMappedFile *fmap, mstr_t path,
                                 msize_t flags, msize_t align_param) {
-  if (!fmap)
+  if (!fmap || !path)
     return MRES_INVALID_ARGS;
   if (fmap->interface_t != INTERFACE_TYPE_MAPPED_FILE)
     return MRES_CONFIGURATION_INVALID;
@@ -83,7 +83,7 @@ mresult_t merry_mapped_file_unmap(MerryMappedFile *fmap) {
 
 mresult_t merry_mapped_file_obtain_ptr(MerryMappedFile *fmap, mbptr_t *ptr,
                                        msize_t off) {
-  if (!fmap)
+  if (!fmap || !ptr)
     return MRES_INVALID_ARGS;
   if (fmap->interface_t != INTERFACE_TYPE_MAPPED_FILE)
     return MRES_CONFIGURATION_INVALID;

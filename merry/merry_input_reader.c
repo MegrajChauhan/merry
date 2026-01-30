@@ -19,7 +19,7 @@ _MERRY_INTERNAL_ mresult_t merry_input_parse_header(MerryInput *inp, msize_t fle
 
   if (chunk[0] != 'M' || chunk[1] != 'I' || chunk[2] != 'F') {
     MERR("Unknown Input File Type received: The IDENTIFICATION bytes 'MIF' "
-         "expected but got %b%b%b", chunk[0], chunk[1], chunk[2]);
+         "expected but got %c%c%c", chunk[0], chunk[1], chunk[2]);
     ret = MRES_UNRECOGNIZED;
     goto OPERATION_FAILURE;
   }
@@ -131,9 +131,6 @@ MerryInput *merry_input_init() {
 }
 
 mresult_t merry_input_read(MerryInput *inp, mstr_t path) {
-  merry_check_ptr(inp);
-  merry_check_ptr(path);
-
   MDBG("Reading Input File %s", path);
 
   mresult_t ret =
@@ -191,10 +188,7 @@ MERRY_INP_PARSE_FAILED:
 }
 
 void merry_input_destroy(MerryInput *inp) {
-  merry_check_ptr(inp);
-  merry_check_ptr(inp->input_file);
-  merry_check_ptr(inp->data);
-  merry_check_ptr(inp->instructions);
+  if (!inp) return;
 
   merry_mapped_file_unmap(inp->mapped);
   merry_mapped_file_destroy(inp->mapped);

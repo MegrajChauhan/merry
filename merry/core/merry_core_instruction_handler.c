@@ -45,7 +45,6 @@ merry_core_ihdlr(sysint) {
  * R14 = the actual error if any
  * */
 merry_core_ihdlr(mint) {
-  merry_check_ptr(core);
   // MerryRequestArgs *args = &core->args;
   switch (core->REGISTER_FILE[MERRY_CORE_R15]) {
   default:

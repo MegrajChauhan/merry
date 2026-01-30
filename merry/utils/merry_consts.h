@@ -58,19 +58,21 @@ _MERRY_INTERNAL_ MerryConsts consts;
 
 _MERRY_INTERNAL_ mstr_t HELP_MSG =
     "Merry Nexus- Runtime and collaboration of systems\n"
-    "version v(Not available right now)\n"
+    "VERSION: v(Not available right now)\n"
     "Usage:\n"
     "mvm [OPTIONS] INPUT ARGS...\n"
     "Options:\n"
-    "General:\n"
-    "    --help                   print this help message\n"
-    "    --version                print the version information\n\n"
-    "    --f [input file]args...  Provide Path to Input File\n"
-    "Graves:\n"
-    "    -Glgrpclim [value]       set limit to the number of groups allowed\n"
-    "    -Glcclim   [value]       set limit to the number of active core "
-    "allowed\n";
-
+    "\tGeneral:\n"
+    "\t\t    --help                   print this help message\n"
+    "\t\t    --version                print the version information\n\n"
+    "\t\t    --f [input file]         Provide Path to Input File\n"
+    "\tGraves:\n"
+    "\t\t    -Glgrpclim [value]       set limit to the number of groups allowed\n"
+    "\t\t    -Glcclim   [value]       set limit to the number of active core "
+    "allowed\n"
+    "\t\t    -Gfdbg                   will print extra information as debug information\n"
+    ;
+    
 void merry_HELP_msg();
 
 mresult_t merry_parse_arg(int argc, char **argv);

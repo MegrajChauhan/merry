@@ -39,6 +39,7 @@
 
 #define _MERRY_DEFINE_QUEUE_(name, type)                                       \
   mresult_t merry_##name##_llqueue_init(MerryLL##name##Queue **queue) {        \
+    if (!queue) return MRES_INVALID_ARGS; \
     *queue = (MerryLL##name##Queue *)malloc(sizeof(MerryLL##name##Queue));     \
     if (!(*queue)) {                                                           \
       return MRES_SYS_FAILURE;                                                 \
@@ -48,8 +49,7 @@
   }                                                                            \
   mresult_t merry_##name##_llqueue_push(MerryLL##name##Queue *queue,           \
                                         type *data) {                          \
-    merry_check_ptr(queue);                                                    \
-    merry_check_ptr(data);                                                     \
+    if (!queue || !data) return MRES_INVALID_ARGS; \
     MerryLL##name##QueueNode *node =                                           \
         (MerryLL##name##QueueNode *)malloc(sizeof(MerryLL##name##QueueNode));  \
     if (!node) {                                                               \
@@ -70,8 +70,7 @@
   }                                                                            \
   mresult_t merry_##name##_llqueue_pop(MerryLL##name##Queue *queue,            \
                                        type *_store_in) {                      \
-    merry_check_ptr(queue);                                                    \
-    merry_check_ptr(_store_in);                                                \
+    if (!queue || !_store_in) return MRES_INVALID_ARGS; \
     if (queue->head == NULL && queue->tail == NULL) {                          \
       return MRES_CONT_EMPTY;                                                  \
     }                                                                          \
@@ -88,7 +87,7 @@
     return RET_SUCCESS;                                                        \
   }                                                                            \
   void merry_##name##_llqueue_clear(MerryLL##name##Queue *queue) {             \
-    merry_check_ptr(queue);                                                    \
+    if (!queue) return;                                                    \
     merry_assert(!(queue->head && !queue->tail));                              \
     merry_assert(!(!queue->head && queue->tail));                              \
     MerryLL##name##QueueNode *curr = queue->head;                              \

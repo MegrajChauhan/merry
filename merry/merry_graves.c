@@ -6,15 +6,15 @@ _MERRY_DEFINE_STATIC_LIST_(Group, MerryGravesGroup *);
 
 _MERRY_NO_RETURN_ void Merry_Graves_Run(int argc, char **argv) {
   // Now we perform pre-initialization
-  MDBG("Running Merry", NULL);
-  if (merry_graves_pre_init() != MRES_SUCCESS)
-    goto GRAVES_FAILED_TO_START;
-
+  merry_init_logger(merry_log__, MERRY_LOG_ERR);
   if (merry_parse_arg(argc, argv) == RET_FAILURE) {
     MERR("Failed to parse input arguments", NULL);
     exit(-1);
   }
   GRAVES._config = CONSTS();
+  if (merry_graves_pre_init() != MRES_SUCCESS)
+    goto GRAVES_FAILED_TO_START;
+  MDBG("Running Merry", NULL);
 
   // We can now read the input file
   if (merry_graves_parse_input() != MRES_SUCCESS)

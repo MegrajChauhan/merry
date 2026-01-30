@@ -1,8 +1,7 @@
 #include <merry_threads.h>
 
 mresult_t merry_thread_create(mthread_t *th, mthexec_t func, mptr_t arg) {
-  merry_check_ptr(th);
-  merry_check_ptr(func);
+  if (!th || !func) return MRES_INVALID_ARGS;
 #if defined(_USE_LINUX_)
   if (pthread_create(th, NULL, func, arg) != 0) {
     return MRES_SYS_FAILURE;
@@ -18,8 +17,7 @@ mresult_t merry_thread_create(mthread_t *th, mthexec_t func, mptr_t arg) {
 
 mresult_t merry_create_detached_thread(mthread_t *th, mthexec_t func,
                                        mptr_t arg) {
-  merry_check_ptr(th);
-  merry_check_ptr(func);
+  if (!th || !func) return MRES_INVALID_ARGS;
 #if defined(_USE_LINUX_)
   pthread_attr_t attr;
   if (pthread_attr_init(&attr) != 0) {

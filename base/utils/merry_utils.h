@@ -15,10 +15,10 @@
 
 // tools
 // CHECK CONDITION AND IF IT FAILS, THROW ERROR AND EXIT
-#define merry_check_condition_and_exit_on_failure(cond)                        \
+#define merry_check_condition(cond)                        \
   do {                                                                         \
     if (surelyF(!(cond))) {                                                    \
-      MDBG(                                                             \
+      MDBG(                                                                    \
              "Condition: "_MERRY_STRINGIFY_(                                   \
                  (cond)) ": Failed. Line %d[FILE: %s]\n",                      \
              __LINE__, __FILE__);                                              \
@@ -28,18 +28,9 @@
 
 #ifdef _MERRY_RELEASE_
 #define merry_assert(cond)
-#define merry_check_ptr(ptr)
 #else
 #define _MERRY_TEST_
-#define merry_assert(cond) merry_check_condition_and_exit_on_failure(cond)
-
-/**
- * The existence of this pointer checker is based on:
- * -- The VM may pass in NULL pointers or invalid pointers
- * So during the testing, if we figure out which pointers are freed and how, we
- * can solve the issue and this macro is  useless in the release mode.
- */
-#define merry_check_ptr(ptr) merry_assert((mptr_t)(ptr) != NULL)
+#define merry_assert(cond) merry_check_condition(cond)
 
 #endif
 

@@ -23,7 +23,7 @@ mresult_t merry_parse_arg(int argc, char **argv) {
     case '-': {
       msize_t len = strlen(argv[st]);
       if (len < 2) {
-        printf("Invalid option '%s'", argv[st]);
+        MERR("Invalid option '%s'", argv[st]);
         merry_HELP_msg();
         return MRES_FAILURE;
       }
@@ -36,7 +36,7 @@ mresult_t merry_parse_arg(int argc, char **argv) {
         } else if (strcmp(argv[st], "--f") == 0) {
           // file provided
           if ((st + 1) >= argc) {
-            printf("Expected file path after --f but got nothing",
+            MERR("Expected file path after --f but got nothing",
                    NULL);
             merry_HELP_msg();
             return MRES_FAILURE;
@@ -47,7 +47,7 @@ mresult_t merry_parse_arg(int argc, char **argv) {
           consts.prog_args_count = argc - (st + 1);
           return MRES_SUCCESS;
         } else {
-          printf("Unknown option %s", argv[st]);
+          MERR("Unknown option %s", argv[st]);
           merry_HELP_msg();
           return MRES_FAILURE;
         }
@@ -66,20 +66,20 @@ mresult_t merry_parse_arg(int argc, char **argv) {
         break;
       }
       default:
-        printf("Unknown option '%s'", argv[st]);
+        MERR("Unknown option '%s'", argv[st]);
         merry_HELP_msg();
         return MRES_FAILURE;
       }
       break;
     }
     default:
-      printf("Unknown option '%s'", argv[st]);
+      MERR("Unknown option '%s'", argv[st]);
       merry_HELP_msg();
       return MRES_FAILURE;
     }
     st++;
   }
-  printf( "No Input File Provided!!!", NULL);
+  MERR( "No Input File Provided!!!", NULL);
   merry_HELP_msg();
   return MRES_FAILURE;
 }
@@ -91,12 +91,12 @@ mresult_t merry_parse_cmd_option_Graves(mstr_t opt, const mstr_t nxt,
     if (strcmp(opt, "-Glgrpclim") == 0) {
       // nxt must be a value
       if (!nxt) {
-        printf("Expected a value after option %s", opt);
+        MERR("Expected a value after option %s", opt);
         return MRES_FAILURE;
       }
       msize_t val = strtoull(nxt, NULL, 10);
       if (val == 0) {
-        printf("Invalid value %s provided for option %s", nxt, opt);
+        MERR("Invalid value %s provided for option %s", nxt, opt);
         return MRES_FAILURE;
       }
       *used_nxt = mtrue;
@@ -105,19 +105,19 @@ mresult_t merry_parse_cmd_option_Graves(mstr_t opt, const mstr_t nxt,
     } else if (strcmp(opt, "-Glcclim") == 0) {
       // nxt must be a value
       if (!nxt) {
-        printf("Expected a value after option %s", opt);
+        MERR("Expected a value after option %s", opt);
         return MRES_FAILURE;
       }
       msize_t val = strtoull(nxt, NULL, 10);
       if (val == 0) {
-        printf("Invalid value %s provided for option %s", nxt, opt);
+        MERR("Invalid value %s provided for option %s", nxt, opt);
         return MRES_FAILURE;
       }
       *used_nxt = mtrue;
       consts.core_count_limit = val;
       consts.graves_config.core_count_lim = mtrue;
     } else {
-      printf("Unknown value option %s", opt);
+      MERR("Unknown value option %s", opt);
       return MRES_FAILURE;
     }
     break;
@@ -128,7 +128,7 @@ mresult_t merry_parse_cmd_option_Graves(mstr_t opt, const mstr_t nxt,
   	break;
   }
   default:
-    printf("Unknown option type %s", opt);
+    MERR("Unknown option type %s", opt);
     return MRES_FAILURE;
   }
   return MRES_SUCCESS;
