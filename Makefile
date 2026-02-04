@@ -32,6 +32,7 @@ DEPS=${patsubst %.c, ${OUTPUT_DEPS}%.d, ${FILES_TO_COMPILE}}
 
 all: directories ${OUTPUT_FILES_NAME}
 	make -C base
+	make -C masm
 	${CC} ${FLAGS} -Wl,-rpath,./build ${OUTPUT_FILES_NAME} mvm.c -Lbuild -lmbase ${INC_DIRS} -o ${OUTPUT_DIR}mvm
 
 WATCH_PROJECT: directories ${OUTPUT_FILES_NAME}

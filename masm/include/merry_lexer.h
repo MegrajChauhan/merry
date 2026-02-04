@@ -5,8 +5,8 @@
 #include <merry_utils.h>
 #include <merry_types.h>
 #include <merry_logger.h>
+#include <merry_helpers.h>
 #include <stdlib.h>
-#include <ctype.h>
 
 typedef struct Lexer Lexer;
 

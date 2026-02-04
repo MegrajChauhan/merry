@@ -14,8 +14,8 @@ struct MerryUSetBucket {
     MerryUSetBucket *nxt_bucket;
 };
 
-struct uset {
-    MerryUSetBucket *buckets;
+struct MerryUSet {
+    MerryUSetBucket **buckets;
     size_t bucket_count;
     mhhfunc_t hash_func;
     mhkeycmpfunc_t cmp_func;

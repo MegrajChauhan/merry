@@ -16,7 +16,7 @@ struct MerryUMapBucket {
 };
 
 struct MerryUMap {
-    MerryUMapBucket *buckets;
+    MerryUMapBucket **buckets;
     msize_t bucket_count;
     mhhfunc_t hash_func;
     mhkeycmpfunc_t cmp_func;
