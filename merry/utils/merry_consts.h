@@ -67,12 +67,13 @@ _MERRY_INTERNAL_ mstr_t HELP_MSG =
     "\t\t    --version                print the version information\n\n"
     "\t\t    --f [input file]         Provide Path to Input File\n"
     "\tGraves:\n"
-    "\t\t    -Glgrpclim [value]       set limit to the number of groups allowed\n"
+    "\t\t    -Glgrpclim [value]       set limit to the number of groups "
+    "allowed\n"
     "\t\t    -Glcclim   [value]       set limit to the number of active core "
     "allowed\n"
-    "\t\t    -Gfdbg                   will print extra information as debug information\n"
-    ;
-    
+    "\t\t    -Gfdbg                   will print extra information as debug "
+    "information\n";
+
 void merry_HELP_msg();
 
 mresult_t merry_parse_arg(int argc, char **argv);

@@ -11,7 +11,7 @@ typedef union MerryRequestArgs MerryRequestArgs;
 
 union MerryRequestArgs {
   struct {
-  	msize_t ret;
+    msize_t ret;
   } stop_core;
   struct {
     maddress_t st_addr;

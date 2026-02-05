@@ -1,24 +1,24 @@
 #ifndef _MERRY_LEXER_
 #define _MERRY_LEXER_
 
-#include <merry_token.h>
-#include <merry_utils.h>
-#include <merry_types.h>
-#include <merry_logger.h>
 #include <merry_helpers.h>
+#include <merry_logger.h>
+#include <merry_token.h>
+#include <merry_types.h>
+#include <merry_utils.h>
 #include <stdlib.h>
 
 typedef struct Lexer Lexer;
 
 struct Lexer {
-	mstr_t stream;
-	msize_t len;
-	msize_t curr;
-	msize_t lnum;
-	msize_t col;
+  mstr_t stream;
+  msize_t len;
+  msize_t curr;
+  msize_t lnum;
+  msize_t col;
 };
 
-Lexer* lexer_init(mstr_t stream, msize_t len);
+Lexer *lexer_init(mstr_t stream, msize_t len);
 
 Token lexer_next(Lexer *l);
 

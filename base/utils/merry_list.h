@@ -56,12 +56,14 @@
     return MRES_SUCCESS;                                                       \
   }                                                                            \
   void merry_##name##_list_destroy(Merry##name##List *lst) {                   \
-    if (!lst) return;                                                      \
+    if (!lst)                                                                  \
+      return;                                                                  \
     free(lst->buf);                                                            \
     free(lst);                                                                 \
   }                                                                            \
   mresult_t merry_##name##_list_push(Merry##name##List *lst, type *elem) {     \
-    if (!lst || !elem) return MRES_INVALID_ARGS;\
+    if (!lst || !elem)                                                         \
+      return MRES_INVALID_ARGS;                                                \
     if (lst->curr_ind >= lst->cap)                                             \
       return MRES_CONT_FULL;                                                   \
     lst->buf[lst->curr_ind] = *elem;                                           \
@@ -69,7 +71,7 @@
     return MRES_SUCCESS;                                                       \
   }                                                                            \
   mresult_t merry_##name##_list_pop(Merry##name##List *lst, type *elem) {      \
-    if (!lst || !elem)                                                                 \
+    if (!lst || !elem)                                                         \
       return MRES_INVALID_ARGS;                                                \
     if (lst->curr_ind == 0)                                                    \
       return MRES_CONT_EMPTY;                                                  \
@@ -79,7 +81,7 @@
   }                                                                            \
   mresult_t merry_##name##_list_at(Merry##name##List *lst, type *elem,         \
                                    msize_t ind) {                              \
-    if (!lst || !elem)                                                                 \
+    if (!lst || !elem)                                                         \
       return MRES_INVALID_ARGS;                                                \
     if (ind >= lst->cap)                                                       \
       return MRES_NOT_EXISTS;                                                  \
@@ -88,7 +90,7 @@
   }                                                                            \
   mresult_t merry_##name##_list_ref_of(Merry##name##List *lst, type **elem,    \
                                        msize_t ind) {                          \
-    if (!lst || !elem)                                                                 \
+    if (!lst || !elem)                                                         \
       return MRES_INVALID_ARGS;                                                \
     if (ind >= lst->cap)                                                       \
       return MRES_NOT_EXISTS;                                                  \
@@ -97,7 +99,8 @@
   }                                                                            \
   mresult_t merry_##name##_list_resize(Merry##name##List *lst,                 \
                                        msize_t resize_factor) {                \
-    if (!lst) return MRES_INVALID_ARGS; \
+    if (!lst)                                                                  \
+      return MRES_INVALID_ARGS;                                                \
     type *new_buf = (type *)malloc(sizeof(type) * lst->cap * resize_factor);   \
     if (!new_buf)                                                              \
       return MRES_SYS_FAILURE;                                                 \
@@ -110,12 +113,14 @@
   }                                                                            \
   _MERRY_ALWAYS_INLINE_ msize_t merry_##name##_list_size(                      \
       Merry##name##List *lst) {                                                \
-    if (!lst) return (msize_t)-1;                                                      \
+    if (!lst)                                                                  \
+      return (msize_t) - 1;                                                    \
     return lst->curr_ind;                                                      \
   }                                                                            \
   _MERRY_ALWAYS_INLINE_ msize_t merry_##name##_list_index_of(                  \
       Merry##name##List *lst, type *elem) {                                    \
-    if (!lst || !elem) return 0;\
+    if (!lst || !elem)                                                         \
+      return 0;                                                                \
     return (msize_t)(((mbptr_t)elem - (mbptr_t)lst->buf) / sizeof(type));      \
   }
 
@@ -139,7 +144,7 @@
 #define _MERRY_DEFINE_LF_STATIC_LIST_(name, type)                              \
   mresult_t merry_lf_##name##_list_create(msize_t cap,                         \
                                           MerryLF##name##List **lst) {         \
-    if (!lst || cap == 0)                                                              \
+    if (!lst || cap == 0)                                                      \
       return MRES_INVALID_ARGS;                                                \
     *lst = (MerryLF##name##List *)malloc(sizeof(MerryLF##name##List));         \
     if (!(*lst)) {                                                             \
@@ -156,13 +161,15 @@
     return MRES_SUCCESS;                                                       \
   }                                                                            \
   void merry_lf_##name##_list_destroy(MerryLF##name##List *lst) {              \
-    if (!lst) return;                                                      \
+    if (!lst)                                                                  \
+      return;                                                                  \
     free(lst->buf);                                                            \
     free(lst);                                                                 \
   }                                                                            \
   mresult_t merry_lf_##name##_list_push(MerryLF##name##List *lst,              \
                                         type *elem) {                          \
-   if (!lst || !elem) return MRES_INVALID_ARGS;\
+    if (!lst || !elem)                                                         \
+      return MRES_INVALID_ARGS;                                                \
     msize_t ind = atomic_fetch_add_explicit((_Atomic msize_t *)&lst->curr_ind, \
                                             1, memory_order_relaxed);          \
     if (ind >= lst->cap) {                                                     \
@@ -174,7 +181,8 @@
     return MRES_SUCCESS;                                                       \
   }                                                                            \
   mresult_t merry_lf_##name##_list_pop(MerryLF##name##List *lst, type *elem) { \
-    if (!lst || !elem) return MRES_INVALID_ARGS;                                                      \
+    if (!lst || !elem)                                                         \
+      return MRES_INVALID_ARGS;                                                \
     if (lst->curr_ind == 0)                                                    \
       return MRES_CONT_EMPTY;                                                  \
     msize_t ind = atomic_fetch_sub_explicit((_Atomic msize_t *)curr_ind, 1,    \
@@ -184,7 +192,9 @@
   }                                                                            \
   _MERRY_ALWAYS_INLINE_ msize_t merry_lf_##name##_list_size(                   \
       MerryLF##name##List *lst) {                                              \
-    if (!lst) return 0;;                                                      \
+    if (!lst)                                                                  \
+      return 0;                                                                \
+    ;                                                                          \
     return lst->curr_ind;                                                      \
   }                                                                            \
   /*-----------------END STATIC LIST--------------------*/

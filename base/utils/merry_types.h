@@ -58,8 +58,8 @@ typedef void *mptr_t;
 
 _MERRY_DEFINE_FUNC_PTR_(_THRET_T_, mthexec_t, mptr_t);
 
-_MERRY_DEFINE_FUNC_PTR_(void,mhcleanfunc_t, mptr_t);
-_MERRY_DEFINE_FUNC_PTR_(msize_t, mhhfunc_t,mptr_t, msize_t);
+_MERRY_DEFINE_FUNC_PTR_(void, mhcleanfunc_t, mptr_t);
+_MERRY_DEFINE_FUNC_PTR_(msize_t, mhhfunc_t, mptr_t, msize_t);
 _MERRY_DEFINE_FUNC_PTR_(mbool_t, mhkeycmpfunc_t, mptr_t, mptr_t);
 
 #endif

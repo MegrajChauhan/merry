@@ -61,12 +61,14 @@ mresult_t merry_graves_parse_input() {
   GRAVES.input = merry_input_init();
   if (!GRAVES.input) {
     MDBG("Failed to parse Input File", NULL);
-  	return MRES_FAILURE;
+    return MRES_FAILURE;
   }
   MDBG("File: %s", GRAVES._config->argv[GRAVES._config->inp_file_index]);
-  if (merry_input_read(GRAVES.input, GRAVES._config->argv[GRAVES._config->inp_file_index]) != MRES_SUCCESS) {
-  	MDBG("Failed to parse Input File", NULL);
-  	return MRES_FAILURE;
+  if (merry_input_read(GRAVES.input,
+                       GRAVES._config->argv[GRAVES._config->inp_file_index]) !=
+      MRES_SUCCESS) {
+    MDBG("Failed to parse Input File", NULL);
+    return MRES_FAILURE;
   }
   return MRES_SUCCESS;
 }
@@ -84,15 +86,15 @@ mresult_t merry_graves_init() {
 
   if (merry_cond_init(&GRAVES.graves_cond) != MRES_SUCCESS) {
     MERR("Failed to initialize MERRY: Graves Initialization[Failed to obtain "
-           "condition variable]",
-           NULL);
+         "condition variable]",
+         NULL);
     return MRES_FAILURE;
   }
 
   if (merry_mutex_init(&GRAVES.graves_lock) != MRES_SUCCESS) {
     MERR("Failed to initialize MERRY: Graves Initialization[Failed to obtain "
-           "mutex lock]",
-           NULL);
+         "mutex lock]",
+         NULL);
     return MRES_FAILURE;
   }
 
@@ -129,8 +131,7 @@ mresult_t merry_graves_ready_everything() {
   }
 
   // Initialize the first core
-  if (merry_graves_init_a_core(first_core, 0x00) !=
-      MRES_SUCCESS) {
+  if (merry_graves_init_a_core(first_core, 0x00) != MRES_SUCCESS) {
     MERR("Failed to initialize the first core...", NULL);
     merry_graves_group_destroy(grp);
     return MRES_FAILURE;
@@ -216,8 +217,7 @@ mresult_t merry_graves_add_core(MerryGravesGroup *grp, MerryCoreRepr **repr) {
   return MRES_SUCCESS;
 }
 
-mresult_t merry_graves_init_a_core(MerryCoreRepr *repr,
-                                   maddress_t addr) {
+mresult_t merry_graves_init_a_core(MerryCoreRepr *repr, maddress_t addr) {
   mresult_t res;
 
   res = merry_core_create(addr, &repr->core);
@@ -233,20 +233,20 @@ mresult_t merry_graves_init_a_core(MerryCoreRepr *repr,
 
 mresult_t merry_graves_boot_a_core(MerryCoreRepr *repr) {
   mresult_t res;
-  res = merry_core_prepare_inst(repr->core, GRAVES.input->instructions, GRAVES.input->instruction_len);
+  res = merry_core_prepare_inst(repr->core, GRAVES.input->instructions,
+                                GRAVES.input->instruction_len);
   if (res != MRES_SUCCESS) {
-    MERR("A core failed to BOOT[ID=%zu, UID=%zu, GUID=%zu]",
-           repr->iden.id, repr->iden.uid,
-           repr->iden.gid);
+    MERR("A core failed to BOOT[ID=%zu, UID=%zu, GUID=%zu]", repr->iden.id,
+         repr->iden.uid, repr->iden.gid);
     merry_core_destroy(repr->core);
     repr->core = NULL;
     return res;
   }
-  res = merry_core_prepare_data(repr->core, GRAVES.input->data, GRAVES.input->data_len);
+  res = merry_core_prepare_data(repr->core, GRAVES.input->data,
+                                GRAVES.input->data_len);
   if (res != MRES_SUCCESS) {
-    MERR("A core failed to BOOT[ID=%zu, UID=%zu, GUID=%zu]",
-           repr->iden.id, repr->iden.uid,
-           repr->iden.gid);
+    MERR("A core failed to BOOT[ID=%zu, UID=%zu, GUID=%zu]", repr->iden.id,
+         repr->iden.uid, repr->iden.gid);
     merry_core_destroy(repr->core);
     repr->core = NULL;
     return res;
@@ -254,9 +254,8 @@ mresult_t merry_graves_boot_a_core(MerryCoreRepr *repr) {
   mthread_t th;
   if (merry_create_detached_thread(&th, merry_graves_core_launcher,
                                    (mptr_t)repr) != MRES_SUCCESS) {
-    MERR("A core failed to BOOT[ID=%zu, UID=%zu, GUID=%zu]",
-           repr->iden.id, repr->iden.uid,
-           repr->iden.gid);
+    MERR("A core failed to BOOT[ID=%zu, UID=%zu, GUID=%zu]", repr->iden.id,
+         repr->iden.uid, repr->iden.gid);
     merry_core_destroy(repr->core);
     repr->core = NULL;
     return MRES_SYS_FAILURE;
@@ -288,8 +287,7 @@ void merry_graves_START() {
     return;
 
   if (merry_graves_boot_a_core(first_core) != MRES_SUCCESS) {
-    MERR("[<BOOT>] Failed to start the VM [First core boot failed]",
-           NULL);
+    MERR("[<BOOT>] Failed to start the VM [First core boot failed]", NULL);
     goto GRAVES_OVERSEER_END;
   }
   while (1) {
@@ -328,8 +326,7 @@ _THRET_T_ merry_graves_core_launcher(mptr_t r) {
   merry_core_destroy(repr->core);
   repr->core = NULL;
   MNOTE("Core[ID=%zu UID=%zu GUID=%zu] terminated with result %zu",
-       repr->iden.id, repr->iden.uid, repr->iden.gid,
-       res);
+        repr->iden.id, repr->iden.uid, repr->iden.gid, res);
   GRAVES.active_core_count--;
   return (_THRET_T_)0;
 }

@@ -15,13 +15,12 @@
 
 // tools
 // CHECK CONDITION AND IF IT FAILS, THROW ERROR AND EXIT
-#define merry_check_condition(cond)                        \
+#define merry_check_condition(cond)                                            \
   do {                                                                         \
     if (surelyF(!(cond))) {                                                    \
-      MDBG(                                                                    \
-             "Condition: "_MERRY_STRINGIFY_(                                   \
-                 (cond)) ": Failed. Line %d[FILE: %s]\n",                      \
-             __LINE__, __FILE__);                                              \
+      MDBG("Condition: "_MERRY_STRINGIFY_(                                     \
+               (cond)) ": Failed. Line %d[FILE: %s]\n",                        \
+           __LINE__, __FILE__);                                                \
       exit(-1);                                                                \
     }                                                                          \
   } while (0)
@@ -36,7 +35,7 @@
 
 #define merry_unreachable()                                                    \
   do {                                                                         \
-    MERR("Unreachable code execution: %s %d", __FILE__, __LINE__);     \
+    MERR("Unreachable code execution: %s %d", __FILE__, __LINE__);             \
     exit(-1);                                                                  \
   } while (0)
 

@@ -1,6 +1,7 @@
 #ifndef _MERRY_INP_READER_
 #define _MERRY_INP_READER_
 
+#include <merry_core_defs.h>
 #include <merry_file.h>
 #include <merry_helpers.h>
 #include <merry_logger.h>
@@ -8,7 +9,6 @@
 #include <merry_results.h>
 #include <merry_types.h>
 #include <merry_utils.h>
-#include <merry_core_defs.h>
 #include <stdlib.h>
 
 /*

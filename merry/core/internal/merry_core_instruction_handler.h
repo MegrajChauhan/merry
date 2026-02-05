@@ -3,16 +3,16 @@
 
 #include <float.h>
 #include <math.h>
+#include <merry_core_defs.h>
+#include <merry_core_internals.h>
+#include <merry_core_registers.h>
+#include <merry_core_sysint.h>
 #include <merry_flags_regr.h>
 #include <merry_graves_request_queue.h>
-#include <merry_core_defs.h>
-#include <merry_core_registers.h>
-#include <merry_core_internals.h>
-#include <merry_core_sysint.h>
 
 struct MerryCore;
 
-#define merry_core_ihdlr(name)                                                        \
+#define merry_core_ihdlr(name)                                                 \
   mbool_t merry_core_i##name(struct MerryCore *core)
 
 void merry_core_compare_f32(float a, float b, MerryCoreFFlagsRegr *regr);

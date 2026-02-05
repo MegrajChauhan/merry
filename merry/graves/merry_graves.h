@@ -10,13 +10,13 @@
 #include <merry_graves_request_queue.h>
 #include <merry_input_reader.h>
 #include <merry_list.h>
+#include <merry_log_subsystem.h>
 #include <merry_protectors.h>
 #include <merry_requests.h>
 #include <merry_results.h>
 #include <merry_threads.h>
 #include <merry_types.h>
 #include <merry_utils.h>
-#include <merry_log_subsystem.h>
 #include <stdlib.h>
 
 _MERRY_DECLARE_STATIC_LIST_(Group, MerryGravesGroup *);

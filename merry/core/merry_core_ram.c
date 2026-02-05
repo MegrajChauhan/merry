@@ -14,11 +14,12 @@ MerryCoreRAM *merry_core_memory_init() {
 }
 
 mresult_t merry_core_memory_populate(MerryCoreRAM *mem, msize_t space_len,
-                              mbptr_t addr_space) {
+                                     mbptr_t addr_space) {
   msize_t pg_count =
       space_len /
-      _MERRY_CORE_PAGE_LEN_IN_BYTES_; // space_len should be aligned most of the time
-                                 // until instruction len is extremely small
+      _MERRY_CORE_PAGE_LEN_IN_BYTES_; // space_len should be aligned most of the
+                                      // time until instruction len is extremely
+                                      // small
   if (space_len && (space_len < _MERRY_CORE_PAGE_LEN_IN_BYTES_))
     pg_count = 1;
 
@@ -32,13 +33,14 @@ mresult_t merry_core_memory_populate(MerryCoreRAM *mem, msize_t space_len,
 
   for (msize_t i = 0; i < pg_count; i++) {
     // Yes! We accessed the buffer directly
-    mem->pg_list->buf[i].repr.bytes = addr_space + i * _MERRY_CORE_PAGE_LEN_IN_BYTES_;
+    mem->pg_list->buf[i].repr.bytes =
+        addr_space + i * _MERRY_CORE_PAGE_LEN_IN_BYTES_;
   }
   return MRES_SUCCESS;
 }
 
 mresult_t merry_core_memory_read_byte(MerryCoreRAM *mem, maddress_t addr,
-                                     mbptr_t store_in) {
+                                      mbptr_t store_in) {
   if (surelyF(addr >= mem->max_address))
     return MRES_CORE_RAM_OUT_OF_BOUNDS_ACCESS;
   *store_in = mem->pg_list->buf[addr / _MERRY_CORE_PAGE_LEN_IN_BYTES_]
@@ -47,78 +49,85 @@ mresult_t merry_core_memory_read_byte(MerryCoreRAM *mem, maddress_t addr,
 }
 
 mresult_t merry_core_memory_read_word(MerryCoreRAM *mem, maddress_t addr,
-                                     mwptr_t store_in) {
+                                      mwptr_t store_in) {
   if (surelyF(addr >= mem->max_address))
     return MRES_CORE_RAM_OUT_OF_BOUNDS_ACCESS;
-  *store_in = *(mwptr_t)&mem->pg_list->buf[addr / _MERRY_CORE_PAGE_LEN_IN_BYTES_]
-                   .repr.bytes[addr % _MERRY_CORE_PAGE_LEN_IN_BYTES_];
+  *store_in =
+      *(mwptr_t)&mem->pg_list->buf[addr / _MERRY_CORE_PAGE_LEN_IN_BYTES_]
+           .repr.bytes[addr % _MERRY_CORE_PAGE_LEN_IN_BYTES_];
   return MRES_SUCCESS;
 }
 
 mresult_t merry_core_memory_read_dword(MerryCoreRAM *mem, maddress_t addr,
-                                      mdptr_t store_in) {
+                                       mdptr_t store_in) {
   if (surelyF(addr >= mem->max_address))
     return MRES_CORE_RAM_OUT_OF_BOUNDS_ACCESS;
-  *store_in = *(mdptr_t)&mem->pg_list->buf[addr / _MERRY_CORE_PAGE_LEN_IN_BYTES_]
-                   .repr.bytes[addr % _MERRY_CORE_PAGE_LEN_IN_BYTES_];
+  *store_in =
+      *(mdptr_t)&mem->pg_list->buf[addr / _MERRY_CORE_PAGE_LEN_IN_BYTES_]
+           .repr.bytes[addr % _MERRY_CORE_PAGE_LEN_IN_BYTES_];
   return MRES_SUCCESS;
 }
 
 mresult_t merry_core_memory_read_qword(MerryCoreRAM *mem, maddress_t addr,
-                                      mqptr_t store_in) {
+                                       mqptr_t store_in) {
   if (surelyF(addr >= mem->max_address))
     return MRES_CORE_RAM_OUT_OF_BOUNDS_ACCESS;
-  *store_in = *(mqptr_t)&mem->pg_list->buf[addr / _MERRY_CORE_PAGE_LEN_IN_BYTES_]
-                   .repr.bytes[addr % _MERRY_CORE_PAGE_LEN_IN_BYTES_];
+  *store_in =
+      *(mqptr_t)&mem->pg_list->buf[addr / _MERRY_CORE_PAGE_LEN_IN_BYTES_]
+           .repr.bytes[addr % _MERRY_CORE_PAGE_LEN_IN_BYTES_];
   return MRES_SUCCESS;
 }
 
 mresult_t merry_core_memory_read_byte_atm(MerryCoreRAM *mem, maddress_t addr,
-                                         mbptr_t store_in) {
+                                          mbptr_t store_in) {
   if (surelyF(addr >= mem->max_address))
     return MRES_CORE_RAM_OUT_OF_BOUNDS_ACCESS;
   *store_in = atomic_load_explicit(
-      (_Atomic mbyte_t *)(&mem->pg_list->buf[addr / _MERRY_CORE_PAGE_LEN_IN_BYTES_]
-          .repr.bytes[addr % _MERRY_CORE_PAGE_LEN_IN_BYTES_]),
+      (_Atomic mbyte_t
+           *)(&mem->pg_list->buf[addr / _MERRY_CORE_PAGE_LEN_IN_BYTES_]
+                   .repr.bytes[addr % _MERRY_CORE_PAGE_LEN_IN_BYTES_]),
       memory_order_relaxed);
   return MRES_SUCCESS;
 }
 
 mresult_t merry_core_memory_read_word_atm(MerryCoreRAM *mem, maddress_t addr,
-                                         mwptr_t store_in) {
+                                          mwptr_t store_in) {
   if (surelyF(addr >= mem->max_address))
     return MRES_CORE_RAM_OUT_OF_BOUNDS_ACCESS;
   *store_in = atomic_load_explicit(
-      (_Atomic mword_t *)(&mem->pg_list->buf[addr / _MERRY_CORE_PAGE_LEN_IN_BYTES_]
-          .repr.bytes[addr % _MERRY_CORE_PAGE_LEN_IN_BYTES_]),
+      (_Atomic mword_t
+           *)(&mem->pg_list->buf[addr / _MERRY_CORE_PAGE_LEN_IN_BYTES_]
+                   .repr.bytes[addr % _MERRY_CORE_PAGE_LEN_IN_BYTES_]),
       memory_order_relaxed);
   return MRES_SUCCESS;
 }
 
 mresult_t merry_core_memory_read_dword_atm(MerryCoreRAM *mem, maddress_t addr,
-                                          mdptr_t store_in) {
+                                           mdptr_t store_in) {
   if (surelyF(addr >= mem->max_address))
     return MRES_CORE_RAM_OUT_OF_BOUNDS_ACCESS;
   *store_in = atomic_load_explicit(
-      (_Atomic mdword_t *)(&mem->pg_list->buf[addr / _MERRY_CORE_PAGE_LEN_IN_BYTES_]
-          .repr.bytes[addr % _MERRY_CORE_PAGE_LEN_IN_BYTES_]),
+      (_Atomic mdword_t
+           *)(&mem->pg_list->buf[addr / _MERRY_CORE_PAGE_LEN_IN_BYTES_]
+                   .repr.bytes[addr % _MERRY_CORE_PAGE_LEN_IN_BYTES_]),
       memory_order_relaxed);
   return MRES_SUCCESS;
 }
 
 mresult_t merry_core_memory_read_qword_atm(MerryCoreRAM *mem, maddress_t addr,
-                                          mqptr_t store_in) {
+                                           mqptr_t store_in) {
   if (surelyF(addr >= mem->max_address))
     return MRES_CORE_RAM_OUT_OF_BOUNDS_ACCESS;
   *store_in = atomic_load_explicit(
-      (_Atomic mqword_t *)(&mem->pg_list->buf[addr / _MERRY_CORE_PAGE_LEN_IN_BYTES_]
-          .repr.bytes[addr % _MERRY_CORE_PAGE_LEN_IN_BYTES_]),
+      (_Atomic mqword_t
+           *)(&mem->pg_list->buf[addr / _MERRY_CORE_PAGE_LEN_IN_BYTES_]
+                   .repr.bytes[addr % _MERRY_CORE_PAGE_LEN_IN_BYTES_]),
       memory_order_relaxed);
   return MRES_SUCCESS;
 }
 
 mresult_t merry_core_memory_read_bulk(MerryCoreRAM *mem, maddress_t addr,
-                                     msize_t len, mbptr_t store_in) {
+                                      msize_t len, mbptr_t store_in) {
   if (surelyF(addr >= mem->max_address))
     return MRES_CORE_RAM_OUT_OF_BOUNDS_ACCESS;
   if (surelyF(!len))
@@ -142,7 +151,9 @@ mresult_t merry_core_memory_read_bulk(MerryCoreRAM *mem, maddress_t addr,
     off = 0;
 
     while (len > 0) {
-      diff = (len < _MERRY_CORE_PAGE_LEN_IN_BYTES_) ? len : _MERRY_CORE_PAGE_LEN_IN_BYTES_;
+      diff = (len < _MERRY_CORE_PAGE_LEN_IN_BYTES_)
+                 ? len
+                 : _MERRY_CORE_PAGE_LEN_IN_BYTES_;
       memcpy(iter, mem->pg_list->buf[pg].repr.bytes, diff);
       iter += diff;
       len -= diff;
@@ -154,7 +165,7 @@ mresult_t merry_core_memory_read_bulk(MerryCoreRAM *mem, maddress_t addr,
 }
 
 mresult_t merry_core_memory_write_byte(MerryCoreRAM *mem, maddress_t addr,
-                                      mbyte_t store) {
+                                       mbyte_t store) {
   if (surelyF(addr >= mem->max_address))
     return MRES_CORE_RAM_OUT_OF_BOUNDS_ACCESS;
   *(mbptr_t)&mem->pg_list->buf[addr / _MERRY_CORE_PAGE_LEN_IN_BYTES_]
@@ -163,7 +174,7 @@ mresult_t merry_core_memory_write_byte(MerryCoreRAM *mem, maddress_t addr,
 }
 
 mresult_t merry_core_memory_write_word(MerryCoreRAM *mem, maddress_t addr,
-                                      mword_t store) {
+                                       mword_t store) {
   if (surelyF(addr >= mem->max_address))
     return MRES_CORE_RAM_OUT_OF_BOUNDS_ACCESS;
   *(mqptr_t)&mem->pg_list->buf[addr / _MERRY_CORE_PAGE_LEN_IN_BYTES_]
@@ -172,7 +183,7 @@ mresult_t merry_core_memory_write_word(MerryCoreRAM *mem, maddress_t addr,
 }
 
 mresult_t merry_core_memory_write_dword(MerryCoreRAM *mem, maddress_t addr,
-                                       mdword_t store) {
+                                        mdword_t store) {
   if (surelyF(addr >= mem->max_address))
     return MRES_CORE_RAM_OUT_OF_BOUNDS_ACCESS;
   *(mdptr_t)&mem->pg_list->buf[addr / _MERRY_CORE_PAGE_LEN_IN_BYTES_]
@@ -181,7 +192,7 @@ mresult_t merry_core_memory_write_dword(MerryCoreRAM *mem, maddress_t addr,
 }
 
 mresult_t merry_core_memory_write_qword(MerryCoreRAM *mem, maddress_t addr,
-                                       mqword_t store) {
+                                        mqword_t store) {
   if (surelyF(addr >= mem->max_address))
     return MRES_CORE_RAM_OUT_OF_BOUNDS_ACCESS;
   *(mqptr_t)&mem->pg_list->buf[addr / _MERRY_CORE_PAGE_LEN_IN_BYTES_]
@@ -190,51 +201,51 @@ mresult_t merry_core_memory_write_qword(MerryCoreRAM *mem, maddress_t addr,
 }
 
 mresult_t merry_core_memory_write_byte_atm(MerryCoreRAM *mem, maddress_t addr,
-                                          mbyte_t store) {
+                                           mbyte_t store) {
   if (surelyF(addr >= mem->max_address))
     return MRES_CORE_RAM_OUT_OF_BOUNDS_ACCESS;
-  atomic_store_explicit(
-      (_Atomic mbyte_t *)&mem->pg_list->buf[addr / _MERRY_CORE_PAGE_LEN_IN_BYTES_]
-          .repr.bytes[addr % _MERRY_CORE_PAGE_LEN_IN_BYTES_],
-      store, memory_order_release);
+  atomic_store_explicit((_Atomic mbyte_t *)&mem->pg_list
+                            ->buf[addr / _MERRY_CORE_PAGE_LEN_IN_BYTES_]
+                            .repr.bytes[addr % _MERRY_CORE_PAGE_LEN_IN_BYTES_],
+                        store, memory_order_release);
   return MRES_SUCCESS;
 }
 
 mresult_t merry_core_memory_write_word_atm(MerryCoreRAM *mem, maddress_t addr,
-                                          mword_t store) {
+                                           mword_t store) {
   if (surelyF(addr >= mem->max_address))
     return MRES_CORE_RAM_OUT_OF_BOUNDS_ACCESS;
-  atomic_store_explicit(
-      (_Atomic mword_t *)&mem->pg_list->buf[addr / _MERRY_CORE_PAGE_LEN_IN_BYTES_]
-          .repr.bytes[addr % _MERRY_CORE_PAGE_LEN_IN_BYTES_],
-      store, memory_order_release);
+  atomic_store_explicit((_Atomic mword_t *)&mem->pg_list
+                            ->buf[addr / _MERRY_CORE_PAGE_LEN_IN_BYTES_]
+                            .repr.bytes[addr % _MERRY_CORE_PAGE_LEN_IN_BYTES_],
+                        store, memory_order_release);
   return MRES_SUCCESS;
 }
 
 mresult_t merry_core_memory_write_dword_atm(MerryCoreRAM *mem, maddress_t addr,
-                                           mdword_t store) {
+                                            mdword_t store) {
   if (surelyF(addr >= mem->max_address))
     return MRES_CORE_RAM_OUT_OF_BOUNDS_ACCESS;
-  atomic_store_explicit(
-      (_Atomic mdword_t *)&mem->pg_list->buf[addr / _MERRY_CORE_PAGE_LEN_IN_BYTES_]
-          .repr.bytes[addr % _MERRY_CORE_PAGE_LEN_IN_BYTES_],
-      store, memory_order_release);
+  atomic_store_explicit((_Atomic mdword_t *)&mem->pg_list
+                            ->buf[addr / _MERRY_CORE_PAGE_LEN_IN_BYTES_]
+                            .repr.bytes[addr % _MERRY_CORE_PAGE_LEN_IN_BYTES_],
+                        store, memory_order_release);
   return MRES_SUCCESS;
 }
 
 mresult_t merry_core_memory_write_qword_atm(MerryCoreRAM *mem, maddress_t addr,
-                                           mqword_t store) {
+                                            mqword_t store) {
   if (surelyF(addr >= mem->max_address))
     return MRES_CORE_RAM_OUT_OF_BOUNDS_ACCESS;
-  atomic_store_explicit(
-      (_Atomic mqword_t *)&mem->pg_list->buf[addr / _MERRY_CORE_PAGE_LEN_IN_BYTES_]
-          .repr.bytes[addr % _MERRY_CORE_PAGE_LEN_IN_BYTES_],
-      store, memory_order_release);
+  atomic_store_explicit((_Atomic mqword_t *)&mem->pg_list
+                            ->buf[addr / _MERRY_CORE_PAGE_LEN_IN_BYTES_]
+                            .repr.bytes[addr % _MERRY_CORE_PAGE_LEN_IN_BYTES_],
+                        store, memory_order_release);
   return MRES_SUCCESS;
 }
 
 mresult_t merry_core_memory_write_bulk(MerryCoreRAM *mem, maddress_t addr,
-                                      msize_t len, mbptr_t store) {
+                                       msize_t len, mbptr_t store) {
   if (surelyF(addr >= mem->max_address))
     return MRES_CORE_RAM_OUT_OF_BOUNDS_ACCESS;
   if (surelyF(!len))
@@ -256,7 +267,9 @@ mresult_t merry_core_memory_write_bulk(MerryCoreRAM *mem, maddress_t addr,
     off = 0;
 
     while (len > 0) {
-      diff = (len < _MERRY_CORE_PAGE_LEN_IN_BYTES_) ? len : _MERRY_CORE_PAGE_LEN_IN_BYTES_;
+      diff = (len < _MERRY_CORE_PAGE_LEN_IN_BYTES_)
+                 ? len
+                 : _MERRY_CORE_PAGE_LEN_IN_BYTES_;
       memcpy(mem->pg_list->buf[pg].repr.bytes, iter, diff);
       iter += diff;
       len -= diff;
@@ -267,12 +280,13 @@ mresult_t merry_core_memory_write_bulk(MerryCoreRAM *mem, maddress_t addr,
   return MRES_SUCCESS;
 }
 
-mresult_t merry_core_memory_cmpxchg(MerryCoreRAM *mem, maddress_t addr, mbyte_t exp,
-                                   mbyte_t des) {
+mresult_t merry_core_memory_cmpxchg(MerryCoreRAM *mem, maddress_t addr,
+                                    mbyte_t exp, mbyte_t des) {
   if (surelyF(addr >= mem->max_address))
     return MRES_CORE_RAM_OUT_OF_BOUNDS_ACCESS;
   atomic_compare_exchange_strong(
-      (_Atomic mbyte_t *)&mem->pg_list->buf[addr / _MERRY_CORE_PAGE_LEN_IN_BYTES_]
+      (_Atomic mbyte_t *)&mem->pg_list
+          ->buf[addr / _MERRY_CORE_PAGE_LEN_IN_BYTES_]
           .repr.bytes[addr % _MERRY_CORE_PAGE_LEN_IN_BYTES_],
       &exp, des);
   return MRES_SUCCESS;

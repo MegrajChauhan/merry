@@ -1,11 +1,11 @@
 #ifndef _HELPERS_
 #define _HELPERS_
 
+#include <ctype.h>
 #include <merry_config.h>
 #include <merry_platform.h>
 #include <merry_results.h>
 #include <merry_types.h>
-#include <ctype.h>
 #include <string.h>
 
 #define sign_extend8(val)                                                      \
@@ -25,10 +25,11 @@
   } while (0)
 
 #define bit_group(name, len) unsigned name : len
-#define misalpha(ch) (((ch) >= 'a' && (ch) <= 'z') || ((ch) >= 'Z' && (ch) <= 'Z'))
+#define misalpha(ch)                                                           \
+  (((ch) >= 'a' && (ch) <= 'z') || ((ch) >= 'Z' && (ch) <= 'Z'))
 #define misnum(ch) (((ch) >= '0' && (ch) <= '9'))
 #define misalnum(ch) (misalpha(ch) || misnum(ch))
-#define misspace(ch) isspace(ch) 
+#define misspace(ch) isspace(ch)
 
 typedef union MerryPtrToQword MerryPtrToQword;
 typedef union MerryHostMemLayout MerryHostMemLayout;

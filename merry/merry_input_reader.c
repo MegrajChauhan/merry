@@ -1,6 +1,7 @@
 #include <merry_input_reader.h>
 
-_MERRY_INTERNAL_ mresult_t merry_input_parse_header(MerryInput *inp, msize_t flen) {
+_MERRY_INTERNAL_ mresult_t merry_input_parse_header(MerryInput *inp,
+                                                    msize_t flen) {
   // inp will be valid
   MDBG("Parsing Header", NULL);
   mbyte_t chunk[8] = {0};
@@ -13,13 +14,15 @@ _MERRY_INTERNAL_ mresult_t merry_input_parse_header(MerryInput *inp, msize_t fle
   mresult_t ret;
 
   // Read the header
-  if ((ret = merry_file_read(inp->input_file, NULL, chunk, 8)) != MRES_SUCCESS) {
+  if ((ret = merry_file_read(inp->input_file, NULL, chunk, 8)) !=
+      MRES_SUCCESS) {
     goto OPERATION_FAILURE;
   }
 
   if (chunk[0] != 'M' || chunk[1] != 'I' || chunk[2] != 'F') {
     MERR("Unknown Input File Type received: The IDENTIFICATION bytes 'MIF' "
-         "expected but got %c%c%c", chunk[0], chunk[1], chunk[2]);
+         "expected but got %c%c%c",
+         chunk[0], chunk[1], chunk[2]);
     ret = MRES_UNRECOGNIZED;
     goto OPERATION_FAILURE;
   }
@@ -27,14 +30,16 @@ _MERRY_INTERNAL_ mresult_t merry_input_parse_header(MerryInput *inp, msize_t fle
 
   if (chunk[3] != _MERRY_BYTE_ORDER_) {
     MERR("Mismatched ENDIANNESS. The host and the input file must have the "
-           "same endianness.", NULL);
+         "same endianness.",
+         NULL);
     ret = MRES_UNRECOGNIZED;
     goto OPERATION_FAILURE;
   }
   MDBG("ENDIANNESS matched", NULL);
 
   // Now time for the lengths
-  if ((ret = merry_file_read(inp->input_file, NULL,chunk, 8)) != MRES_SUCCESS) {
+  if ((ret = merry_file_read(inp->input_file, NULL, chunk, 8)) !=
+      MRES_SUCCESS) {
     goto OPERATION_FAILURE;
   }
 
@@ -48,8 +53,7 @@ _MERRY_INTERNAL_ mresult_t merry_input_parse_header(MerryInput *inp, msize_t fle
   ilen.bytes.b7 = chunk[7];
 
   if (ilen.whole_word == 0) {
-    MERR("No instructions provided: Instruction section length is 0",
-         NULL);
+    MERR("No instructions provided: Instruction section length is 0", NULL);
     ret = MRES_UNRECOGNIZED;
     goto OPERATION_FAILURE;
   }
@@ -62,7 +66,8 @@ _MERRY_INTERNAL_ mresult_t merry_input_parse_header(MerryInput *inp, msize_t fle
   }
   MDBG("Intruction section: Length=%zu BYTES", ilen.whole_word);
 
-  if ((ret = merry_file_read(inp->input_file, NULL, chunk, 8)) != MRES_SUCCESS) {
+  if ((ret = merry_file_read(inp->input_file, NULL, chunk, 8)) !=
+      MRES_SUCCESS) {
     goto OPERATION_FAILURE;
   }
 
@@ -77,7 +82,8 @@ _MERRY_INTERNAL_ mresult_t merry_input_parse_header(MerryInput *inp, msize_t fle
 
   MDBG("Data section: Length=%zu BYTES", dlen.whole_word);
 
-  if ((ret = merry_file_read(inp->input_file, NULL, chunk, 8)) != MRES_SUCCESS) {
+  if ((ret = merry_file_read(inp->input_file, NULL, chunk, 8)) !=
+      MRES_SUCCESS) {
     goto OPERATION_FAILURE;
   }
 
@@ -90,11 +96,10 @@ _MERRY_INTERNAL_ mresult_t merry_input_parse_header(MerryInput *inp, msize_t fle
   dbg_len.bytes.b6 = chunk[6];
   dbg_len.bytes.b7 = chunk[7];
 
-    MDBG("Debug section: Length=%zu BYTES", dbg_len.whole_word);
-  
+  MDBG("Debug section: Length=%zu BYTES", dbg_len.whole_word);
+
   if ((ilen.whole_word + dlen.whole_word + dbg_len.whole_word) > flen) {
-    MERR(
-         "Input file header's information doesn't match with what was read",
+    MERR("Input file header's information doesn't match with what was read",
          NULL);
     ret = MRES_UNRECOGNIZED;
     goto OPERATION_FAILURE;
@@ -152,14 +157,15 @@ mresult_t merry_input_read(MerryInput *inp, mstr_t path) {
     goto MERRY_INP_PARSE_FAILED;
   }
 
-  inp->data_len = merry_align_value(inp->data_len, _MERRY_CORE_PAGE_LEN_IN_BYTES_);
+  inp->data_len =
+      merry_align_value(inp->data_len, _MERRY_CORE_PAGE_LEN_IN_BYTES_);
 
   // Now finally allocate the memory
   msize_t total_len = inp->data_len + inp->instruction_len + 32;
 
-  if ((ret = merry_mapped_file_map(inp->mapped, path,
-                                   _MERRY_MAPPED_FILE_ALIGN_FILE_LEN_,
-                                   _MERRY_CORE_PAGE_LEN_IN_BYTES_)) != MRES_SUCCESS) {
+  if ((ret = merry_mapped_file_map(
+           inp->mapped, path, _MERRY_MAPPED_FILE_ALIGN_FILE_LEN_,
+           _MERRY_CORE_PAGE_LEN_IN_BYTES_)) != MRES_SUCCESS) {
     goto MERRY_INP_PARSE_FAILED;
   }
 
@@ -188,7 +194,8 @@ MERRY_INP_PARSE_FAILED:
 }
 
 void merry_input_destroy(MerryInput *inp) {
-  if (!inp) return;
+  if (!inp)
+    return;
 
   merry_mapped_file_unmap(inp->mapped);
   merry_mapped_file_destroy(inp->mapped);

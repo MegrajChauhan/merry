@@ -12,8 +12,7 @@ mresult_t merry_core_create(maddress_t st_addr, MerryCore **core) {
     ret = MRES_SYS_FAILURE;
     goto MERRY_CC_FAILED;
   }
-  if ((ret = merry_Interface_list_create(10, &c->interfaces)) !=
-      MRES_SUCCESS) {
+  if ((ret = merry_Interface_list_create(10, &c->interfaces)) != MRES_SUCCESS) {
     MERR("Failed to allocate memory for a component", NULL);
     free(c);
     goto MERRY_CC_FAILED;
@@ -32,9 +31,9 @@ mresult_t merry_core_create(maddress_t st_addr, MerryCore **core) {
     free(c);
     goto MERRY_CC_FAILED;
   }
-  merry_mapped_memory_obtain_ptr(c->st, (mbptr_t*)&c->stack);
-  if ((ret = merry_CoreProcFrame_stack_init(&c->stack_frames,
-                                           _MERRY_CORE_CALL_DEPTH_)) != MRES_SUCCESS) {
+  merry_mapped_memory_obtain_ptr(c->st, (mbptr_t *)&c->stack);
+  if ((ret = merry_CoreProcFrame_stack_init(
+           &c->stack_frames, _MERRY_CORE_CALL_DEPTH_)) != MRES_SUCCESS) {
     MERR("Failed to initialize the stack", NULL);
     merry_Interface_list_destroy(c->interfaces);
     merry_mapped_memory_unmap(c->st);
@@ -52,8 +51,9 @@ MERRY_CC_FAILED:
   return ret;
 }
 
-void merry_core_destroy(MerryCore* c) {
-  if (!c) return;
+void merry_core_destroy(MerryCore *c) {
+  if (!c)
+    return;
 
   merry_Interface_list_destroy(c->interfaces);
   merry_CoreProcFrame_stack_destroy(c->stack_frames);
@@ -64,14 +64,14 @@ void merry_core_destroy(MerryCore* c) {
   free(c);
 }
 
-msize_t merry_core_run(MerryCore* c) {
+msize_t merry_core_run(MerryCore *c) {
   mbool_t running = mtrue;
   while (running) {
-    if (surelyF(
-            merry_core_memory_read_qword(c->iram, c->PC, &c->IR.whole_word) != MRES_SUCCESS)) {
-          MERR("Page Fault: PC=%zu",c->PC);
-          c->ret = 1;
-          break;
+    if (surelyF(merry_core_memory_read_qword(
+                    c->iram, c->PC, &c->IR.whole_word) != MRES_SUCCESS)) {
+      MERR("Page Fault: PC=%zu", c->PC);
+      c->ret = 1;
+      break;
     } else {
       running = HDLRS[c->IR.bytes.b0](c);
       c->PC += 8;
@@ -80,18 +80,20 @@ msize_t merry_core_run(MerryCore* c) {
   return c->ret;
 }
 
-mresult_t merry_core_prepare_inst(MerryCore* c, mbptr_t inst, msize_t len) {
-	if (!c || !inst) return MRES_INVALID_ARGS;
-	c->iram = merry_core_memory_init();
-	if (!c->iram) 
-		return MRES_SYS_FAILURE;    
-	return merry_core_memory_populate(c->iram, len, inst);
+mresult_t merry_core_prepare_inst(MerryCore *c, mbptr_t inst, msize_t len) {
+  if (!c || !inst)
+    return MRES_INVALID_ARGS;
+  c->iram = merry_core_memory_init();
+  if (!c->iram)
+    return MRES_SYS_FAILURE;
+  return merry_core_memory_populate(c->iram, len, inst);
 }
 
-mresult_t merry_core_prepare_data(MerryCore* c, mbptr_t data, msize_t len) {
-    if (!c || !data) return MRES_INVALID_ARGS;
-	c->dram = merry_core_memory_init();
-	if (!c->dram) 
-		return MRES_SYS_FAILURE;    
-	return merry_core_memory_populate(c->iram, len, data);
+mresult_t merry_core_prepare_data(MerryCore *c, mbptr_t data, msize_t len) {
+  if (!c || !data)
+    return MRES_INVALID_ARGS;
+  c->dram = merry_core_memory_init();
+  if (!c->dram)
+    return MRES_SYS_FAILURE;
+  return merry_core_memory_populate(c->iram, len, data);
 }

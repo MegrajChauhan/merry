@@ -2,7 +2,8 @@
 
 mresult_t merry_open_file(MerryFile **file, mstr_t file_path, mstr_t modes,
                           int flags) {
-  if (!file || !file_path || !modes) return MRES_INVALID_ARGS;
+  if (!file || !file_path || !modes)
+    return MRES_INVALID_ARGS;
   mresult_t res = merry_interface_init(file, INTERFACE_TYPE_FILE);
   if (!(*file)) {
     return res;
@@ -81,7 +82,8 @@ mret_t merry_figure_out_file_modes(mstr_t modex, int flags, int *res_mode,
 }
 
 mresult_t merry_close_file(MerryFile *file) {
-  if (!file) return MRES_INVALID_ARGS;
+  if (!file)
+    return MRES_INVALID_ARGS;
   if (file->interface_t != INTERFACE_TYPE_FILE) {
     return MRES_UNEXPECTED;
   }
@@ -97,7 +99,8 @@ mresult_t merry_close_file(MerryFile *file) {
 }
 
 mresult_t merry_destroy_file(MerryFile *file) {
-  if (!file) return MRES_INVALID_ARGS;
+  if (!file)
+    return MRES_INVALID_ARGS;
   if (file->interface_t != INTERFACE_TYPE_FILE) {
     return MRES_UNEXPECTED;
   }
@@ -109,7 +112,8 @@ mresult_t merry_destroy_file(MerryFile *file) {
 }
 
 mresult_t merry_file_size(MerryFile *file, msize_t *res) {
-  if (!file || !res) return MRES_INVALID_ARGS;
+  if (!file || !res)
+    return MRES_INVALID_ARGS;
   if (file->interface_t != INTERFACE_TYPE_FILE)
     return MRES_UNEXPECTED;
   if (!file->file.flags.file_opened)
@@ -124,7 +128,8 @@ mresult_t merry_file_size(MerryFile *file, msize_t *res) {
 
 mresult_t merry_file_seek(MerryFile *file, mqptr_t _res, msqword_t off,
                           msize_t whence) {
-  if (!file) return MRES_INVALID_ARGS;
+  if (!file)
+    return MRES_INVALID_ARGS;
   if (file->interface_t != INTERFACE_TYPE_FILE)
     return MRES_UNEXPECTED;
   if (!file->file.flags.file_opened)
@@ -142,8 +147,9 @@ mresult_t merry_file_seek(MerryFile *file, mqptr_t _res, msqword_t off,
 }
 
 mresult_t merry_file_tell(MerryFile *file, msize_t *off) {
- if (!file || !off) return MRES_INVALID_ARGS;
- if (file->interface_t != INTERFACE_TYPE_FILE)
+  if (!file || !off)
+    return MRES_INVALID_ARGS;
+  if (file->interface_t != INTERFACE_TYPE_FILE)
     return MRES_UNEXPECTED;
   if (!file->file.flags.file_opened)
     return MRES_CONFIGURATION_INVALID;
@@ -156,7 +162,8 @@ mresult_t merry_file_tell(MerryFile *file, msize_t *off) {
 
 mresult_t merry_file_read(MerryFile *file, mqptr_t _res, mbptr_t buf,
                           msize_t num_of_bytes) {
-  if (!file || !buf) return MRES_INVALID_ARGS;  
+  if (!file || !buf)
+    return MRES_INVALID_ARGS;
   if (file->interface_t != INTERFACE_TYPE_FILE)
     return MRES_UNEXPECTED;
   if (!file->file.flags.file_opened || !file->file.flags.read)
@@ -175,7 +182,8 @@ mresult_t merry_file_read(MerryFile *file, mqptr_t _res, mbptr_t buf,
 
 mresult_t merry_file_write(MerryFile *file, mqptr_t _res, mbptr_t buf,
                            msize_t num_of_bytes) {
-  if (!file || !buf) return MRES_INVALID_ARGS;
+  if (!file || !buf)
+    return MRES_INVALID_ARGS;
   if (file->interface_t != INTERFACE_TYPE_FILE)
     return MRES_UNEXPECTED;
   if (!file->file.flags.file_opened ||

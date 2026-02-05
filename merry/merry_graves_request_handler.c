@@ -41,7 +41,7 @@
 //   if (res == MRES_SYS_FAILURE)
 //     req->err = errno;
 // }
-// 
+//
 // REQ(create_group) {
 //   /*
 //    * Just create a new group
@@ -58,7 +58,7 @@
 //   args->create_group.new_guid = ngrp->group_id;
 //   req->result = MRES_SUCCESS;
 // }
-// 
+//
 // // REQ(get_system_details) {
 // //   /*
 // //    * Get system details but not what you think

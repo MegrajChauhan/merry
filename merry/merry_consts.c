@@ -1,9 +1,6 @@
 #include <merry_consts.h>
 
-_MERRY_ALWAYS_INLINE_ void
-merry_HELP_msg() {
-  printf("%s", HELP_MSG);
-}
+_MERRY_ALWAYS_INLINE_ void merry_HELP_msg() { printf("%s", HELP_MSG); }
 
 mresult_t merry_parse_arg(int argc, char **argv) {
   // ..... parsing
@@ -36,8 +33,7 @@ mresult_t merry_parse_arg(int argc, char **argv) {
         } else if (strcmp(argv[st], "--f") == 0) {
           // file provided
           if ((st + 1) >= argc) {
-            MERR("Expected file path after --f but got nothing",
-                   NULL);
+            MERR("Expected file path after --f but got nothing", NULL);
             merry_HELP_msg();
             return MRES_FAILURE;
           }
@@ -79,7 +75,7 @@ mresult_t merry_parse_arg(int argc, char **argv) {
     }
     st++;
   }
-  MERR( "No Input File Provided!!!", NULL);
+  MERR("No Input File Provided!!!", NULL);
   merry_HELP_msg();
   return MRES_FAILURE;
 }
@@ -123,9 +119,9 @@ mresult_t merry_parse_cmd_option_Graves(mstr_t opt, const mstr_t nxt,
     break;
   }
   case 'f': {
-  	if (strcmp(opt, "-Gfdbg") == 0)
-  		consts.graves_config.log_dbg = mtrue;
-  	break;
+    if (strcmp(opt, "-Gfdbg") == 0)
+      consts.graves_config.log_dbg = mtrue;
+    break;
   }
   default:
     MERR("Unknown option type %s", opt);
