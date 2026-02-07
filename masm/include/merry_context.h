@@ -1,6 +1,7 @@
 #ifndef _MERRY_CONTEXT_
 #define _MERRY_CONTEXT_
 
+#include <merry_expr_parser.h>
 #include <merry_file.h>
 #include <merry_helpers.h>
 #include <merry_lexer.h>
@@ -15,6 +16,7 @@ struct Context {
   mstr_t file_path;
   mstr_t file_stream;
   Lexer *lexer;
+  ExprParser *expr;
 };
 
 Context *context_create(mstr_t file_path);

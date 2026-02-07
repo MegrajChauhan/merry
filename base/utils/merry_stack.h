@@ -103,7 +103,7 @@
   void merry_##name##_stack_destroy(Merry##name##Stack *stack) {               \
     if (!stack)                                                                \
       return;                                                                  \
-    if (stack->external_buffer)                                                \
+    if (!stack->external_buffer)                                                \
       free(stack->buf);                                                        \
     free(stack);                                                               \
   }

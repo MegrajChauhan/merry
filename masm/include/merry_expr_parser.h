@@ -14,6 +14,7 @@ _MERRY_DECLARE_STACK_(Op, __TmpRepr);
 struct ExprParser {
   MerryOperStack *oper_stack;
   MerryOpStack *op_stack;
+  token_t type; // type of result
   union {
     mqword_t integer;
     double decimal;
@@ -29,8 +30,10 @@ struct __TmpRepr {
   };
 };
 
+ExprParser *create_expr_parser();
+
 mbool_t parse_expr(ExprParser *expr, Lexer *l);
 
-void ast_destroy(ExprParser expr);
+void destroy_expr_parser(ExprParser *expr);
 
 #endif

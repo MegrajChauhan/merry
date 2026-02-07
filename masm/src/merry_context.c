@@ -50,24 +50,47 @@ Context *context_create(mstr_t file_path) {
     merry_destroy_file(file);
     return NULL;
   }
+  ctx->expr = create_expr_parser();
+  if (!ctx->expr) {
+    MERR("[%s]: Failed to initialize parser", file_path);
+    free(ctx->file_stream);
+    free(ctx);
+    merry_destroy_file(file);
+    lexer_destroy(ctx->lexer);
+    return NULL;
+  }
   merry_destroy_file(file);
   return ctx;
 }
 
 mbool_t context_process_file(Context *ctx) {
-  Token curr = lexer_next(ctx->lexer);
-  while (curr.type != TOK_ERR && curr.type != TOK_EOF) {
-    printf("TOK_TYPE: %zu\nTOK_LINE: %zu\nTOK_COL: %zu\nTOK_VAL: ", curr.type,
-           curr.lnum, curr.col_st);
-    mstr_t itr = curr.begin;
-    while (itr != curr.end) {
-      putchar(*itr);
-      itr++;
+  // Token curr = lexer_next(ctx->lexer);
+  // while (mtrue) {
+    if (!parse_expr(ctx->expr, ctx->lexer)) {
+      MERR("Oh no!", NULL);
+      return mfalse;
+      // break;
     }
-    putchar(10);
-    curr = lexer_next(ctx->lexer);
-  }
-  return true;
+    switch (ctx->expr->type) {
+    case TOK_NUM_INT:
+      printf("VALUE: %zu\n", ctx->expr->integer);
+      break;
+    case TOK_NUM_FLOAT:
+      printf("VALUE: %lf\n", ctx->expr->decimal);
+      break;
+    }
+    // printf("TOK_TYPE: %zu\nTOK_LINE: %zu\nTOK_COL: %zu\nTOK_VAL: ",
+    // curr.type,
+    //        curr.lnum, curr.col_st);
+    // mstr_t itr = curr.begin;
+    // while (itr != curr.end) {
+    //   putchar(*itr);
+    //   itr++;
+    // }
+    // putchar(10);
+    // curr = lexer_next(ctx->lexer);
+  // }
+  return mtrue;
 }
 
 void context_destroy(Context *ctx) {
@@ -75,6 +98,7 @@ void context_destroy(Context *ctx) {
     if (ctx->file_stream)
       free(ctx->file_stream);
     lexer_destroy(ctx->lexer);
+    destroy_expr_parser(ctx->expr);
     free(ctx);
   }
 }
