@@ -10,6 +10,7 @@ _MERRY_INTERNAL_ int associativity(token_t type) {
   switch (type) {
   case TOK_PLUS:
   case TOK_MINUS:
+  case TOK_MUL:
     return ASSOCIATIVITY_LEFT;
   }
   return ASSOCIATIVITY_RIGHT; // this will never be executed[I am 100% sure!!!! :) ]
@@ -17,15 +18,14 @@ _MERRY_INTERNAL_ int associativity(token_t type) {
 
 _MERRY_INTERNAL_ int precedence(token_t type) {
   switch (type) {
-  case TOK_ERR:
-    return 0;
   case TOK_MINUS:
-    return 1;
   case TOK_PLUS:
-    return 2;
+    return 1;
   case TOK_MUL:
-    return 3;
+    return 2;
   case TOK_DIV:
+    return 3;
+  case TOK_MODULO:
     return 4;
   }
   return 0;
@@ -33,6 +33,7 @@ _MERRY_INTERNAL_ int precedence(token_t type) {
 
 _MERRY_INTERNAL_ mbool_t evaluate_operator(ExprParser *expr) {
   token_t top;
+  token_t resulting_type = TOK_NUM_INT;
   __TmpRepr right, left;
   if (merry_Op_stack_pop(expr->op_stack, &right) != MRES_SUCCESS) {
     MERR("Expression parsing failed!", NULL);
@@ -46,9 +47,9 @@ _MERRY_INTERNAL_ mbool_t evaluate_operator(ExprParser *expr) {
     MERR("Expression parsing failed!", NULL);
     return mfalse;
   }
-  if (right.type != left.type) {
-    MERR("[LINE: %zu]: Mismatch of value types for expression", right.lnum);
-    return mfalse;
+  if (top == TOK_OPEN_PAREN) {
+  	MERR("Invalid Expression!", NULL);
+  	return mfalse;
   }
   mqword_t res_int;
   double res_dec;
@@ -72,6 +73,16 @@ _MERRY_INTERNAL_ mbool_t evaluate_operator(ExprParser *expr) {
     }
     res_int = left.integer / right.integer;
     res_dec = left.decimal / right.decimal;
+    break;
+  case TOK_MODULO:
+    if (right.lnum == TOK_NUM_FLOAT) {
+    	MERR("[LINE: %zu]: Modulo operator not supported for floats", right.lnum);
+    }
+    if (left.integer == 0) {
+      MERR("[LINE: %zu]: Divide by ZERO!", right.lnum);
+      return mfalse;
+    }
+    res_int = left.integer % right.integer;
     break;
   }
   if (right.type == TOK_NUM_INT)
@@ -152,11 +163,45 @@ _MERRY_INTERNAL_ mbool_t start_parsing_expr(ExprParser *expr, Lexer *l) {
     case TOK_NUM_BINARY:
     case TOK_NUM_OCTAL:
     case TOK_NUM_HEX:
-      if (!push_operand(expr, &tok, mfalse))
+      if (!push_operand(expr, &tok, mfalse)) {
+        MERR("[LINE: %zu]: While parsing expression", line);
         return mfalse;
+      }
       break;
+    case TOK_OPEN_PAREN:
+      if (merry_Oper_stack_push(expr->oper_stack, &tok.type) !=
+                  MRES_SUCCESS) {
+        MERR("[LINE: %zu]: Expression parsing failed", tok.lnum);
+        return mfalse;
+      }
+      top = TOK_OPEN_PAREN;
+      break;
+    case TOK_CLOSE_PAREN: {
+        if (merry_is_stack_empty(expr->oper_stack)) {
+        	MERR("[LINE: %zu]: Invalid Expression provided!", line);
+        	return mfalse;
+        }
+        merry_Oper_stack_top(expr->oper_stack, &top);
+    	while (!merry_is_stack_empty(expr->oper_stack) && top != TOK_OPEN_PAREN) {
+    	  if (!evaluate_operator(expr)) {
+    	    MERR("[LINE: %zu]: While parsing expression", line);
+    	    return mfalse;
+    	  }
+    	  merry_Oper_stack_top(expr->oper_stack, &top);	
+    	}
+    	if (top != TOK_OPEN_PAREN) {
+        	MERR("[LINE: %zu]: Invalid Expression provided!", line);
+        	return mfalse;
+        }
+        merry_Oper_stack_pop(expr->oper_stack, &top);
+        if (merry_is_stack_empty(expr->oper_stack))
+          top = TOK_TMP;
+        else
+          merry_Oper_stack_top(expr->oper_stack, &top);
+        break;
+    }
     default: {
-      if ((top == TOK_ERR) && tok.type == TOK_MINUS) {
+      if ((top == TOK_ERR || top == TOK_OPEN_PAREN) && tok.type == TOK_MINUS) {
         // probably a unary '-'
         tok = lexer_next(l);
         if (tok.type == TOK_ERR || tok.type == TOK_EOF) {
@@ -164,9 +209,11 @@ _MERRY_INTERNAL_ mbool_t start_parsing_expr(ExprParser *expr, Lexer *l) {
           return mfalse;
         }
         // PUSH a unary
-        if (!push_operand(expr, &tok, mtrue))
+        if (!push_operand(expr, &tok, mtrue)) {
+          MERR("[LINE: %zu]: While parsing expression", line);
           return mfalse;
-      } else if (precedence(top) < precedence(tok.type)) {
+        }
+      } else if ((top == TOK_OPEN_PAREN) || (precedence(top) < precedence(tok.type))) {
         if (merry_Oper_stack_push(expr->oper_stack, &tok.type) !=
             MRES_SUCCESS) {
           MERR("[LINE: %zu]: Expression parsing failed", tok.lnum);
@@ -176,8 +223,10 @@ _MERRY_INTERNAL_ mbool_t start_parsing_expr(ExprParser *expr, Lexer *l) {
       } else if (precedence(top) > precedence(tok.type)) {
         // evaluate the top operator
         while (precedence(top) > precedence(tok.type)) {
-          if (!evaluate_operator(expr))
+          if (!evaluate_operator(expr)) {
+            MERR("[LINE: %zu]: While parsing expression", line);
             return mfalse;
+          }
           if (merry_Oper_stack_top(expr->oper_stack, &top) != MRES_SUCCESS)
              break;
         }
@@ -189,8 +238,10 @@ _MERRY_INTERNAL_ mbool_t start_parsing_expr(ExprParser *expr, Lexer *l) {
         top = tok.type;
       } else {
         if (associativity(top) == ASSOCIATIVITY_LEFT) {
-          if (!evaluate_operator(expr))
+          if (!evaluate_operator(expr)) {
+            MERR("[LINE: %zu]: While parsing expression", line);
             return mfalse;
+          }
         }
         if (merry_Oper_stack_push(expr->oper_stack, &tok.type) !=
             MRES_SUCCESS) {

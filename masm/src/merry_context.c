@@ -73,7 +73,7 @@ mbool_t context_process_file(Context *ctx) {
     }
     switch (ctx->expr->type) {
     case TOK_NUM_INT:
-      printf("VALUE: %zu\n", ctx->expr->integer);
+      printf("VALUE: %zu %zi\n", ctx->expr->integer, ctx->expr->integer);
       break;
     case TOK_NUM_FLOAT:
       printf("VALUE: %lf\n", ctx->expr->decimal);

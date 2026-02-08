@@ -144,6 +144,15 @@ Token lexer_next(Lexer *l) {
   } else if (l->stream[l->curr] == '/') {
     res.type = TOK_DIV;
     lexer_update(l);
+  } else if (l->stream[l->curr] == '(') {
+    res.type = TOK_OPEN_PAREN;
+    lexer_update(l);
+  } else if (l->stream[l->curr] == ')') {
+    res.type = TOK_CLOSE_PAREN;
+    lexer_update(l);
+  } else if (l->stream[l->curr] == '%') {
+    res.type = TOK_MODULO;
+    lexer_update(l);
   } else if (misnum(l->stream[l->curr])) {
     msize_t peek = l->curr + 1;
     if (l->stream[l->curr] == '0' && l->len > peek && l->stream[peek] == 'x')

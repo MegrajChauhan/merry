@@ -6,6 +6,9 @@ typedef enum token_t token_t;
 enum token_t {
   TOK_EOF,
   TOK_ERR,
+  TOK_TMP,
+  TOK_OPEN_PAREN,
+  TOK_CLOSE_PAREN,
   TOK_NUM_INT,
   TOK_NUM_FLOAT,
   TOK_NUM_BINARY,
@@ -16,6 +19,7 @@ enum token_t {
   TOK_MINUS,
   TOK_MUL,
   TOK_DIV,
+  TOK_MODULO,
   TOK_NON_EXPRESSION,
 };
 
