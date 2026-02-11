@@ -98,6 +98,12 @@ _MERRY_INTERNAL_ void lexer_handle_octal(Lexer *l, Token *t) {
   return;
 }
 
+_MERRY_INTERNAL_ void lexer_handle_identifier(Lexer *l, Token *t) {
+	while (l->curr < l->len && (misalpha(l->stream[l->curr]) || l->stream[l->curr] == '_'))
+	  lexer_update(l);
+	t->type = TOK_IDENTIFIER;
+}
+
 // Why aren't we making extra checks?
 // Well, we will make sure that incorrect arguments are never passed
 Lexer *lexer_init(mstr_t stream, msize_t len) {
@@ -153,6 +159,86 @@ Token lexer_next(Lexer *l) {
   } else if (l->stream[l->curr] == '%') {
     res.type = TOK_MODULO;
     lexer_update(l);
+  } else if (l->stream[l->curr] == '~') {
+      res.type = TOK_BITWISE_NOT;
+      lexer_update(l);
+  } else if (l->stream[l->curr] == '^') {
+      res.type = TOK_BITWISE_XOR;
+      lexer_update(l);
+  } else if (l->stream[l->curr] == '>') {
+    if ((l->curr+1) < l->len) {
+    	switch (l->stream[l->curr + 1]) {
+    		case '=':
+    		 res.type = TOK_GREATER_EQUAL;
+    		 lexer_update(l);
+    		 break;
+    	    default:
+             res.type = TOK_GREATER;
+    	}
+    } else {
+       res.type = TOK_GREATER;
+    }
+    lexer_update(l);
+  } else if (l->stream[l->curr] == '<') {
+    if ((l->curr+1) < l->len) {
+    	switch (l->stream[l->curr + 1]) {
+    		case '=':
+    		 res.type = TOK_SMALLER_EQUAL;
+    		 lexer_update(l);
+    		 break;
+    	    default:
+             res.type = TOK_SMALLER;
+    	}
+    } else {
+       res.type = TOK_SMALLER;
+    }
+    lexer_update(l);
+  } else if (l->stream[l->curr] == '=') {
+    if ((l->curr + 1) >= l->curr || l->stream[l->curr+1] != '=') {
+    	MERR("[LINE:%zu]: Unknown operator used when expected '=='", l->lnum);
+    	res.type = TOK_ERR;
+    } else {
+    	res.type = TOK_IS_EQUAL;
+    	lexer_update(l);
+    }
+    lexer_update(l);
+  } else if (l->stream[l->curr] == '!') {
+    if ((l->curr + 1) >= l->curr || l->stream[l->curr+1] != '=') {
+    	MERR("[LINE:%zu]: Unknown operator used when expected '!='", l->lnum);
+    	res.type = TOK_ERR;
+    } else {
+    	res.type = TOK_NOT_EQUAL;
+    	lexer_update(l);
+    }
+    lexer_update(l);  
+  } else if (l->stream[l->curr] == '|') {
+    if ((l->curr+1) < l->len) {
+    	switch (l->stream[l->curr + 1]) {
+    		case '|':
+    		 res.type = TOK_OR;
+    		 lexer_update(l);
+    		 break;
+    	    default:
+             res.type = TOK_BITWISE_OR;
+    	}
+    } else {
+       res.type = TOK_BITWISE_OR;
+    }
+    lexer_update(l);
+  } else if (l->stream[l->curr] == '&') {
+      if ((l->curr+1) < l->len) {
+      	switch (l->stream[l->curr + 1]) {
+      		case '&':
+      		 res.type = TOK_AND;
+      		 lexer_update(l);
+      		 break;
+      	    default:
+               res.type = TOK_BITWISE_AND;
+      	}
+      } else {
+         res.type = TOK_BITWISE_AND;
+      }
+      lexer_update(l);
   } else if (misnum(l->stream[l->curr])) {
     msize_t peek = l->curr + 1;
     if (l->stream[l->curr] == '0' && l->len > peek && l->stream[peek] == 'x')
@@ -170,6 +256,8 @@ Token lexer_next(Lexer *l) {
     } else {
       lexer_handle_decimal(l, &res);
     }
+  } else if (misalpha(l->stream[l->curr]) || l->stream[l->curr] == '_') {
+  	lexer_handle_identifier(l, &res);
   } else {
     MERR("[LINE:%zu]: Cannot build a token from this '%c'", l->lnum,
          l->stream[l->curr]);

@@ -5,8 +5,7 @@
  * We are gonna have:
  * 1. Static list
  * 2. lock free static list here
- * Dynamic lists are not implemented for more control. The ones using these
- * lists will have more control over their operations
+ * 3. Dynamic list(not lock free)
  * */
 
 #include <merry_logger.h>
@@ -197,6 +196,117 @@
     ;                                                                          \
     return lst->curr_ind;                                                      \
   }                                                                            \
-  /*-----------------END STATIC LIST--------------------*/
+  /*-----------------END LF STATIC LIST--------------------*/
+
+/*------------------DYNAMIC LIST---------------------*/
+#define _MERRY_DECLARE_DYNAMIC_LIST_(name, type)                                \
+  typedef struct MerryD##name##List Merry##name##List;                          \
+  struct MerryD##name##List {                                                   \
+    msize_t cap;                                                               \
+    msize_t curr_ind;                                                          \
+    type *buf;                                                                 \
+  };                                                                           \
+  mresult_t merry_d##name##_list_create(msize_t cap, MerryD##name##List **lst);  \
+  void merry_d##name##_list_destroy(MerryD##name##List *lst);                    \
+  mresult_t merry_d##name##_list_push(MerryD##name##List *lst, type *elem);      \
+  mresult_t merry_d##name##_list_pop(MerryD##name##List *lst, type *elem);       \
+  mresult_t merry_d##name##_list_at(MerryD##name##List *lst, type *elem,         \
+                                   msize_t ind);                               \
+  mresult_t merry_d##name##_list_resize(MerryD##name##List *lst,                 \
+                                       msize_t resize_factor);                 \
+  msize_t merry_d##name##_list_size(MerryD##name##List *lst);                    \
+  mresult_t merry_d##name##_list_ref_of(MerryD##name##List *lst, type **elem,    \
+                                       msize_t ind);                           \
+  msize_t merry_d##name##_list_index_of(MerryD##name##List *lst, type *elem);
+
+#define _MERRY_DEFINE_DYNAMIC_LIST_(name, type)                                 \
+  mresult_t merry_d##name##_list_create(msize_t cap, MerryD##name##List **lst) { \
+    if (cap == 0)                                                              \
+      return MRES_INVALID_ARGS;                                                \
+    *lst = (MerryD##name##List *)malloc(sizeof(MerryD##name##List));             \
+    if (!(*lst)) {                                                             \
+      return MRES_SYS_FAILURE;                                                 \
+    }                                                                          \
+    (*lst)->buf = (type *)calloc(cap, sizeof(type));                           \
+    if (!(*lst)->buf) {                                                        \
+      free(*lst);                                                              \
+      return MRES_SYS_FAILURE;                                                 \
+    }                                                                          \
+    (*lst)->cap = cap;                                                         \
+    (*lst)->curr_ind = 0;                                                      \
+    return MRES_SUCCESS;                                                       \
+  }                                                                            \
+  void merry_d##name##_list_destroy(MerryD##name##List *lst) {                   \
+    if (!lst)                                                                  \
+      return;                                                                  \
+    free(lst->buf);                                                            \
+    free(lst);                                                                 \
+  }                                                                            \
+  mresult_t merry_d##name##_list_push(MerryD##name##List *lst, type *elem) {     \
+    if (!lst || !elem)                                                         \
+      return MRES_INVALID_ARGS;                                                \
+    if (lst->curr_ind >= lst->cap) {                         \
+        mresult_t res;                                    \
+    	if ((res = merry_d##name##_list_resize(lst, 2)) != MRES_SUCCESS) return res;   \
+    }                                                                          \
+    lst->buf[lst->curr_ind] = *elem;                                           \
+    lst->curr_ind++;                                                           \
+    return MRES_SUCCESS;                                                       \
+  }                                                                            \
+  mresult_t merry_d##name##_list_pop(MerryD##name##List *lst, type *elem) {      \
+    if (!lst || !elem)                                                         \
+      return MRES_INVALID_ARGS;                                                \
+    if (lst->curr_ind == 0)                                                    \
+      return MRES_CONT_EMPTY;                                                  \
+    lst->curr_ind--;                                                           \
+    *elem = lst->buf[lst->curr_ind];                                           \
+    return MRES_SUCCESS;                                                       \
+  }                                                                            \
+  mresult_t merry_d##name##_list_at(MerryD##name##List *lst, type *elem,         \
+                                   msize_t ind) {                              \
+    if (!lst || !elem)                                                         \
+      return MRES_INVALID_ARGS;                                                \
+    if (ind >= lst->cap)                                                       \
+      return MRES_NOT_EXISTS;                                                  \
+    *elem = lst->buf[ind];                                                     \
+    return MRES_SUCCESS;                                                       \
+  }                                                                            \
+  mresult_t merry_d##name##_list_ref_of(MerryD##name##List *lst, type **elem,    \
+                                       msize_t ind) {                          \
+    if (!lst || !elem)                                                         \
+      return MRES_INVALID_ARGS;                                                \
+    if (ind >= lst->cap)                                                       \
+      return MRES_NOT_EXISTS;                                                  \
+    *elem = &lst->buf[ind];                                                    \
+    return MRES_SUCCESS;                                                       \
+  }                                                                            \
+  mresult_t merry_d##name##_list_resize(MerryD##name##List *lst,                 \
+                                       msize_t resize_factor) {                \
+    if (!lst)                                                                  \
+      return MRES_INVALID_ARGS;                                                \
+    type *new_buf = (type *)malloc(sizeof(type) * lst->cap * resize_factor);   \
+    if (!new_buf)                                                              \
+      return MRES_SYS_FAILURE;                                                 \
+    mempcpy(new_buf, lst->buf, lst->curr_ind * sizeof(type));                  \
+    type *tmp = lst->buf;                                                      \
+    lst->buf = new_buf;                                                        \
+    lst->cap *= resize_factor;                                                 \
+    free(tmp);                                                                 \
+    return MRES_SUCCESS;                                                       \
+  }                                                                            \
+  _MERRY_ALWAYS_INLINE_ msize_t merry_d##name##_list_size(                      \
+      MerryD##name##List *lst) {                                                \
+    if (!lst)                                                                  \
+      return (msize_t) - 1;                                                    \
+    return lst->curr_ind;                                                      \
+  }                                                                            \
+  _MERRY_ALWAYS_INLINE_ msize_t merry_d##name##_list_index_of(                  \
+      MerryD##name##List *lst, type *elem) {                                    \
+    if (!lst || !elem)                                                         \
+      return 0;                                                                \
+    return (msize_t)(((mbptr_t)elem - (mbptr_t)lst->buf) / sizeof(type));      \
+  }
+
+/*-----------------END DYNAMIC LIST--------------------*/
 
 #endif

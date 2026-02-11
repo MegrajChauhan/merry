@@ -18,15 +18,31 @@ _MERRY_INTERNAL_ int associativity(token_t type) {
 
 _MERRY_INTERNAL_ int precedence(token_t type) {
   switch (type) {
+  case TOK_AND:
+  case TOK_OR:
+    return 0;
+  case TOK_GREATER:
+  case TOK_SMALLER:
+  case TOK_SMALLER_EQUAL:
+  case TOK_GREATER_EQUAL:
+  case TOK_IS_EQUAL:
+  case TOK_NOT_EQUAL:
+    return 1;
   case TOK_MINUS:
   case TOK_PLUS:
-    return 1;
+    return 5;
   case TOK_MUL:
-    return 2;
+    return 6;
   case TOK_DIV:
-    return 3;
+    return 7;
   case TOK_MODULO:
-    return 4;
+    return 8;
+  case TOK_BITWISE_AND:
+  case TOK_BITWISE_OR:
+  case TOK_BITWISE_XOR:
+    return 9;
+  case TOK_BITWISE_NOT:
+    return 10;
   }
   return 0;
 }
@@ -35,17 +51,22 @@ _MERRY_INTERNAL_ mbool_t evaluate_operator(ExprParser *expr) {
   token_t top;
   token_t resulting_type = TOK_NUM_INT;
   __TmpRepr right, left;
+  
+  if (merry_Oper_stack_pop(expr->oper_stack, &top) != MRES_SUCCESS) {
+    MERR("Expression parsing failed!", NULL);
+    return mfalse;
+  }
+  
   if (merry_Op_stack_pop(expr->op_stack, &right) != MRES_SUCCESS) {
     MERR("Expression parsing failed!", NULL);
     return mfalse;
   }
+
+  if (top != TOK_BITWISE_NOT) {
   if (merry_Op_stack_pop(expr->op_stack, &left) != MRES_SUCCESS) {
     MERR("Expression parsing failed!", NULL);
     return mfalse;
   }
-  if (merry_Oper_stack_pop(expr->oper_stack, &top) != MRES_SUCCESS) {
-    MERR("Expression parsing failed!", NULL);
-    return mfalse;
   }
   if (top == TOK_OPEN_PAREN) {
   	MERR("Invalid Expression!", NULL);
@@ -54,19 +75,22 @@ _MERRY_INTERNAL_ mbool_t evaluate_operator(ExprParser *expr) {
   mqword_t res_int;
   double res_dec;
   switch (top) {
-  case TOK_PLUS:
+  case TOK_PLUS: {
     res_int = right.integer + left.integer;
     res_dec = right.decimal + left.decimal;
     break;
-  case TOK_MINUS:
+  }
+  case TOK_MINUS: {
     res_int = left.integer - right.integer;
     res_dec = left.decimal - right.decimal;
     break;
-  case TOK_MUL:
+  }
+  case TOK_MUL: {
     res_int = right.integer * left.integer;
     res_dec = right.decimal * left.decimal;
     break;
-  case TOK_DIV:
+  }
+  case TOK_DIV: {
     if (left.integer == 0 || left.decimal == 0.0) {
       MERR("[LINE: %zu]: Divide by ZERO!", right.lnum);
       return mfalse;
@@ -74,7 +98,8 @@ _MERRY_INTERNAL_ mbool_t evaluate_operator(ExprParser *expr) {
     res_int = left.integer / right.integer;
     res_dec = left.decimal / right.decimal;
     break;
-  case TOK_MODULO:
+  }
+  case TOK_MODULO: {
     if (right.lnum == TOK_NUM_FLOAT) {
     	MERR("[LINE: %zu]: Modulo operator not supported for floats", right.lnum);
     }
@@ -84,6 +109,72 @@ _MERRY_INTERNAL_ mbool_t evaluate_operator(ExprParser *expr) {
     }
     res_int = left.integer % right.integer;
     break;
+  }
+  case TOK_GREATER: {
+  	res_int = left.integer > right.integer?1:0;
+  	res_dec = left.decimal > right.decimal?1.0:0.0;
+  	break;
+  }
+  case TOK_SMALLER: {
+   	res_int = left.integer < right.integer?1:0;
+   	res_dec = left.decimal < right.decimal?1.0:0.0;
+   	break;
+  }
+  case TOK_SMALLER_EQUAL: {
+   	res_int = left.integer <= right.integer?1:0;
+   	res_dec = left.decimal <= right.decimal?1.0:0.0;
+   	break;
+  }
+  case TOK_GREATER_EQUAL: {
+   	res_int = left.integer >= right.integer?1:0;
+   	res_dec = left.decimal >= right.decimal?1.0:0.0;
+   	break;
+  }
+  case TOK_IS_EQUAL: {
+  	res_int = left.integer == right.integer?1:0;
+  	res_dec = left.decimal == right.decimal?1.0:0.0;
+  	break;
+  }
+  case TOK_NOT_EQUAL: {
+  	res_int = left.integer != right.integer?1:0;
+  	res_dec = left.decimal != right.decimal?1.0:0.0;
+  	break;
+  }
+  case TOK_AND: {
+  	res_int = left.integer && right.integer?1:0;
+  	res_dec = left.decimal && right.decimal?1.0:0.0;
+  	break;  	
+  }
+  case TOK_OR: {
+  	res_int = left.integer || right.integer?1:0;
+  	res_dec = left.decimal || right.decimal?1.0:0.0;
+  	break;
+  }
+  case TOK_BITWISE_AND: {
+    if (right.lnum == TOK_NUM_FLOAT || left.lnum == TOK_NUM_FLOAT) {
+    	MERR("[LINE: %zu]: BITWISE AND operator not supported for floats", right.lnum);
+    }
+  	res_int = left.integer & right.integer;
+  	break;
+  }
+  case TOK_BITWISE_OR: {
+    if (right.lnum == TOK_NUM_FLOAT || left.lnum == TOK_NUM_FLOAT) {
+    	MERR("[LINE: %zu]: BITWISE OR operator not supported for floats", right.lnum);
+    }
+  	res_int = left.integer | right.integer;
+  	break;
+  }
+  case TOK_BITWISE_XOR: {
+    if (right.lnum == TOK_NUM_FLOAT || left.lnum == TOK_NUM_FLOAT) {
+    	MERR("[LINE: %zu]: BITWISE XOR operator not supported for floats", right.lnum);
+    }
+  	res_int = left.integer ^ right.integer;
+  	break;
+  }
+  case TOK_BITWISE_NOT: {
+  	res_int = ~right.integer;
+  	break;
+  }
   }
   if (right.type == TOK_NUM_INT)
     right.integer = res_int;

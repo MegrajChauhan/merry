@@ -9,7 +9,7 @@ db var_name 100
 ; The format is db|dw|dd|dq variable_name expression|string|array
 ; The expression is evaluated
 ; In case of db the expression can be replaced with a string "some string"
-; the expression is a mathematical expression that may include +,-,*,/,%,>,<,>=,<=,==,!=,!,~(NOT),(),&,|,&&,||,^(XOR)
+; the expression is a mathematical expression that may include +,-,*,/,%,>,<,>=,<=,==,!=,~(NOT),(),&,|,&&,||,^(XOR)
 ; arrays are created as expression1, expression2, expression3, expression4,....
 ; Every boolean operation generates 0 for false and 1 for true, thus, can be used for mathematical evaluation
 ; Any expression can include other variables as well
