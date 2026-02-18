@@ -15,13 +15,14 @@
  * The format will look something like this:
  * <IDENTIFICATION[Magic Numbers]> <ENDIANNESS OF THE INSTRUCTIONS AND DATA> ->
  * Identification Header[We will have a few bytes left to be used for something
- * else if it comes to that] <Instruction Section Length> The length of the
- * instruction section <Data Section Length> The number of bytes that the Data
- * Section has <Debugging Information Table Length> -> A custom section
+ * else if it comes to that] 
+ * <Instruction Section Length> The length of the instruction section 
+ * <Data Section Length> The number of bytes that the Data Section has 
+ * <Debugging Information Table Length> -> A custom section
  *
  * <Instruction Section>
  * <Data Section>
- * <Debugging Information>: [None of RBC's business]
+ * <Debugging Information>: [None of Merry's business]
  *
  * A detailed explanation for each of the sections is as follow:
  * Data Section: Contains all of the data needed by the core.

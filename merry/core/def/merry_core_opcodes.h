@@ -4,8 +4,9 @@
 typedef enum mcoreop_t mcoreop_t;
 
 enum mcoreop_t {
+  MCOP_HLT, 
   MCOP_SYSINT,
-  MCOP_MINT,
+  MCOP_MINT, // 2
 
   // Arithmetic instructions
   MCOP_ADD_IMM,
@@ -27,7 +28,7 @@ enum mcoreop_t {
   MCOP_FMUL32,
   MCOP_FDIV32,
   MCOP_INC,
-  MCOP_DEC,
+  MCOP_DEC, // 22
 
   /* --------------------- Internal Data Movement Instructions ------------*/
   MCOP_MOVE_IMM_64,
@@ -41,13 +42,13 @@ enum mcoreop_t {
   MCOP_MOVESX_IMM32,
   MCOP_MOVESX_REG8,
   MCOP_MOVESX_REG16,
-  MCOP_MOVESX_REG32,
+  MCOP_MOVESX_REG32, // 34
 
   // exchanging values between two registers
   MCOP_EXCG8,
   MCOP_EXCG16,
   MCOP_EXCG32,
-  MCOP_EXCG,
+  MCOP_EXCG, // 38
 
   // we won't need zero extend. It can simply aliased with simple move
 
@@ -83,7 +84,7 @@ enum mcoreop_t {
   MCOP_JFU,
   MCOP_JFNU,
   MCOP_JFI,
-  MCOP_JFNI,
+  MCOP_JFNI, // 69
 
   MCOP_CALL_REG,
   MCOP_CALL,
@@ -115,7 +116,7 @@ enum mcoreop_t {
   MCOP_RETFNO,
   MCOP_RETFU,
   MCOP_RETFNU,
-  MCOP_RETFI,
+  MCOP_RETFI, // 100
 
   MCOP_LOOP,
 
@@ -125,12 +126,12 @@ enum mcoreop_t {
   MCOP_PUSH_REG,
   MCOP_POP64,
   MCOP_PUSHA,
-  MCOP_POPA,
+  MCOP_POPA, // 106
 
   MCOP_LOADSQ,
   MCOP_STORESQ,
   MCOP_LOADSQ_REG,
-  MCOP_STORESQ_REG,
+  MCOP_STORESQ_REG, // 110
 
   /*--------------------Logical Instructions--------------------------*/
 
@@ -154,7 +155,7 @@ enum mcoreop_t {
   MCOP_CMP_REG,
 
   MCOP_FCMP,
-  MCOP_FCMP32,
+  MCOP_FCMP32, // 125
 
   /*------------------------IO Instructions-----------------------------*/
   MCOP_BIN,
@@ -169,7 +170,7 @@ enum mcoreop_t {
   MCOP_STOREW,
   MCOP_STORED,
   MCOP_LOADQ,
-  MCOP_STOREQ,
+  MCOP_STOREQ, // 135
 
   MCOP_LOADB_REG,
   MCOP_STOREB_REG,
@@ -178,7 +179,7 @@ enum mcoreop_t {
   MCOP_LOADD_REG,
   MCOP_STORED_REG,
   MCOP_LOADQ_REG,
-  MCOP_STOREQ_REG,
+  MCOP_STOREQ_REG, // 143
 
   MCOP_ATOMIC_LOADB,
   MCOP_ATOMIC_LOADW,
@@ -187,7 +188,7 @@ enum mcoreop_t {
   MCOP_ATOMIC_STOREB,
   MCOP_ATOMIC_STOREW,
   MCOP_ATOMIC_STORED,
-  MCOP_ATOMIC_STOREQ,
+  MCOP_ATOMIC_STOREQ, // 151
 
   MCOP_ATOMIC_LOADB_REG,
   MCOP_ATOMIC_LOADW_REG,
@@ -196,7 +197,7 @@ enum mcoreop_t {
   MCOP_ATOMIC_STOREB_REG,
   MCOP_ATOMIC_STOREW_REG,
   MCOP_ATOMIC_STORED_REG,
-  MCOP_ATOMIC_STOREQ_REG,
+  MCOP_ATOMIC_STOREQ_REG, // 159
 
   /*-------------------Utility Instructions-----------------------------*/
 

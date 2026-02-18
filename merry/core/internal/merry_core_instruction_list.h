@@ -8,6 +8,7 @@
 _MERRY_DEFINE_FUNC_PTR_(mbool_t, mcihdlr_t, MerryCore *);
 
 mcihdlr_t HDLRS[256] = {
+    _MIHDLR_FUNC_(hlt),
     _MIHDLR_FUNC_(sysint),
     _MIHDLR_FUNC_(mint),
     _MIHDLR_FUNC_(add_imm),
@@ -172,8 +173,7 @@ mcihdlr_t HDLRS[256] = {
     _MIHDLR_FUNC_(cfflags),
     _MIHDLR_FUNC_(reset),
     _MIHDLR_FUNC_(cmpxchg),
-    _MIHDLR_FUNC_(cmpxchg_reg), // 165
-    _MIHDLR_FUNC_(invalid_inst),
+    _MIHDLR_FUNC_(cmpxchg_reg), // 166
     _MIHDLR_FUNC_(invalid_inst),
     _MIHDLR_FUNC_(invalid_inst),
     _MIHDLR_FUNC_(invalid_inst),

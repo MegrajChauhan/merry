@@ -23,6 +23,10 @@ void merry_core_compare_f64(double a, double b, MerryCoreFFlagsRegr *regr) {
   regr->uf = fabs(diff) < DBL_MIN && diff != 0.0;
 }
 
+merry_core_ihdlr(hlt) {
+	return mfalse;
+}
+
 /*
  * The various system interrupts will use various registers
  * to obtain the required arguments.
